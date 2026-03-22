@@ -50,12 +50,13 @@ export default function WholesaleLoginPage() {
 
           <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
             <Input
-              label="Username"
+              label="Email"
               id="username"
+              type="email"
               required
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="wholesale-username"
+              placeholder="your@email.com"
             />
             <Input
               label="Password"
@@ -75,7 +76,8 @@ export default function WholesaleLoginPage() {
           </form>
 
           <p className="text-center text-xs text-gray-400 mt-6">
-            Wholesale accounts are provided by Interstate Graphics. Contact us to become a wholesale partner.
+            Distributor accounts are created when your application is approved.{' '}
+            <a href="/distributors/apply" className="text-amber-600 hover:underline">Apply here</a>.
           </p>
         </div>
       </Container>
