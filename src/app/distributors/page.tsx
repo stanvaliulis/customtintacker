@@ -146,7 +146,7 @@ const faqs = [
 
 export default function DistributorsPage() {
   // Use the 12x12 tacker as the example product for the pricing table
-  const exampleProduct = products.find((p) => p.slug === '12x12-embossed-tacker')!;
+  const exampleProduct = products.find((p) => p.slug === '18-inch-square-tacker') ?? products[0];
 
   return (
     <>
