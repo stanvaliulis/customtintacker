@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -30,7 +31,8 @@ export default function WholesaleLoginPage() {
       setError('Invalid username or password.');
       setLoading(false);
     } else {
-      router.push('/wholesale/dashboard');
+      toast.success('Welcome back! Distributor pricing is now active.');
+      router.push('/products');
     }
   }
 
@@ -42,9 +44,9 @@ export default function WholesaleLoginPage() {
             <div className="mx-auto w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
               <Lock className="w-7 h-7 text-gray-600" />
             </div>
-            <h1 className="text-2xl font-bold text-gray-900">Wholesale Login</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Distributor Login</h1>
             <p className="text-gray-500 text-sm mt-2">
-              Sign in to access wholesale pricing and discounts.
+              Sign in to see your distributor pricing across the site.
             </p>
           </div>
 

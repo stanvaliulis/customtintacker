@@ -19,7 +19,7 @@ function getWholesaleCredentials() {
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
-      name: 'Wholesale Login',
+      name: 'Distributor Login',
       credentials: {
         username: { label: 'Username', type: 'text' },
         password: { label: 'Password', type: 'password' },
@@ -39,7 +39,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             id: envAccount.username,
             name: envAccount.name,
             email: `${envAccount.username}@wholesale`,
-          };
+            role: 'distributor',
+            companyName: envAccount.name,
+            asiNumber: '',
+            sageNumber: '',
+            ppaiNumber: '',
+            discountTier: 0.40,
+          } as Record<string, unknown>;
         }
 
         // 2. Check approved distributors in database
@@ -60,7 +66,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                     id: distributor.id,
                     name: distributor.contactName,
                     email: distributor.email,
-                  };
+                    role: 'distributor',
+                    companyName: distributor.companyName,
+                    asiNumber: distributor.asiNumber || '',
+                    sageNumber: distributor.sageNumber || '',
+                    ppaiNumber: distributor.ppaiNumber || '',
+                    discountTier: 0.40,
+                  } as Record<string, unknown>;
                 }
               }
             }
@@ -76,13 +88,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        token.role = 'wholesale';
+        const u = user as Record<string, unknown>;
+        token.role = u.role || 'distributor';
+        token.companyName = u.companyName || '';
+        token.asiNumber = u.asiNumber || '';
+        token.sageNumber = u.sageNumber || '';
+        token.ppaiNumber = u.ppaiNumber || '';
+        token.discountTier = u.discountTier ?? 0.40;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        (session.user as unknown as Record<string, unknown>).role = token.role;
+        const user = session.user as unknown as Record<string, unknown>;
+        user.role = token.role;
+        user.companyName = token.companyName;
+        user.asiNumber = token.asiNumber;
+        user.sageNumber = token.sageNumber;
+        user.ppaiNumber = token.ppaiNumber;
+        user.discountTier = token.discountTier;
       }
       return session;
     },

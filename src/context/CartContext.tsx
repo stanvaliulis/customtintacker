@@ -1,55 +1,77 @@
 'use client';
 
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Product, BackingOption, CartItem } from '@/types/product';
+import { Product, BackingOption, CartItem, PriceTier } from '@/types/product';
 import { backingOptions } from '@/data/products';
-import { getPriceForQuantity } from '@/lib/utils';
+import { getPriceForQuantity, getCatalogPriceForQuantity } from '@/lib/utils';
 
 interface CartState {
   items: CartItem[];
-  isWholesale: boolean;
+  isDistributor: boolean;
+  distributorDiscount: number;
 }
 
 type CartAction =
-  | { type: 'ADD_ITEM'; product: Product; quantity: number; backing: BackingOption }
+  | { type: 'ADD_ITEM'; product: Product; quantity: number; backing: BackingOption; priceTier: PriceTier; distributorDiscount: number }
   | { type: 'REMOVE_ITEM'; productId: string }
   | { type: 'UPDATE_QUANTITY'; productId: string; quantity: number }
   | { type: 'CLEAR' }
-  | { type: 'SET_WHOLESALE'; isWholesale: boolean }
+  | { type: 'SET_DISTRIBUTOR'; isDistributor: boolean; distributorDiscount: number }
   | { type: 'HYDRATE'; items: CartItem[] };
 
-function calculateUnitPrice(product: Product, quantity: number, backing: BackingOption, isWholesale: boolean): number {
-  const basePrice = getPriceForQuantity(product.pricingTiers, quantity);
-  if (!basePrice) return 0;
+function calculateUnitPrice(
+  product: Product,
+  quantity: number,
+  backing: BackingOption,
+  priceTier: PriceTier,
+  distributorDiscount: number
+): number {
   const backingConfig = backingOptions.find((b) => b.id === backing);
   const multiplier = backingConfig?.priceMultiplier ?? 1.0;
-  let price = Math.round(basePrice * multiplier);
-  if (isWholesale) {
-    price = Math.round(price * (1 - product.wholesaleDiscount));
+
+  if (priceTier === 'distributor') {
+    const catalogPrice = getCatalogPriceForQuantity(product.pricingTiers, quantity);
+    if (!catalogPrice) return 0;
+    const adjustedCatalog = Math.round(catalogPrice * multiplier);
+    return Math.round(adjustedCatalog * (1 - distributorDiscount));
   }
-  return price;
+
+  const basePrice = getPriceForQuantity(product.pricingTiers, quantity);
+  if (!basePrice) return 0;
+  return Math.round(basePrice * multiplier);
 }
 
 function cartReducer(state: CartState, action: CartAction): CartState {
   switch (action.type) {
     case 'ADD_ITEM': {
+      const priceTier = action.priceTier;
+      const discount = action.distributorDiscount;
       const existing = state.items.find((i) => i.product.id === action.product.id);
       if (existing) {
         const newQty = existing.quantity + action.quantity;
-        const unitPrice = calculateUnitPrice(action.product, newQty, action.backing, state.isWholesale);
+        const unitPrice = calculateUnitPrice(action.product, newQty, action.backing, priceTier, discount);
         return {
           ...state,
           items: state.items.map((i) =>
             i.product.id === action.product.id
-              ? { ...i, quantity: newQty, selectedBacking: action.backing, unitPrice }
+              ? { ...i, quantity: newQty, selectedBacking: action.backing, unitPrice, priceTier }
               : i
           ),
         };
       }
-      const unitPrice = calculateUnitPrice(action.product, action.quantity, action.backing, state.isWholesale);
+      const unitPrice = calculateUnitPrice(action.product, action.quantity, action.backing, priceTier, discount);
       return {
         ...state,
-        items: [...state.items, { product: action.product, quantity: action.quantity, selectedBacking: action.backing, unitPrice }],
+        items: [
+          ...state.items,
+          {
+            product: action.product,
+            quantity: action.quantity,
+            selectedBacking: action.backing,
+            unitPrice,
+            priceTier,
+          },
+        ],
       };
     }
     case 'REMOVE_ITEM':
@@ -59,20 +81,35 @@ function cartReducer(state: CartState, action: CartAction): CartState {
         ...state,
         items: state.items.map((i) => {
           if (i.product.id !== action.productId) return i;
-          const unitPrice = calculateUnitPrice(i.product, action.quantity, i.selectedBacking, state.isWholesale);
+          const unitPrice = calculateUnitPrice(
+            i.product,
+            action.quantity,
+            i.selectedBacking,
+            i.priceTier,
+            state.distributorDiscount
+          );
           return { ...i, quantity: action.quantity, unitPrice };
         }),
       };
     }
     case 'CLEAR':
       return { ...state, items: [] };
-    case 'SET_WHOLESALE': {
+    case 'SET_DISTRIBUTOR': {
+      const newPriceTier: PriceTier = action.isDistributor ? 'distributor' : 'retail';
       return {
         ...state,
-        isWholesale: action.isWholesale,
+        isDistributor: action.isDistributor,
+        distributorDiscount: action.distributorDiscount,
         items: state.items.map((i) => ({
           ...i,
-          unitPrice: calculateUnitPrice(i.product, i.quantity, i.selectedBacking, action.isWholesale),
+          priceTier: newPriceTier,
+          unitPrice: calculateUnitPrice(
+            i.product,
+            i.quantity,
+            i.selectedBacking,
+            newPriceTier,
+            action.distributorDiscount
+          ),
         })),
       };
     }
@@ -85,22 +122,29 @@ function cartReducer(state: CartState, action: CartAction): CartState {
 
 interface CartContextType {
   items: CartItem[];
-  addItem: (product: Product, quantity: number, backing: BackingOption) => void;
+  addItem: (product: Product, quantity: number, backing: BackingOption, priceTier?: PriceTier) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
   clearCart: () => void;
+  setDistributor: (isDistributor: boolean, distributorDiscount: number) => void;
+  /** @deprecated Use useDistributor() instead. Kept for backward compat. */
   setWholesale: (isWholesale: boolean) => void;
   itemCount: number;
   subtotal: number;
   setupFees: number;
   total: number;
   isWholesale: boolean;
+  isDistributor: boolean;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(cartReducer, { items: [], isWholesale: false });
+  const [state, dispatch] = useReducer(cartReducer, {
+    items: [],
+    isDistributor: false,
+    distributorDiscount: 0.40,
+  });
 
   useEffect(() => {
     try {
@@ -108,7 +152,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          dispatch({ type: 'HYDRATE', items: parsed });
+          // Ensure hydrated items have priceTier
+          const items = parsed.map((item: CartItem) => ({
+            ...item,
+            priceTier: item.priceTier || 'retail',
+          }));
+          dispatch({ type: 'HYDRATE', items });
         }
       }
     } catch {}
@@ -129,16 +178,28 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const value: CartContextType = {
     items: state.items,
-    addItem: (product, quantity, backing) => dispatch({ type: 'ADD_ITEM', product, quantity, backing }),
+    addItem: (product, quantity, backing, priceTier) =>
+      dispatch({
+        type: 'ADD_ITEM',
+        product,
+        quantity,
+        backing,
+        priceTier: priceTier || (state.isDistributor ? 'distributor' : 'retail'),
+        distributorDiscount: state.distributorDiscount,
+      }),
     removeItem: (productId) => dispatch({ type: 'REMOVE_ITEM', productId }),
     updateQuantity: (productId, quantity) => dispatch({ type: 'UPDATE_QUANTITY', productId, quantity }),
     clearCart: () => dispatch({ type: 'CLEAR' }),
-    setWholesale: (isWholesale) => dispatch({ type: 'SET_WHOLESALE', isWholesale }),
+    setDistributor: (isDistributor, distributorDiscount) =>
+      dispatch({ type: 'SET_DISTRIBUTOR', isDistributor, distributorDiscount }),
+    setWholesale: (isWholesale) =>
+      dispatch({ type: 'SET_DISTRIBUTOR', isDistributor: isWholesale, distributorDiscount: state.distributorDiscount }),
     itemCount,
     subtotal,
     setupFees,
     total,
-    isWholesale: state.isWholesale,
+    isWholesale: state.isDistributor,
+    isDistributor: state.isDistributor,
   };
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

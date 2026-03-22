@@ -7,7 +7,8 @@ export type ProductCategory = 'standard' | 'circle' | 'can-shape' | 'specialty' 
 export interface PricingTier {
   minQuantity: number;
   maxQuantity: number | null;
-  pricePerUnit: number; // cents
+  pricePerUnit: number; // cents (retail price)
+  catalogPrice: number; // cents (ASI/SAGE list price — what distributors show in catalogs)
 }
 
 export interface BackingConfig {
@@ -52,10 +53,20 @@ export interface Product {
   };
 }
 
+export type PriceTier = 'retail' | 'distributor';
+
+export interface DistributorPricing {
+  retailPrice: number;       // what regular customers see (cents)
+  catalogPrice: number;      // what goes in ASI/SAGE catalogs — the "list" price distributors show their clients (cents)
+  distributorCost: number;   // what the distributor pays us (cents)
+  distributorSavings: number; // percentage saved vs retail (0-100)
+}
+
 export interface CartItem {
   product: Product;
   quantity: number;
   selectedBacking: BackingOption;
   unitPrice: number;
+  priceTier: PriceTier;
   artworkNotes?: string;
 }

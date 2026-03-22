@@ -1,19 +1,29 @@
+'use client';
+
 import Link from 'next/link';
 import Image from 'next/image';
 import { Product } from '@/types/product';
-import { formatPrice, getLowestPrice } from '@/lib/utils';
-import ProductImagePlaceholder from './ProductImagePlaceholder';
-import { ArrowRight } from 'lucide-react';
+import { formatPrice, getLowestPrice, getLowestCatalogPrice } from '@/lib/utils';
+import { ArrowRight, Tag } from 'lucide-react';
+import { useDistributor } from '@/context/DistributorContext';
 
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const lowestPrice = getLowestPrice(product.pricingTiers);
+  const { isDistributor, distributorDiscount } = useDistributor();
+  const lowestRetailPrice = getLowestPrice(product.pricingTiers);
   const maxQtyTier = product.pricingTiers.find((t) => t.maxQuantity === null);
-  const firstTierPrice = product.pricingTiers[0]?.pricePerUnit ?? lowestPrice;
-  const savingsPercent = Math.round(((firstTierPrice - lowestPrice) / firstTierPrice) * 100);
+  const firstTierPrice = product.pricingTiers[0]?.pricePerUnit ?? lowestRetailPrice;
+  const savingsPercent = Math.round(((firstTierPrice - lowestRetailPrice) / firstTierPrice) * 100);
+
+  // Distributor pricing
+  const lowestCatalogPrice = getLowestCatalogPrice(product.pricingTiers);
+  const distributorCost = Math.round(lowestCatalogPrice * (1 - distributorDiscount));
+  const distributorSavingsVsRetail = lowestRetailPrice > 0
+    ? Math.round(((lowestRetailPrice - distributorCost) / lowestRetailPrice) * 100)
+    : 0;
 
   return (
     <Link href={`/products/${product.slug}`} className="group block h-full">
@@ -47,6 +57,12 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-800/90 text-gray-300 backdrop-blur-sm border border-gray-700/50">
               {product.shape}
             </span>
+            {isDistributor && (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 backdrop-blur-sm border border-amber-500/30">
+                <Tag className="w-3 h-3" />
+                Distributor Price
+              </span>
+            )}
           </div>
 
           {/* Hover overlay */}
@@ -72,17 +88,41 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.pricingTiers.length > 0 ? (
               <>
                 <div>
-                  <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">
-                    From {formatPrice(lowestPrice)}
-                  </span>
-                  <span className="text-xs text-gray-500 block mt-0.5">
-                    /unit at {maxQtyTier?.minQuantity?.toLocaleString()}+
-                  </span>
+                  {isDistributor ? (
+                    <>
+                      <span className="text-sm text-gray-500 line-through block">
+                        Retail: {formatPrice(lowestRetailPrice)}
+                      </span>
+                      <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">
+                        From {formatPrice(distributorCost)}
+                      </span>
+                      <span className="text-xs text-gray-500 block mt-0.5">
+                        /unit at {maxQtyTier?.minQuantity?.toLocaleString()}+
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">
+                        From {formatPrice(lowestRetailPrice)}
+                      </span>
+                      <span className="text-xs text-gray-500 block mt-0.5">
+                        /unit at {maxQtyTier?.minQuantity?.toLocaleString()}+
+                      </span>
+                    </>
+                  )}
                 </div>
-                {savingsPercent > 0 && (
-                  <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full border border-emerald-400/20">
-                    Save {savingsPercent}%
-                  </span>
+                {isDistributor ? (
+                  distributorSavingsVsRetail > 0 && (
+                    <span className="text-xs font-medium text-amber-400 bg-amber-400/10 px-2 py-1 rounded-full border border-amber-400/20">
+                      Save {distributorSavingsVsRetail}%
+                    </span>
+                  )
+                ) : (
+                  savingsPercent > 0 && (
+                    <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full border border-emerald-400/20">
+                      Save {savingsPercent}%
+                    </span>
+                  )
                 )}
               </>
             ) : (

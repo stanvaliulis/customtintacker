@@ -40,10 +40,11 @@ function dbProductToApp(p: any): AppProduct {
       displaySize: p.displaySize,
     },
     images: p.images.map((img: { url: string }) => img.url),
-    pricingTiers: p.pricingTiers.map((t: { minQuantity: number; maxQuantity: number | null; pricePerUnit: number }): PricingTier => ({
+    pricingTiers: p.pricingTiers.map((t: { minQuantity: number; maxQuantity: number | null; pricePerUnit: number; catalogPrice?: number }): PricingTier => ({
       minQuantity: t.minQuantity,
       maxQuantity: t.maxQuantity,
       pricePerUnit: t.pricePerUnit,
+      catalogPrice: t.catalogPrice ?? t.pricePerUnit,
     })),
     wholesaleDiscount: p.wholesaleDiscount,
     backingOptions: p.backingOptions.map((b: { backingId: string }) => b.backingId as BackingOption),
