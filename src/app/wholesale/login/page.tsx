@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
@@ -10,19 +9,18 @@ import Input from '@/components/ui/Input';
 import { Lock } from 'lucide-react';
 
 export default function WholesaleLoginPage() {
-  const router = useRouter();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
-    if (session?.user) {
-      router.push('/products');
+    if (status === 'authenticated' && session?.user) {
+      window.location.href = '/products';
     }
-  }, [session, router]);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  }, [session, status]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -40,8 +38,22 @@ export default function WholesaleLoginPage() {
       setLoading(false);
     } else {
       toast.success('Welcome back! Distributor pricing is now active.');
-      router.push('/products');
+      // Use hard redirect to ensure full page refresh with new session
+      window.location.href = '/products';
     }
+  }
+
+  // Show loading state while checking session
+  if (status === 'loading') {
+    return (
+      <section className="py-16 sm:py-24">
+        <Container>
+          <div className="max-w-sm mx-auto text-center">
+            <p className="text-gray-500">Loading...</p>
+          </div>
+        </Container>
+      </section>
+    );
   }
 
   return (
