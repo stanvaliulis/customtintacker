@@ -230,3 +230,123 @@ Submitted: ${data.submittedAt || 'N/A'}`;
 
   return { subject, html, text };
 }
+
+// ---------------------------------------------------------------------------
+// Distributor Approval
+// ---------------------------------------------------------------------------
+
+export interface DistributorApprovalData {
+  contactName: string;
+  companyName: string;
+  email: string;
+  tempPassword: string;
+}
+
+export function distributorApprovalEmail(data: DistributorApprovalData) {
+  const subject = `Welcome to Custom Tin Tackers — Your Distributor Account is Approved!`;
+
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://customtintackers.com';
+
+  const body = `
+    <h2 style="margin:0 0 8px;color:#111827;font-size:18px;">Congratulations, ${data.contactName}!</h2>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      Your distributor application for <strong>${data.companyName}</strong> has been approved.
+      You now have access to wholesale pricing, bulk ordering tools, and dedicated support.
+    </p>
+
+    <div style="background:#fffbeb;border:2px solid ${BRAND_COLOR};border-radius:8px;padding:20px;margin:20px 0;">
+      <h3 style="margin:0 0 12px;color:${BRAND_COLOR};font-size:16px;">Your Login Credentials</h3>
+      ${row('Login URL', `${siteUrl}/wholesale/login`)}
+      ${row('Email', data.email)}
+      ${row('Temporary Password', data.tempPassword)}
+    </div>
+
+    <p style="margin:16px 0;color:#dc2626;font-size:13px;font-weight:600;">
+      Please change your password after your first login.
+    </p>
+
+    <h3 style="margin:20px 0 8px;color:#111827;font-size:15px;font-weight:600;">What You Get as a Distributor</h3>
+    <ul style="margin:0;padding:0 0 0 20px;color:#374151;font-size:14px;line-height:1.8;">
+      <li>Wholesale pricing (up to 40% off retail)</li>
+      <li>Net 30 payment terms</li>
+      <li>Blind drop shipping</li>
+      <li>Dedicated account support</li>
+      <li>Access to distributor-only products</li>
+      <li>Co-branded marketing materials</li>
+    </ul>
+
+    <div style="margin:24px 0;text-align:center;">
+      <a href="${siteUrl}/wholesale/login"
+         style="display:inline-block;background:${BRAND_COLOR};color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:6px;font-weight:700;font-size:15px;">
+        Log In Now
+      </a>
+    </div>
+
+    <p style="margin:16px 0 0;color:#6b7280;font-size:13px;line-height:1.5;">
+      Questions? Reply to this email or contact us at web@igiprint.com.
+      We're excited to have ${data.companyName} as a distribution partner!
+    </p>
+  `;
+
+  const html = layout('Distributor Account Approved', body);
+
+  const text = `Congratulations, ${data.contactName}!
+
+Your distributor application for ${data.companyName} has been approved.
+
+LOGIN CREDENTIALS:
+Login URL: ${siteUrl}/wholesale/login
+Email: ${data.email}
+Temporary Password: ${data.tempPassword}
+
+Please change your password after your first login.
+
+WHAT YOU GET AS A DISTRIBUTOR:
+- Wholesale pricing (up to 40% off retail)
+- Net 30 payment terms
+- Blind drop shipping
+- Dedicated account support
+- Access to distributor-only products
+- Co-branded marketing materials
+
+Questions? Reply to this email or contact us at web@igiprint.com.`;
+
+  return { subject, html, text };
+}
+
+// ---------------------------------------------------------------------------
+// Distributor Rejection
+// ---------------------------------------------------------------------------
+
+export function distributorRejectionEmail(data: { contactName: string; companyName: string }) {
+  const subject = `Update on Your Custom Tin Tackers Distributor Application`;
+
+  const body = `
+    <h2 style="margin:0 0 8px;color:#111827;font-size:18px;">Hi ${data.contactName},</h2>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      Thank you for your interest in becoming a distributor for Custom Tin Tackers.
+      After reviewing your application for <strong>${data.companyName}</strong>,
+      we're unable to approve it at this time.
+    </p>
+    <p style="margin:0 0 16px;color:#374151;font-size:14px;line-height:1.6;">
+      This doesn't mean the door is closed — if your situation changes or you'd like
+      to discuss further, please don't hesitate to reach out to us at web@igiprint.com.
+    </p>
+    <p style="margin:16px 0 0;color:#6b7280;font-size:13px;">
+      You can still order tin tackers at retail pricing on our website anytime.
+    </p>
+  `;
+
+  const html = layout('Application Update', body);
+
+  const text = `Hi ${data.contactName},
+
+Thank you for your interest in becoming a distributor for Custom Tin Tackers.
+After reviewing your application for ${data.companyName}, we're unable to approve it at this time.
+
+This doesn't mean the door is closed — if your situation changes or you'd like to discuss further, please reach out to us at web@igiprint.com.
+
+You can still order tin tackers at retail pricing on our website anytime.`;
+
+  return { subject, html, text };
+}
