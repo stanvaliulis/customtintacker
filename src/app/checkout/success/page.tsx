@@ -5,7 +5,7 @@ import { useCart } from '@/context/CartContext';
 import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
 import Link from 'next/link';
-import { CheckCircle, Phone, Mail } from 'lucide-react';
+import { CheckCircle, Phone, MessageSquare } from 'lucide-react';
 
 export default function CheckoutSuccessPage() {
   const { clearCart } = useCart();
@@ -36,10 +36,10 @@ export default function CheckoutSuccessPage() {
           </div>
 
           <div className="flex items-center justify-center gap-6 text-sm text-gray-500 mb-8">
-            <a href="mailto:web@igiprint.com" className="flex items-center gap-1.5 hover:text-gray-700">
-              <Mail className="w-4 h-4" />
-              web@igiprint.com
-            </a>
+            <Link href="/contact" className="flex items-center gap-1.5 hover:text-gray-700">
+              <MessageSquare className="w-4 h-4" />
+              Contact Us
+            </Link>
             <a href="tel:8155414569" className="flex items-center gap-1.5 hover:text-gray-700">
               <Phone className="w-4 h-4" />
               (815) 541-4569

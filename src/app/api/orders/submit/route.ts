@@ -39,7 +39,7 @@ export async function POST(request: Request) {
             customerName: name,
             customerEmail: email,
             customerPhone: phone || '',
-            shippingStreet: shippingAddress || '',
+            shippingAddress1: shippingAddress || '',
             shippingCity: city || '',
             shippingState: state || '',
             shippingZip: zip || '',

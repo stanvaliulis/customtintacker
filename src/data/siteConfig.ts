@@ -16,7 +16,7 @@ export const siteConfig = {
     latitude: 42.3186,
     longitude: -89.0378,
   },
-  parentCompanyTagline: 'Powered by Interstate Graphics',
+  parentCompanyTagline: 'Made by Interstate Graphics',
   social: {
     facebook: '',
     instagram: '',

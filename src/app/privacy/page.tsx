@@ -223,12 +223,12 @@ export default function PrivacyPage() {
               </h2>
               <p className="text-gray-600 leading-relaxed">
                 If you have any questions about this privacy policy or how we
-                handle your data, contact us at{' '}
+                handle your data, contact us through our website at{' '}
                 <a
-                  href={`mailto:${siteConfig.email}`}
+                  href="/contact"
                   className="text-amber-600 hover:text-amber-700 underline"
                 >
-                  {siteConfig.email}
+                  customtintackers.com/contact
                 </a>{' '}
                 or call{' '}
                 <a

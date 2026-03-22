@@ -249,12 +249,12 @@ export default function TermsPage() {
                 Questions About These Terms?
               </h2>
               <p className="text-gray-600 leading-relaxed">
-                Reach out to us at{' '}
+                Reach out to us through our website at{' '}
                 <a
-                  href={`mailto:${siteConfig.email}`}
+                  href="/contact"
                   className="text-amber-600 hover:text-amber-700 underline"
                 >
-                  {siteConfig.email}
+                  customtintackers.com/contact
                 </a>{' '}
                 or call{' '}
                 <a

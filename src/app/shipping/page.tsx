@@ -214,12 +214,12 @@ export default function ShippingPage() {
                   damaged signs. The more documentation, the better.
                 </li>
                 <li>
-                  <strong>Contact us within 7 days</strong> of delivery at{' '}
+                  <strong>Contact us within 7 days</strong> of delivery through our{' '}
                   <a
-                    href={`mailto:${siteConfig.email}`}
+                    href="/contact"
                     className="text-amber-600 hover:text-amber-700 underline"
                   >
-                    {siteConfig.email}
+                    contact form
                   </a>{' '}
                   with your order number and photos.
                 </li>
@@ -241,12 +241,12 @@ export default function ShippingPage() {
               <p className="text-gray-600 leading-relaxed">
                 Whether you&apos;re wondering about production status, shipping
                 options, or need to report an issue, we&apos;re here to help.
-                Email us at{' '}
+                Reach out through our{' '}
                 <a
-                  href={`mailto:${siteConfig.email}`}
+                  href="/contact"
                   className="text-amber-600 hover:text-amber-700 underline"
                 >
-                  {siteConfig.email}
+                  contact form
                 </a>{' '}
                 or call{' '}
                 <a

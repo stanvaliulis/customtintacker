@@ -44,7 +44,11 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-4">Contact Us</h3>
             <ul className="space-y-2 text-sm">
-              <li>{siteConfig.email}</li>
+              <li>
+                <Link href="/contact" className="hover:text-white transition-colors">
+                  Contact Us
+                </Link>
+              </li>
               <li>{siteConfig.phone}</li>
               <li>{siteConfig.address.city}, {siteConfig.address.state}</li>
             </ul>

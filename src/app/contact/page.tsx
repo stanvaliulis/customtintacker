@@ -4,7 +4,7 @@ import ContactForm from '@/components/forms/ContactForm';
 import JsonLd from '@/components/seo/JsonLd';
 import { getBreadcrumbSchema } from '@/lib/structured-data';
 import { siteConfig } from '@/data/siteConfig';
-import { Mail, Phone, MapPin } from 'lucide-react';
+import { Phone, MapPin, MessageSquare } from 'lucide-react';
 
 export const metadata: Metadata = {
   title: 'Contact Us — Order Custom Tin Tackers | Interstate Graphics',
@@ -61,10 +61,10 @@ export default function ContactPage() {
                 <h3 className="font-semibold text-gray-900 mb-4">Get in Touch</h3>
                 <div className="space-y-4">
                   <div className="flex items-start gap-3">
-                    <Mail className="w-5 h-5 text-amber-600 mt-0.5" />
+                    <MessageSquare className="w-5 h-5 text-amber-600 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-gray-900">Email</p>
-                      <p className="text-sm text-gray-600">{siteConfig.email}</p>
+                      <p className="text-sm font-medium text-gray-900">Message Us</p>
+                      <p className="text-sm text-gray-600">Use the form on this page</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
