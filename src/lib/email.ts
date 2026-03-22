@@ -1,16 +1,12 @@
 /**
  * Email notification utility.
  *
- * - When SMTP env vars are configured, sends via nodemailer.
- * - Otherwise, logs the email contents to the server console (graceful
- *   fallback so the app never breaks if SMTP is not set up).
- *
- * Required env vars for SMTP delivery:
- *   SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS, NOTIFICATION_EMAIL
+ * - When RESEND_API_KEY is set, sends via Resend (recommended).
+ * - Otherwise falls back to SMTP via nodemailer if configured.
+ * - Otherwise logs to console (graceful fallback).
  */
 
-import nodemailer from 'nodemailer';
-import { env, isEmailConfigured } from './env';
+import { env } from './env';
 
 export interface EmailPayload {
   subject: string;
@@ -18,54 +14,71 @@ export interface EmailPayload {
   text: string;
 }
 
-// ---------------------------------------------------------------------------
-// Public API
-// ---------------------------------------------------------------------------
+function isResendConfigured(): boolean {
+  return !!env.email.resendApiKey;
+}
+
+function isSmtpConfigured(): boolean {
+  return !!(env.email.smtpHost && env.email.smtpPort && env.email.smtpUser && env.email.smtpPass);
+}
 
 /**
  * Send a notification email. Safe to call fire-and-forget.
- *
- * - If SMTP is configured, sends the email via nodemailer.
- * - If SMTP is NOT configured, logs subject + text to the console.
- * - Never throws -- all errors are caught and logged.
+ * Never throws -- all errors are caught and logged.
  */
 export async function sendNotificationEmail(payload: EmailPayload): Promise<void> {
+  const to = env.email.notificationEmail || 'web@igiprint.com';
+
   try {
-    if (!isEmailConfigured()) {
-      // Graceful fallback: log to console
-      console.log('-----------------------------------------------------------');
-      console.log('[Email Notification - SMTP not configured, logging instead]');
-      console.log(`To: (NOTIFICATION_EMAIL not set)`);
-      console.log(`Subject: ${payload.subject}`);
-      console.log('');
-      console.log(payload.text);
-      console.log('-----------------------------------------------------------');
+    // ── Option 1: Resend (preferred) ──────────────────────────────
+    if (isResendConfigured()) {
+      const { Resend } = await import('resend');
+      const resend = new Resend(env.email.resendApiKey);
+
+      await resend.emails.send({
+        from: env.email.resendFrom || 'Custom Tin Tackers <notifications@customtintackers.com>',
+        to,
+        subject: payload.subject,
+        html: payload.html,
+        text: payload.text,
+      });
+
+      console.log(`[Email/Resend] Sent: ${payload.subject}`);
       return;
     }
 
-    const { smtpHost, smtpPort, smtpUser, smtpPass, notificationEmail } = env.email;
+    // ── Option 2: SMTP via nodemailer ─────────────────────────────
+    if (isSmtpConfigured()) {
+      const nodemailer = await import('nodemailer');
+      const { smtpHost, smtpPort, smtpUser, smtpPass } = env.email;
 
-    const transporter = nodemailer.createTransport({
-      host: smtpHost,
-      port: Number(smtpPort),
-      secure: Number(smtpPort) === 465,
-      auth: {
-        user: smtpUser,
-        pass: smtpPass,
-      },
-    });
+      const transporter = nodemailer.default.createTransport({
+        host: smtpHost,
+        port: Number(smtpPort),
+        secure: Number(smtpPort) === 465,
+        auth: { user: smtpUser, pass: smtpPass },
+      });
 
-    await transporter.sendMail({
-      from: `"Custom Tin Tackers" <${smtpUser}>`,
-      to: notificationEmail,
-      subject: payload.subject,
-      text: payload.text,
-      html: payload.html,
-    });
+      await transporter.sendMail({
+        from: `"Custom Tin Tackers" <${smtpUser}>`,
+        to,
+        subject: payload.subject,
+        text: payload.text,
+        html: payload.html,
+      });
 
-    console.log(`[Email] Sent notification: ${payload.subject}`);
+      console.log(`[Email/SMTP] Sent: ${payload.subject}`);
+      return;
+    }
+
+    // ── Fallback: log to console ──────────────────────────────────
+    console.log('-----------------------------------------------------------');
+    console.log('[Email] No email provider configured, logging instead');
+    console.log(`To: ${to}`);
+    console.log(`Subject: ${payload.subject}`);
+    console.log(payload.text);
+    console.log('-----------------------------------------------------------');
   } catch (error) {
-    // Never let email failures propagate -- just log the error.
-    console.error('[Email] Failed to send notification:', error);
+    console.error('[Email] Failed to send:', error);
   }
 }

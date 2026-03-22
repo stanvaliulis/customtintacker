@@ -40,12 +40,17 @@ export const env = {
     webhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
   },
 
-  // ── Email (SMTP) ──────────────────────────────────────────────────────────
+  // ── Email ─────────────────────────────────────────────────────────────────
   email: {
+    // Resend (preferred — just needs an API key)
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    resendFrom: process.env.RESEND_FROM || 'Custom Tin Tackers <notifications@customtintackers.com>',
+    // SMTP fallback
     smtpHost: process.env.SMTP_HOST || '',
     smtpPort: process.env.SMTP_PORT || '',
     smtpUser: process.env.SMTP_USER || '',
     smtpPass: process.env.SMTP_PASS || '',
+    // Where notifications go
     notificationEmail: process.env.NOTIFICATION_EMAIL || 'web@igiprint.com',
   },
 
