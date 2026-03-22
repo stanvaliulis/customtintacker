@@ -1,0 +1,84 @@
+'use client';
+
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import Container from '@/components/ui/Container';
+import Button from '@/components/ui/Button';
+import Input from '@/components/ui/Input';
+import { Lock } from 'lucide-react';
+
+export default function WholesaleLoginPage() {
+  const router = useRouter();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    const result = await signIn('credentials', {
+      username,
+      password,
+      redirect: false,
+    });
+
+    if (result?.error) {
+      setError('Invalid username or password.');
+      setLoading(false);
+    } else {
+      router.push('/wholesale/dashboard');
+    }
+  }
+
+  return (
+    <section className="py-16 sm:py-24">
+      <Container>
+        <div className="max-w-sm mx-auto">
+          <div className="text-center mb-8">
+            <div className="mx-auto w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center mb-4">
+              <Lock className="w-7 h-7 text-gray-600" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900">Wholesale Login</h1>
+            <p className="text-gray-500 text-sm mt-2">
+              Sign in to access wholesale pricing and discounts.
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+            <Input
+              label="Username"
+              id="username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="wholesale-username"
+            />
+            <Input
+              label="Password"
+              id="password"
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+            />
+
+            {error && <p className="text-sm text-red-600">{error}</p>}
+
+            <Button type="submit" loading={loading} size="lg" className="w-full">
+              Sign In
+            </Button>
+          </form>
+
+          <p className="text-center text-xs text-gray-400 mt-6">
+            Wholesale accounts are provided by Interstate Graphics. Contact us to become a wholesale partner.
+          </p>
+        </div>
+      </Container>
+    </section>
+  );
+}

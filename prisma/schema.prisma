@@ -1,0 +1,223 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Product {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  name             String
+  shortDescription String
+  longDescription  String
+  category         String
+  shape            String
+  width            Float
+  height           Float
+  displaySize      String
+  wholesaleDiscount Float   @default(0.20)
+  minimumOrder     Int      @default(25)
+  leadTimeDays     Int      @default(30)
+  setupFee         Int      @default(20000)
+  inStock          Boolean  @default(true)
+  featured         Boolean  @default(false)
+  sortOrder        Int      @default(0)
+  material         String   @default("Recycled Aluminum")
+  printMethod      String   @default("Silkscreen / 4-Color Process")
+  mountingHoles    Int      @default(2)
+  shrinkWrapped    Boolean  @default(true)
+  madeInUSA        Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  images         ProductImage[]
+  pricingTiers   PricingTier[]
+  backingOptions ProductBacking[]
+  features       ProductFeature[]
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  url       String
+  alt       String  @default("")
+  sortOrder Int     @default(0)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model PricingTier {
+  id           String  @id @default(cuid())
+  minQuantity  Int
+  maxQuantity  Int?
+  pricePerUnit Int
+  productId    String
+  product      Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductBacking {
+  id        String  @id @default(cuid())
+  backingId String
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+model ProductFeature {
+  id        String  @id @default(cuid())
+  text      String
+  sortOrder Int     @default(0)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+}
+
+// ─── Quote Request ──────────────────────────────────────────────────────────
+
+model Quote {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String   @default("")
+  company     String
+  shape       String   @default("")
+  size        String   @default("")
+  quantity    Int      @default(1)
+  gauge       String   @default("")
+  backing     String   @default("")
+  artwork     String   @default("")
+  colors      String   @default("")
+  message     String   @default("")
+  status      String   @default("new") // new | reviewed | quoted | accepted | declined
+  quotedPrice Int?     // price in cents, if quoted
+  notes       String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── Contact Message ────────────────────────────────────────────────────────
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String   @default("")
+  company   String   @default("")
+  message   String
+  status    String   @default("new") // new | read | replied | archived
+  notes     String   @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Order ──────────────────────────────────────────────────────────────────
+
+model Order {
+  id                     String   @id @default(cuid())
+  orderNumber            String   @unique
+  stripeSessionId        String?  @unique
+  stripePaymentIntentId  String?  @unique
+  customerName           String   @default("")
+  customerEmail          String   @default("")
+  customerPhone          String   @default("")
+  shippingAddress1       String   @default("")
+  shippingAddress2       String   @default("")
+  shippingCity           String   @default("")
+  shippingState          String   @default("")
+  shippingZip            String   @default("")
+  shippingCountry        String   @default("US")
+  items                  Json     @default("[]")
+  subtotal               Int      @default(0) // cents
+  shipping               Int      @default(0) // cents
+  tax                    Int      @default(0) // cents
+  total                  Int      @default(0) // cents
+  status                 String   @default("pending") // pending | processing | shipped | delivered | cancelled
+  trackingNumber         String?
+  notes                  String   @default("")
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+// ─── Distributor Application ────────────────────────────────────────────────
+
+model DistributorApplication {
+  id               String   @id @default(cuid())
+  companyName      String
+  contactName      String
+  email            String
+  phone            String
+  website          String   @default("")
+  asiNumber        String   @default("")
+  sageNumber       String   @default("")
+  ppaiNumber       String   @default("")
+  businessType     String   @default("")
+  yearsInBusiness  String   @default("")
+  annualRevenue    String   @default("")
+  monthlyVolume    String   @default("")
+  primaryIndustry  String   @default("")
+  hearAboutUs      String   @default("")
+  additionalNotes  String   @default("")
+  agreeTerms       Boolean  @default(false)
+  status           String   @default("pending") // pending | approved | rejected
+  notes            String   @default("")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+// ─── Admin Settings ─────────────────────────────────────────────────────────
+
+model AdminSetting {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  value       String   @default("")
+  type        String   @default("string") // string | number | boolean | json
+  description String   @default("")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─── Design Editor ──────────────────────────────────────────────────────────
+
+model DesignTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  shape       String
+  width       Float
+  height      Float
+  thumbnail   String   @default("")
+  canvasJson  String   @db.Text
+  category    String   @default("general")
+  tags        String   @default("")
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SavedDesign {
+  id           String   @id @default(cuid())
+  sessionId    String
+  email        String   @default("")
+  name         String   @default("My Design")
+  productId    String
+  shape        String
+  width        Float
+  height       Float
+  canvasJson   String   @db.Text
+  thumbnailUrl String   @default("")
+  status       String   @default("draft")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model DesignAsset {
+  id        String   @id @default(cuid())
+  sessionId String
+  filename  String
+  url       String
+  fileType  String
+  fileSize  Int
+  createdAt DateTime @default(now())
+}
