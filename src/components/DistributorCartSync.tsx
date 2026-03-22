@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useDistributor } from '@/context/DistributorContext';
 import { useCart } from '@/context/CartContext';
 
@@ -11,10 +11,18 @@ import { useCart } from '@/context/CartContext';
 export function DistributorCartSync() {
   const { isDistributor, distributorDiscount } = useDistributor();
   const { setDistributor } = useCart();
+  const prevRef = useRef({ isDistributor: false, discount: 0 });
 
   useEffect(() => {
-    setDistributor(isDistributor, distributorDiscount);
-  }, [isDistributor, distributorDiscount, setDistributor]);
+    // Only dispatch when values actually change to avoid infinite loops
+    if (
+      prevRef.current.isDistributor !== isDistributor ||
+      prevRef.current.discount !== distributorDiscount
+    ) {
+      prevRef.current = { isDistributor, discount: distributorDiscount };
+      setDistributor(isDistributor, distributorDiscount);
+    }
+  }, [isDistributor, distributorDiscount]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return null;
 }
