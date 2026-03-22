@@ -76,7 +76,7 @@ export async function POST(request: Request) {
       status: 'pending' as const,
       submittedAt: new Date().toISOString(),
     };
-    void sendNotificationEmail(distributorApplicationEmail(emailData));
+    await sendNotificationEmail(distributorApplicationEmail(emailData));
 
     return NextResponse.json({ message: 'Application submitted successfully.', id: applicationId }, { status: 201 });
   } catch (err) {

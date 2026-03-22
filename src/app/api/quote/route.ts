@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       status: 'new' as const,
       submittedAt: new Date().toISOString(),
     };
-    void sendNotificationEmail(quoteRequestEmail(emailData));
+    await sendNotificationEmail(quoteRequestEmail(emailData));
 
     return NextResponse.json({ message: 'Quote request submitted successfully.', id: quoteId }, { status: 201 });
   } catch (err) {

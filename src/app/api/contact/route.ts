@@ -56,7 +56,7 @@ export async function POST(request: Request) {
       ...result.data,
       submittedAt: new Date().toISOString(),
     };
-    void sendNotificationEmail(contactFormEmail(emailData));
+    await sendNotificationEmail(contactFormEmail(emailData));
 
     return NextResponse.json({ message: 'Message sent successfully.', id: contactId }, { status: 201 });
   } catch (err) {
