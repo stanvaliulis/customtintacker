@@ -46,7 +46,7 @@ export const env = {
     smtpPort: process.env.SMTP_PORT || '',
     smtpUser: process.env.SMTP_USER || '',
     smtpPass: process.env.SMTP_PASS || '',
-    notificationEmail: process.env.NOTIFICATION_EMAIL || '',
+    notificationEmail: process.env.NOTIFICATION_EMAIL || 'web@igiprint.com',
   },
 
   // ── Site ──────────────────────────────────────────────────────────────────

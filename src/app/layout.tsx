@@ -14,6 +14,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://customtintackers.com'),
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
   title: {
     default: 'Custom Tin Tackers | Embossed Aluminum Tin Tacker Signs | Bar & Brewery Signs Made in USA',
     template: '%s | Custom Tin Tackers',
