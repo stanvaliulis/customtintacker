@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { useState, useEffect } from 'react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import Container from '@/components/ui/Container';
@@ -11,8 +11,16 @@ import { Lock } from 'lucide-react';
 
 export default function WholesaleLoginPage() {
   const router = useRouter();
+  const { data: session } = useSession();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (session?.user) {
+      router.push('/products');
+    }
+  }, [session, router]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 

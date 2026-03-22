@@ -74,6 +74,8 @@ export async function getAllProducts(): Promise<AppProduct[]> {
       include: productIncludes,
       orderBy: { sortOrder: 'asc' },
     });
+    // Fall back to static data if DB has no products (not yet seeded)
+    if (products.length === 0) return getStaticProducts();
     return products.map(dbProductToApp);
   } catch {
     return getStaticProducts();
@@ -81,10 +83,11 @@ export async function getAllProducts(): Promise<AppProduct[]> {
 }
 
 export async function getProductBySlug(slug: string): Promise<AppProduct | null> {
-  if (!hasDatabase) {
-    const products = await getStaticProducts();
-    return products.find((p) => p.slug === slug) || null;
-  }
+  // Always check static data first since DB may not have products seeded
+  const staticProducts = await getStaticProducts();
+  const staticMatch = staticProducts.find((p) => p.slug === slug) || null;
+
+  if (!hasDatabase) return staticMatch;
 
   try {
     const prisma = await getPrisma();
@@ -92,19 +95,18 @@ export async function getProductBySlug(slug: string): Promise<AppProduct | null>
       where: { slug },
       include: productIncludes,
     });
-    if (!p) return null;
+    if (!p) return staticMatch; // Fall back to static
     return dbProductToApp(p);
   } catch {
-    const products = await getStaticProducts();
-    return products.find((p) => p.slug === slug) || null;
+    return staticMatch;
   }
 }
 
 export async function getProductById(id: string): Promise<AppProduct | null> {
-  if (!hasDatabase) {
-    const products = await getStaticProducts();
-    return products.find((p) => p.id === id) || null;
-  }
+  const staticProducts = await getStaticProducts();
+  const staticMatch = staticProducts.find((p) => p.id === id) || null;
+
+  if (!hasDatabase) return staticMatch;
 
   try {
     const prisma = await getPrisma();
@@ -112,19 +114,18 @@ export async function getProductById(id: string): Promise<AppProduct | null> {
       where: { id },
       include: productIncludes,
     });
-    if (!p) return null;
+    if (!p) return staticMatch;
     return dbProductToApp(p);
   } catch {
-    const products = await getStaticProducts();
-    return products.find((p) => p.id === id) || null;
+    return staticMatch;
   }
 }
 
 export async function getFeaturedProducts(): Promise<AppProduct[]> {
-  if (!hasDatabase) {
-    const products = await getStaticProducts();
-    return products.filter((p) => p.featured).sort((a, b) => a.sortOrder - b.sortOrder);
-  }
+  const staticProducts = await getStaticProducts();
+  const staticFeatured = staticProducts.filter((p) => p.featured).sort((a, b) => a.sortOrder - b.sortOrder);
+
+  if (!hasDatabase) return staticFeatured;
 
   try {
     const prisma = await getPrisma();
@@ -133,9 +134,9 @@ export async function getFeaturedProducts(): Promise<AppProduct[]> {
       include: productIncludes,
       orderBy: { sortOrder: 'asc' },
     });
+    if (products.length === 0) return staticFeatured;
     return products.map(dbProductToApp);
   } catch {
-    const products = await getStaticProducts();
-    return products.filter((p) => p.featured).sort((a, b) => a.sortOrder - b.sortOrder);
+    return staticFeatured;
   }
 }
