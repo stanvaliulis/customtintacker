@@ -41,6 +41,7 @@ export default function UploadPanel({ onAddImage }: UploadPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [hint, setHint] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   /* ---- File validation ------------------------------------------- */
@@ -86,6 +87,10 @@ export default function UploadPanel({ onAddImage }: UploadPanelProps) {
 
       // Automatically add to canvas
       onAddImage(previewUrl);
+
+      // Show positioning hint
+      setHint('Click and drag to reposition your image');
+      setTimeout(() => setHint(null), 4000);
     },
     [validateFile, onAddImage],
   );
@@ -176,6 +181,14 @@ export default function UploadPanel({ onAddImage }: UploadPanelProps) {
         <div className="flex items-start gap-2 p-2 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-xs">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <span>{error}</span>
+        </div>
+      )}
+
+      {/* ---- Positioning hint ---- */}
+      {hint && (
+        <div className="flex items-start gap-2 p-2 rounded-md bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs">
+          <ImageIcon className="w-4 h-4 shrink-0 mt-0.5" />
+          <span>{hint}</span>
         </div>
       )}
 

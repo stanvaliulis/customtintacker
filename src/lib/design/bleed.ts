@@ -18,6 +18,12 @@ export const SAFE_AREA_INCHES = 0.25;
 /** Pixels per inch for screen display (72 DPI) */
 export const PPI = 72;
 
+/** Pixels per inch for print-ready output (300 DPI) */
+export const PRINT_DPI = 300;
+
+/** Multiplier to convert screen canvas to print resolution */
+export const PRINT_MULTIPLIER = PRINT_DPI / PPI;
+
 /**
  * Convert a measurement in inches to pixels at screen resolution.
  */

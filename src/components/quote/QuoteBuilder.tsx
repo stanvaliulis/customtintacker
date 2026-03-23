@@ -2,7 +2,8 @@
 
 import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, ArrowRight, Check, Sparkles, Info } from 'lucide-react';
+import { ShoppingCart, ArrowRight, Check, Sparkles, Info, Clock } from 'lucide-react';
+import { RUSH_FEE_RATE } from '@/context/CartContext';
 import { products, backingOptions } from '@/data/products';
 import { formatPrice, getPriceForQuantity } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
@@ -95,6 +96,7 @@ export default function QuoteBuilder() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [selectedBacking, setSelectedBacking] = useState<BackingOption>('standard-024');
   const [quantity, setQuantity] = useState<number>(100);
+  const [isRush, setIsRush] = useState(false);
   const [addedToCart, setAddedToCart] = useState(false);
 
   // Derived data
@@ -118,10 +120,11 @@ export default function QuoteBuilder() {
     const adjustedPerUnit = Math.round(basePricePerUnit * backingConfig.priceMultiplier);
     const setupFee = selectedProduct.setupFee;
     const subtotal = adjustedPerUnit * quantity;
-    const total = subtotal + setupFee;
+    const rushFee = isRush ? Math.round(subtotal * RUSH_FEE_RATE) : 0;
+    const total = subtotal + rushFee + setupFee;
 
-    return { basePricePerUnit, adjustedPerUnit, setupFee, subtotal, total };
-  }, [selectedProduct, quantity, backingConfig]);
+    return { basePricePerUnit, adjustedPerUnit, setupFee, subtotal, rushFee, total };
+  }, [selectedProduct, quantity, backingConfig, isRush]);
 
   // Handlers
   const handleShapeSelect = useCallback(
@@ -158,10 +161,10 @@ export default function QuoteBuilder() {
 
   const handleAddToCart = useCallback(() => {
     if (!selectedProduct || !priceCalc) return;
-    addItem(selectedProduct, quantity, selectedBacking);
+    addItem(selectedProduct, quantity, selectedBacking, 'retail', isRush);
     setAddedToCart(true);
     setTimeout(() => setAddedToCart(false), 3000);
-  }, [selectedProduct, priceCalc, addItem, quantity, selectedBacking]);
+  }, [selectedProduct, priceCalc, addItem, quantity, selectedBacking, isRush]);
 
   const isDieCut = selectedShape === 'die-cut';
 
@@ -374,6 +377,44 @@ export default function QuoteBuilder() {
             </div>
           )}
         </section>
+
+        {/* ====== Step 5 – Rush Processing ====== */}
+        <section
+          className={`bg-white rounded-2xl border border-gray-200 p-6 shadow-sm transition-opacity duration-300 ${
+            !selectedProduct ? 'opacity-40 pointer-events-none' : ''
+          }`}
+        >
+          <StepHeader step={5} title="Processing Speed" completed={!!selectedProduct} />
+          <button
+            type="button"
+            onClick={() => setIsRush(!isRush)}
+            className={`w-full flex items-start gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left cursor-pointer ${
+              isRush
+                ? 'border-amber-500 bg-amber-50 shadow-md shadow-amber-100'
+                : 'border-gray-200 bg-gray-50 hover:border-gray-300 hover:bg-gray-100'
+            }`}
+          >
+            <div className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center shrink-0 transition-colors ${
+              isRush ? 'bg-amber-600 text-white' : 'border border-gray-300 bg-white'
+            }`}>
+              {isRush && (
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              )}
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-600" />
+                <span className="font-semibold text-gray-900 text-sm">Rush Processing</span>
+                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">+25%</span>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Get your order in ~15 business days instead of ~30. Rush fee is 25% of your order subtotal.
+              </p>
+            </div>
+          </button>
+        </section>
       </div>
 
       {/* ---------------------------------------------------------- */}
@@ -399,6 +440,7 @@ export default function QuoteBuilder() {
               />
               <SummaryRow label="Gauge" value={backingConfig.label} />
               <SummaryRow label="Quantity" value={selectedProduct ? quantity.toLocaleString() : '--'} />
+              <SummaryRow label="Rush" value={isRush ? 'Yes (+25%)' : 'Standard'} />
             </div>
 
             {/* Divider */}
@@ -421,6 +463,16 @@ export default function QuoteBuilder() {
                   <span className="text-gray-400">One-time setup fee</span>
                   <span className="font-semibold">{formatPrice(priceCalc.setupFee)}</span>
                 </div>
+
+                {isRush && priceCalc.rushFee > 0 && (
+                  <div className="flex justify-between py-1.5 px-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                    <span className="text-amber-400 font-medium flex items-center gap-1 text-xs">
+                      <Clock className="w-3 h-3" />
+                      Rush fee
+                    </span>
+                    <span className="text-amber-400 font-semibold text-xs">+{formatPrice(priceCalc.rushFee)}</span>
+                  </div>
+                )}
 
                 <div className="h-px bg-gray-700 my-1" />
 
@@ -479,10 +531,13 @@ export default function QuoteBuilder() {
 
           {/* Lead time callout */}
           {selectedProduct && (
-            <div className="mt-4 bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm">
+            <div className={`mt-4 rounded-xl p-4 text-sm border ${
+              isRush ? 'bg-amber-100 border-amber-300' : 'bg-amber-50 border-amber-200'
+            }`}>
               <p className="font-semibold text-amber-800 mb-1">Estimated Lead Time</p>
               <p className="text-amber-700">
-                {selectedProduct.leadTimeDays} business days from artwork approval
+                {isRush ? '~15' : `~${selectedProduct.leadTimeDays}`} business days from artwork approval
+                {isRush && <span className="block mt-1 text-xs text-amber-600 font-medium">Rush processing selected</span>}
               </p>
             </div>
           )}

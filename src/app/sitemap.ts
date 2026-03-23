@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { products } from '@/data/products';
 import { blogPosts } from '@/data/blog-posts';
+import { industries } from '@/data/industries';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://customtintackers.com';
@@ -33,6 +34,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
+      url: `${baseUrl}/mockup`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/distributors`,
       lastModified: now,
       changeFrequency: 'monthly',
@@ -45,6 +52,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
+      url: `${baseUrl}/gallery`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/samples`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    },
+    {
       url: `${baseUrl}/about`,
       lastModified: now,
       changeFrequency: 'monthly',
@@ -55,6 +74,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: now,
       changeFrequency: 'monthly',
       priority: 0.5,
+    },
+    {
+      url: `${baseUrl}/artwork-templates`,
+      lastModified: now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/shipping`,
@@ -102,5 +127,13 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.6,
   }));
 
-  return [...staticPages, ...productPages, ...blogIndexPage, ...blogPostPages];
+  // Industry landing pages
+  const industryPages: MetadataRoute.Sitemap = industries.map((industry) => ({
+    url: `${baseUrl}/${industry.slug}`,
+    lastModified: now,
+    changeFrequency: 'weekly' as const,
+    priority: 0.8,
+  }));
+
+  return [...staticPages, ...industryPages, ...productPages, ...blogIndexPage, ...blogPostPages];
 }

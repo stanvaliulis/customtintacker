@@ -9,7 +9,8 @@ import { useDistributor } from '@/context/DistributorContext';
 import { formatPrice, getPriceForQuantity, getCatalogPriceForQuantity } from '@/lib/utils';
 import Button from '@/components/ui/Button';
 import PricingTable from './PricingTable';
-import { ShoppingCart, Zap, Tag } from 'lucide-react';
+import { RUSH_FEE_RATE } from '@/context/CartContext';
+import { ShoppingCart, Zap, Tag, Clock } from 'lucide-react';
 
 interface AddToCartFormProps {
   product: Product;
@@ -20,6 +21,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
   const { isDistributor, distributorDiscount } = useDistributor();
   const [quantity, setQuantity] = useState(product.minimumOrder);
   const [backing, setBacking] = useState<BackingOption>(product.backingOptions[0]);
+  const [isRush, setIsRush] = useState(false);
 
   const backingConfig = backingOptions.find((b) => b.id === backing);
   const backingMultiplier = backingConfig?.priceMultiplier ?? 1;
@@ -36,6 +38,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
   // Final price depends on user type
   const finalPrice = isDistributor ? distributorCost : adjustedRetailPrice;
   const lineTotal = finalPrice ? finalPrice * quantity : 0;
+  const rushFee = isRush ? Math.round(lineTotal * RUSH_FEE_RATE) : 0;
   const maxQuantity = isDistributor ? 99999 : 1000;
 
   const quantityValid = quantity >= product.minimumOrder && baseRetailPrice !== null;
@@ -46,8 +49,8 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
 
   function handleAdd() {
     if (!quantityValid) return;
-    addItem(product, quantity, backing, isDistributor ? 'distributor' : 'retail');
-    toast.success(`Added ${quantity}x ${product.name} to cart`);
+    addItem(product, quantity, backing, isDistributor ? 'distributor' : 'retail', isRush);
+    toast.success(`Added ${quantity}x ${product.name} to cart${isRush ? ' (Rush)' : ''}`);
   }
 
   return (
@@ -86,6 +89,39 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
         )}
       </div>
 
+      {/* Rush Processing */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setIsRush(!isRush)}
+          className={`w-full flex items-start gap-4 p-4 rounded-xl border-2 transition-all duration-200 text-left ${
+            isRush
+              ? 'border-amber-500 bg-amber-500/10'
+              : 'border-gray-700/50 bg-gray-900/30 hover:border-gray-600'
+          }`}
+        >
+          <div className={`mt-0.5 w-5 h-5 rounded flex items-center justify-center shrink-0 transition-colors ${
+            isRush ? 'bg-amber-500 text-gray-950' : 'border border-gray-600 bg-gray-800'
+          }`}>
+            {isRush && (
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            )}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-amber-400" />
+              <span className="font-semibold text-white text-sm">Rush Processing</span>
+              <span className="text-xs font-medium text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">+25%</span>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              Get your order in ~15 business days instead of ~30
+            </p>
+          </div>
+        </button>
+      </div>
+
       {/* Order Summary */}
       {finalPrice && (
         <div className="bg-gray-900/80 rounded-xl border border-gray-700/50 p-5">
@@ -106,10 +142,20 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
             <span className="text-gray-300 font-medium">{formatPrice(lineTotal)}</span>
           </div>
 
-          <div className="flex justify-between text-sm text-gray-400 mb-3">
+          <div className="flex justify-between text-sm text-gray-400 mb-2">
             <span>Setup fee (one-time)</span>
             <span className="text-gray-300 font-medium">{formatPrice(product.setupFee)}</span>
           </div>
+
+          {isRush && (
+            <div className="flex justify-between text-sm mb-2 py-2 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+              <span className="text-amber-400 font-medium flex items-center gap-1">
+                <Clock className="w-3.5 h-3.5" />
+                Rush processing fee
+              </span>
+              <span className="text-amber-400 font-semibold">+{formatPrice(rushFee)}</span>
+            </div>
+          )}
 
           {isDistributor && distributorSavings > 0 && (
             <div className="flex justify-between text-sm mb-3 py-2 px-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
@@ -124,7 +170,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
           <div className="border-t border-gray-700/50 pt-3 flex justify-between items-baseline">
             <span className="font-semibold text-white">Estimated Total</span>
             <span className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">
-              {formatPrice(lineTotal + product.setupFee)}
+              {formatPrice(lineTotal + rushFee + product.setupFee)}
             </span>
           </div>
 
@@ -149,7 +195,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
 
       <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
         <Zap className="w-4 h-4 text-amber-500/50" />
-        <span>Estimated production: {product.leadTimeDays} business days</span>
+        <span>Estimated production: {isRush ? '~15' : `~${product.leadTimeDays}`} business days</span>
       </div>
     </div>
   );

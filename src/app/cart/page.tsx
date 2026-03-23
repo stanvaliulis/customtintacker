@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 
 export default function CartPage() {
-  const { items, subtotal, setupFees, total, clearCart } = useCart();
+  const { items, subtotal, rushFee, setupFees, total, clearCart } = useCart();
 
   if (items.length === 0) {
     return (
@@ -55,6 +55,12 @@ export default function CartPage() {
                   <span>Subtotal</span>
                   <span>{formatPrice(subtotal)}</span>
                 </div>
+                {rushFee > 0 && (
+                  <div className="flex justify-between text-amber-600">
+                    <span className="flex items-center gap-1">Rush Processing Fee</span>
+                    <span>{formatPrice(rushFee)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-gray-600">
                   <span>Setup Fees</span>
                   <span>{formatPrice(setupFees)}</span>

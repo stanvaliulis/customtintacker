@@ -5,7 +5,7 @@ import { backingOptions } from '@/data/products';
 import { formatPrice } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import QuantitySelector from './QuantitySelector';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Clock } from 'lucide-react';
 
 interface CartItemProps {
   item: CartItemType;
@@ -23,7 +23,15 @@ export default function CartItemRow({ item }: CartItemProps) {
         </span>
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="font-medium text-gray-900 truncate">{item.product.name}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="font-medium text-gray-900 truncate">{item.product.name}</h3>
+          {item.isRush && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 border border-amber-200 shrink-0">
+              <Clock className="w-3 h-3" />
+              Rush
+            </span>
+          )}
+        </div>
         <p className="text-sm text-gray-500">{backingConfig?.label}</p>
         <p className="text-sm text-gray-500">{formatPrice(item.unitPrice)}/unit</p>
         <div className="flex items-center gap-3 mt-2">

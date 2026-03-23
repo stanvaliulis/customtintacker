@@ -35,6 +35,7 @@ interface DesignToolbarProps {
   onRedo: () => void;
   onZoomIn: () => void;
   onZoomOut: () => void;
+  onFitToScreen: () => void;
   onToggleBleed: () => void;
   onToggleSafeArea: () => void;
   onPreview: () => void;
@@ -112,12 +113,6 @@ function ExportDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const formats: { format: DesignExportFormat; label: string; icon: React.ReactNode }[] = [
-    { format: 'png', label: 'PNG Image', icon: <ImageIcon className="w-4 h-4" /> },
-    { format: 'svg', label: 'SVG Vector', icon: <FileCode className="w-4 h-4" /> },
-    { format: 'pdf', label: 'PDF Document', icon: <FileText className="w-4 h-4" /> },
-  ];
-
   return (
     <div ref={dropdownRef} className="relative">
       <button
@@ -133,21 +128,49 @@ function ExportDropdown({
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1 w-44 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 py-1">
-          {formats.map(({ format, label, icon }) => (
-            <button
-              key={format}
-              type="button"
-              onClick={() => {
-                onExport(format);
-                setOpen(false);
-              }}
-              className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-            >
-              {icon}
-              {label}
-            </button>
-          ))}
+        <div className="absolute right-0 top-full mt-1 w-56 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 py-1">
+          <div className="px-3 py-1.5 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
+            Preview
+          </div>
+          <button
+            type="button"
+            onClick={() => { onExport('png'); setOpen(false); }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+          >
+            <ImageIcon className="w-4 h-4" />
+            <div>
+              <div>PNG Preview</div>
+              <div className="text-[10px] text-gray-500">Screen quality (144 DPI)</div>
+            </div>
+          </button>
+          <button
+            type="button"
+            onClick={() => { onExport('svg'); setOpen(false); }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+          >
+            <FileCode className="w-4 h-4" />
+            <div>
+              <div>SVG Vector</div>
+              <div className="text-[10px] text-gray-500">Scalable, no quality loss</div>
+            </div>
+          </button>
+
+          <div className="border-t border-gray-700 my-1" />
+
+          <div className="px-3 py-1.5 text-[10px] font-semibold text-amber-500 uppercase tracking-wider">
+            Print-Ready
+          </div>
+          <button
+            type="button"
+            onClick={() => { onExport('pdf'); setOpen(false); }}
+            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
+          >
+            <FileText className="w-4 h-4 text-amber-500" />
+            <div>
+              <div className="text-amber-400">Print-Ready PNG</div>
+              <div className="text-[10px] text-gray-500">300 DPI with 1/8&quot; bleed</div>
+            </div>
+          </button>
         </div>
       )}
     </div>
@@ -169,6 +192,7 @@ export default function DesignToolbar({
   onRedo,
   onZoomIn,
   onZoomOut,
+  onFitToScreen,
   onToggleBleed,
   onToggleSafeArea,
   onPreview,
@@ -189,15 +213,24 @@ export default function DesignToolbar({
 
         <ToolbarSeparator />
 
-        <ToolbarButton label="Zoom In" onClick={onZoomIn}>
-          <ZoomIn className="w-4 h-4" />
-        </ToolbarButton>
         <ToolbarButton label="Zoom Out" onClick={onZoomOut}>
           <ZoomOut className="w-4 h-4" />
         </ToolbarButton>
         <span className="text-xs text-gray-500 font-mono w-12 text-center select-none">
           {Math.round(zoom * 100)}%
         </span>
+        <ToolbarButton label="Zoom In" onClick={onZoomIn}>
+          <ZoomIn className="w-4 h-4" />
+        </ToolbarButton>
+        <button
+          type="button"
+          title="Fit to screen (Ctrl+0)"
+          aria-label="Fit to screen"
+          onClick={onFitToScreen}
+          className="flex items-center justify-center h-7 px-2 rounded-md text-[11px] font-medium text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+        >
+          Fit
+        </button>
       </div>
 
       {/* ---- Center ---- */}

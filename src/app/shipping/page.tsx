@@ -90,14 +90,14 @@ export default function ShippingPage() {
               </p>
               <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>
-                  <strong>Standard production:</strong> approximately 30 days
-                  from proof approval and payment.
+                  <strong>Standard production:</strong> approximately 30
+                  business days from proof approval and payment.
                 </li>
                 <li>
-                  <strong>Rush orders:</strong> may be available depending on
-                  our production schedule. Contact us to discuss your deadline
-                  and we&apos;ll let you know what&apos;s possible. Rush fees
-                  may apply.
+                  <strong>Rush production:</strong> approximately 15 business
+                  days from proof approval and payment. Rush processing is
+                  available on all orders for an additional 25% fee, which you
+                  can select when adding items to your cart or building a quote.
                 </li>
                 <li>
                   Production does not begin until you approve your digital proof

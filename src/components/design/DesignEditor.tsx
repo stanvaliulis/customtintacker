@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
-  Canvas,
   Textbox,
   type FabricObject,
 } from 'fabric';
@@ -16,6 +15,25 @@ import DesignSidebar from './DesignSidebar';
 import DesignProperties, { type ObjectProperties } from './DesignProperties';
 import { toast } from 'sonner';
 
+/* ------------------------------------------------------------------ */
+/*  Checkered background CSS (like Photoshop transparency grid)        */
+/* ------------------------------------------------------------------ */
+const CHECKER_BG_STYLE: React.CSSProperties = {
+  backgroundImage: [
+    'linear-gradient(45deg, #2a2a2e 25%, transparent 25%)',
+    'linear-gradient(-45deg, #2a2a2e 25%, transparent 25%)',
+    'linear-gradient(45deg, transparent 75%, #2a2a2e 75%)',
+    'linear-gradient(-45deg, transparent 75%, #2a2a2e 75%)',
+  ].join(', '),
+  backgroundSize: '20px 20px',
+  backgroundPosition: '0 0, 0 10px, 10px -10px, -10px 0px',
+  backgroundColor: '#222226',
+};
+
+/* ------------------------------------------------------------------ */
+/*  Props                                                              */
+/* ------------------------------------------------------------------ */
+
 interface DesignEditorProps {
   productId: string;
   productName: string;
@@ -24,6 +42,10 @@ interface DesignEditorProps {
   height: number;
   displaySize: string;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                          */
+/* ------------------------------------------------------------------ */
 
 export default function DesignEditor({
   productId,
@@ -41,18 +63,23 @@ export default function DesignEditor({
   /* ---- Canvas hook (all Fabric.js operations) ---- */
   const {
     canvas,
+    zoom,
+    fitZoom,
     addText,
     addImage,
     addShape,
     deleteSelected,
     zoomIn,
     zoomOut,
+    fitToScreen,
     toJSON,
     loadFromJSON,
     exportPNG,
     exportSVG,
+    exportPrintReady,
   } = useDesignCanvas({
     canvasRef: canvasElRef,
+    containerRef,
     width: widthPx,
     height: heightPx,
     shape,
@@ -65,9 +92,9 @@ export default function DesignEditor({
   /* ---- UI state ---- */
   const [showBleed, setShowBleed] = useState(true);
   const [showSafeArea, setShowSafeArea] = useState(true);
-  const [zoom, setZoom] = useState(1);
   const [selectedObject, setSelectedObject] = useState<ObjectProperties | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [imageHint, setImageHint] = useState<string | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -107,6 +134,11 @@ export default function DesignEditor({
     const onSelected = () => {
       const active = canvas.getActiveObject();
       if (active && !(active as unknown as { _objects?: unknown[] })._objects) {
+        // Skip bg rect from selection info
+        if ((active as FabricObject & { _isBgRect?: boolean })._isBgRect) {
+          setSelectedObject(null);
+          return;
+        }
         setSelectedObject(extractProps(active));
       } else {
         setSelectedObject(null);
@@ -116,7 +148,9 @@ export default function DesignEditor({
     const onDeselected = () => setSelectedObject(null);
     const onModified = () => {
       const active = canvas.getActiveObject();
-      if (active) setSelectedObject(extractProps(active));
+      if (active && !(active as FabricObject & { _isBgRect?: boolean })._isBgRect) {
+        setSelectedObject(extractProps(active));
+      }
     };
 
     canvas.on('selection:created', onSelected);
@@ -126,10 +160,6 @@ export default function DesignEditor({
     canvas.on('object:scaling', onModified);
     canvas.on('object:moving', onModified);
     canvas.on('object:rotating', onModified);
-
-    // Track zoom
-    const onZoom = () => setZoom(canvas.getZoom());
-    canvas.on('after:render', onZoom);
 
     // Keyboard shortcuts
     const onKeyDown = (e: KeyboardEvent) => {
@@ -142,6 +172,11 @@ export default function DesignEditor({
         if (e.shiftKey) redo();
         else undo();
       }
+      // Fit to screen shortcut
+      if ((e.ctrlKey || e.metaKey) && e.key === '0') {
+        e.preventDefault();
+        fitToScreen();
+      }
     };
     window.addEventListener('keydown', onKeyDown);
 
@@ -153,14 +188,14 @@ export default function DesignEditor({
       canvas.off('object:scaling', onModified);
       canvas.off('object:moving', onModified);
       canvas.off('object:rotating', onModified);
-      canvas.off('after:render', onZoom);
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [canvas, deleteSelected, undo, redo]);
+  }, [canvas, deleteSelected, undo, redo, fitToScreen]);
 
   /* ---- Toolbar handlers ---- */
   const handleZoomIn = useCallback(() => { zoomIn(); }, [zoomIn]);
   const handleZoomOut = useCallback(() => { zoomOut(); }, [zoomOut]);
+  const handleFitToScreen = useCallback(() => { fitToScreen(); }, [fitToScreen]);
 
   const handlePreview = useCallback(() => {
     const dataUrl = exportPNG();
@@ -194,7 +229,6 @@ export default function DesignEditor({
         toast.error('Failed to save design');
       }
     } catch {
-      // Save locally as fallback
       localStorage.setItem(`design-${productId}`, JSON.stringify(json));
       toast.success('Design saved locally');
     }
@@ -203,18 +237,33 @@ export default function DesignEditor({
   const handleExport = useCallback((format: DesignExportFormat) => {
     let data: string;
     let filename: string;
-    let mimeType: string;
 
     if (format === 'png') {
+      // Screen-quality preview
       data = exportPNG();
-      filename = `${productId}-design.png`;
-      mimeType = 'image/png';
+      filename = `${productId}-design-preview.png`;
     } else if (format === 'svg') {
       data = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(exportSVG());
       filename = `${productId}-design.svg`;
-      mimeType = 'image/svg+xml';
+    } else if (format === 'pdf') {
+      // Print-ready PNG at 300 DPI with bleed
+      const result = exportPrintReady({ dpi: 300, includeBleed: true, format: 'png' });
+      data = result.dataUrl;
+      filename = `${productId}-PRINT-READY-300dpi-with-bleed.png`;
+
+      const link = document.createElement('a');
+      link.href = data;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success(
+        `Print-ready file exported! ${result.widthPx}×${result.heightPx}px at ${result.dpi} DPI${result.includesBleed ? ' with 1/8" bleed' : ''}`,
+        { duration: 5000 }
+      );
+      return;
     } else {
-      toast.info('PDF export coming soon');
       return;
     }
 
@@ -225,7 +274,7 @@ export default function DesignEditor({
     link.click();
     document.body.removeChild(link);
     toast.success(`Exported as ${format.toUpperCase()}`);
-  }, [exportPNG, exportSVG, productId]);
+  }, [exportPNG, exportSVG, exportPrintReady, productId]);
 
   const handleAddToCart = useCallback(() => {
     toast.info('Save your design first, then add the product to cart from the product page.');
@@ -241,6 +290,8 @@ export default function DesignEditor({
   const handleAddImage = useCallback(async (url: string) => {
     await addImage(url);
     saveState();
+    setImageHint('Click and drag to reposition your image');
+    setTimeout(() => setImageHint(null), 4000);
   }, [addImage, saveState]);
 
   const handleAddShape = useCallback((type: string) => {
@@ -291,11 +342,9 @@ export default function DesignEditor({
     if (property === 'opacity') {
       active.set('opacity', (value as number) / 100);
     } else if (property === 'width') {
-      const currentW = (active.width ?? 1) * (active.scaleX ?? 1);
-      if (currentW > 0) active.set('scaleX', (value as number) / (active.width ?? 1));
+      if ((active.width ?? 1) > 0) active.set('scaleX', (value as number) / (active.width ?? 1));
     } else if (property === 'height') {
-      const currentH = (active.height ?? 1) * (active.scaleY ?? 1);
-      if (currentH > 0) active.set('scaleY', (value as number) / (active.height ?? 1));
+      if ((active.height ?? 1) > 0) active.set('scaleY', (value as number) / (active.height ?? 1));
     } else if (property === 'bold') {
       (active as Textbox).set('fontWeight', value ? 'bold' : 'normal');
     } else if (property === 'italic') {
@@ -310,7 +359,6 @@ export default function DesignEditor({
     canvas.requestRenderAll();
     saveState();
 
-    // Update local state
     setSelectedObject(prev => prev ? { ...prev, [property]: value } : null);
   }, [canvas, saveState]);
 
@@ -329,13 +377,16 @@ export default function DesignEditor({
         loadFromJSON(JSON.parse(saved)).then(() => saveState());
       } catch { /* ignore */ }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [canvas, productId]);
 
-  /* ---- Canvas display ---- */
-  const aspectRatio = widthInches / heightInches;
-  const canvasDisplayWidth = isMobile ? 320 : 600;
-  const canvasDisplayHeight = canvasDisplayWidth / aspectRatio;
+  /* ---- Count non-bg objects for empty hint ---- */
+  const objectCount = canvas
+    ? canvas.getObjects().filter(
+        (obj) => !(obj as FabricObject & { _isBgRect?: boolean })._isBgRect &&
+                 !(obj as FabricObject & { _isSnapGuide?: boolean })._isSnapGuide
+      ).length
+    : 0;
 
   return (
     <div className="flex flex-col h-[calc(100vh-64px)] bg-gray-950">
@@ -351,6 +402,7 @@ export default function DesignEditor({
         onRedo={redo}
         onZoomIn={handleZoomIn}
         onZoomOut={handleZoomOut}
+        onFitToScreen={handleFitToScreen}
         onToggleBleed={() => setShowBleed(b => !b)}
         onToggleSafeArea={() => setShowSafeArea(b => !b)}
         onPreview={handlePreview}
@@ -374,19 +426,18 @@ export default function DesignEditor({
           />
         )}
 
-        {/* Center canvas */}
+        {/* Center canvas area */}
         <div
           ref={containerRef}
-          className="relative flex-1 flex items-center justify-center overflow-hidden bg-gray-900/50"
+          className="relative flex-1 overflow-hidden"
+          style={CHECKER_BG_STYLE}
         >
-          {/* Canvas container — just the Fabric.js canvas, no extra borders */}
-          <div className="relative" style={{ width: canvasDisplayWidth, height: canvasDisplayHeight, maxWidth: '90%', maxHeight: '85%' }}>
-            <canvas ref={canvasElRef} id="design-canvas" />
-          </div>
+          {/* The Fabric.js canvas fills this entire container */}
+          <canvas ref={canvasElRef} id="design-canvas" className="block w-full h-full" />
 
           {/* Guide labels (small text in corner) */}
           {(showBleed || showSafeArea) && (
-            <div className="absolute top-2 left-2 flex gap-3 pointer-events-none">
+            <div className="absolute top-2 left-2 flex gap-3 pointer-events-none z-10">
               {showBleed && (
                 <span className="text-[10px] text-red-400/70 flex items-center gap-1">
                   <span className="w-3 h-0 border-t border-dashed border-red-400/70 inline-block" /> bleed
@@ -400,16 +451,30 @@ export default function DesignEditor({
             </div>
           )}
 
-          {/* Zoom controls */}
-          <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-gray-900/90 rounded-lg px-1 py-0.5">
-            <button onClick={handleZoomOut} className="text-gray-400 hover:text-white text-xs px-2 py-1 transition-colors">−</button>
-            <span className="text-gray-400 text-xs font-mono min-w-[3ch] text-center">{Math.round(zoom * 100)}%</span>
-            <button onClick={handleZoomIn} className="text-gray-400 hover:text-white text-xs px-2 py-1 transition-colors">+</button>
+          {/* Zoom controls (bottom-right) */}
+          <div className="absolute bottom-3 right-3 flex items-center gap-1 bg-gray-900/90 rounded-lg px-1 py-0.5 z-10">
+            <button onClick={handleZoomOut} className="text-gray-400 hover:text-white text-xs px-2 py-1 transition-colors" aria-label="Zoom out">-</button>
+            <span className="text-gray-400 text-xs font-mono min-w-[3ch] text-center select-none">{Math.round(zoom * 100)}%</span>
+            <button onClick={handleZoomIn} className="text-gray-400 hover:text-white text-xs px-2 py-1 transition-colors" aria-label="Zoom in">+</button>
+            <span className="w-px h-4 bg-gray-700 mx-0.5" />
+            <button onClick={handleFitToScreen} className="text-gray-400 hover:text-white text-[10px] px-1.5 py-1 transition-colors" aria-label="Fit to screen" title="Fit to screen (Ctrl+0)">Fit</button>
           </div>
 
+          {/* Pan hint */}
+          <div className="absolute bottom-3 left-3 pointer-events-none z-10">
+            <span className="text-[10px] text-gray-600 select-none">Alt+drag or middle-click to pan | Scroll to zoom</span>
+          </div>
+
+          {/* Image positioning hint */}
+          {imageHint && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 px-4 py-2 bg-amber-600/90 text-white text-sm rounded-lg shadow-lg pointer-events-none animate-fade-in">
+              {imageHint}
+            </div>
+          )}
+
           {/* Hint when canvas is empty */}
-          {canvas && canvas.getObjects().length === 0 && (
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          {canvas && objectCount === 0 && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
               <div className="text-center">
                 <p className="text-gray-500 text-lg font-medium">Start designing</p>
                 <p className="text-gray-600 text-sm mt-1">Add text, upload images, or pick a template</p>

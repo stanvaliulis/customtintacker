@@ -350,3 +350,60 @@ You can still order tin tackers at retail pricing on our website anytime.`;
 
   return { subject, html, text };
 }
+
+// ---------------------------------------------------------------------------
+// Sample Pack Order
+// ---------------------------------------------------------------------------
+
+export interface SampleOrderData {
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  samplePack: string;
+  samplePackLabel: string;
+  shippingAddress: string;
+  city: string;
+  state: string;
+  zip: string;
+  notes?: string;
+  id?: string;
+  submittedAt?: string;
+}
+
+export function sampleOrderEmail(data: SampleOrderData) {
+  const subject = `New Sample Pack Order: ${data.name} — ${data.samplePackLabel}`;
+
+  const rows = [
+    row('Name', data.name),
+    row('Email', data.email),
+    row('Phone', data.phone),
+    row('Company', data.company),
+    row('Sample Pack', data.samplePackLabel),
+    row('Address', data.shippingAddress),
+    row('City', data.city),
+    row('State', data.state),
+    row('ZIP', data.zip),
+    row('Notes', data.notes),
+    row('Order ID', data.id),
+    row('Submitted', data.submittedAt),
+  ].filter(Boolean).join('');
+
+  const html = layout('New Sample Pack Order', table(rows));
+
+  const text = `New Sample Pack Order
+Name: ${data.name}
+Email: ${data.email}
+Phone: ${data.phone || 'N/A'}
+Company: ${data.company || 'N/A'}
+Sample Pack: ${data.samplePackLabel}
+Address: ${data.shippingAddress}
+City: ${data.city}
+State: ${data.state}
+ZIP: ${data.zip}
+Notes: ${data.notes || 'N/A'}
+Order ID: ${data.id || 'N/A'}
+Submitted: ${data.submittedAt || 'N/A'}`;
+
+  return { subject, html, text };
+}

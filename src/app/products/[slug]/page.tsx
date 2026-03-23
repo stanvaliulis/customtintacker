@@ -226,7 +226,7 @@ export default async function ProductDetailPage({ params }: Props) {
               </p>
 
               {/* Design Online CTA */}
-              <div className="mb-8 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+              <div className="mb-4 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-white font-semibold">Design your sign online</p>
@@ -237,6 +237,26 @@ export default async function ProductDetailPage({ params }: Props) {
                     className="shrink-0 bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors"
                   >
                     Design Online
+                  </Link>
+                </div>
+              </div>
+
+              {/* Preview Artwork Mockup CTA */}
+              <div className="mb-8 p-4 rounded-xl border border-gray-700/50 bg-gray-800/30">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-white font-semibold">Preview your artwork on this sign</p>
+                    <p className="text-sm text-gray-400 mt-0.5">Upload your logo and see a realistic mockup in seconds</p>
+                  </div>
+                  <Link
+                    href={`/mockup?shape=${product.shape}`}
+                    className="shrink-0 bg-gray-700 hover:bg-gray-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Preview Mockup
                   </Link>
                 </div>
               </div>

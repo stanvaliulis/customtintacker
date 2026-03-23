@@ -69,4 +69,5 @@ export interface CartItem {
   unitPrice: number;
   priceTier: PriceTier;
   artworkNotes?: string;
+  isRush?: boolean;
 }
