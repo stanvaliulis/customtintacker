@@ -6,7 +6,7 @@ import { Clock, Truck, PackageCheck, ShieldCheck } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Tin Tacker Shipping & Returns | Production Timeline & Delivery Info',
   description:
-    'Shipping information and return policy for custom tin tacker signs by Interstate Graphics. Tin tacker production takes approximately 30 days. Nationwide shipping via UPS and FedEx. Learn about delivery timelines, damage claims, and our quality guarantee on all embossed aluminum tin tackers.',
+    'Shipping information and return policy for custom tin tacker signs by Interstate Graphics. Tin tacker production takes approximately 15 business days. Nationwide shipping via UPS and FedEx. Learn about delivery timelines, damage claims, and our quality guarantee on all embossed aluminum tin tackers.',
   openGraph: {
     title: 'Tin Tacker Shipping & Returns | Production Timeline & Delivery Info',
     description:
@@ -21,9 +21,9 @@ export const metadata: Metadata = {
 const highlights = [
   {
     icon: Clock,
-    title: '~30 Day Production',
+    title: '~15 Business Day Production',
     description:
-      'Each order is custom manufactured from scratch. Plan for approximately 30 days from proof approval to shipment.',
+      'Each order is custom manufactured from scratch. Plan for approximately 15 business days from proof approval to shipment. Larger orders may require additional time.',
   },
   {
     icon: Truck,

@@ -410,7 +410,7 @@ export default function QuoteBuilder() {
                 <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">+25%</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Get your order in ~15 business days instead of ~30. Rush fee is 25% of your order subtotal.
+                Get your order in ~7 business days instead of ~15. Rush fee is 25% of your order subtotal.
               </p>
             </div>
           </button>

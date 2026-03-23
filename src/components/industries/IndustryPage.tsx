@@ -97,7 +97,7 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
                 25 minimum order
               </span>
               <span className="w-1 h-1 rounded-full bg-gray-700" />
-              <span>~30 day lead time</span>
+              <span>~15 business day lead time</span>
               <span className="w-1 h-1 rounded-full bg-gray-700" />
               <span>Made in USA</span>
             </div>
@@ -211,9 +211,9 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
               },
               {
                 step: '3',
-                title: 'Ships in ~30 Days',
+                title: 'Ships in ~15 Business Days',
                 description:
-                  'Standard production is about 30 business days. We ship directly to you (or your distributor, your accounts, wherever you need them).',
+                  'Standard production is about 15 business days. Larger orders may require additional time. We ship directly to you (or your distributor, your accounts, wherever you need them).',
                 Icon: Truck,
               },
             ].map((item, i) => (

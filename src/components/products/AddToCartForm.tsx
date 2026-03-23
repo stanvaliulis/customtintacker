@@ -116,7 +116,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
               <span className="text-xs font-medium text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">+25%</span>
             </div>
             <p className="text-xs text-gray-400 mt-1">
-              Get your order in ~15 business days instead of ~30
+              Get your order in ~7 business days instead of ~15
             </p>
           </div>
         </button>

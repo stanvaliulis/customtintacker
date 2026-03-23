@@ -115,9 +115,9 @@ export default function TermsPage() {
                 Production and Delivery Timeline
               </h2>
               <p className="text-gray-600 leading-relaxed mb-3">
-                Standard production time is approximately 30 days from proof
-                approval. This can vary depending on order size and current
-                production schedules.
+                Standard production time is approximately 15 business days from proof
+                approval. Larger orders may require additional time depending on
+                order size and current production schedules.
               </p>
               <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>

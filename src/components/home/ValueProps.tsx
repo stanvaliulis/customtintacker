@@ -14,7 +14,7 @@ const steps = [
   {
     number: '3',
     title: 'They show up at your door',
-    description: 'Boxed up and shipped. Most orders are done in about 30 days.',
+    description: 'Boxed up and shipped. Most orders are done in about 15 business days.',
   },
 ];
 

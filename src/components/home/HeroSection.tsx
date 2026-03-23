@@ -28,7 +28,7 @@ export default function HeroSection() {
           {/* Subtext */}
           <p className="mt-8 text-lg sm:text-xl text-gray-300 max-w-2xl leading-relaxed">
             The signs you see in every brewery and bar? We make those.
-            Custom shapes, your artwork, shipped in about a month.
+            Custom shapes, your artwork, shipped in about 15 business days.
           </p>
 
           {/* CTAs */}
@@ -56,7 +56,7 @@ export default function HeroSection() {
         {/* Trust badges — simple text row */}
         <div className="mt-20 pt-10 border-t border-white/10">
           <p className="text-sm sm:text-base text-gray-400 tracking-wide">
-            Made in USA &bull; 25 minimum &bull; Full color &bull; ~30 days
+            Made in USA &bull; 25 minimum &bull; Full color &bull; ~15 business days
           </p>
         </div>
       </Container>
