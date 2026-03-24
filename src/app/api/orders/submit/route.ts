@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/env';
 import { sendNotificationEmail } from '@/lib/email';
+import { readJsonFile, writeJsonFile } from '@/lib/json-store';
 
 interface OrderItem {
   productId: string;
@@ -29,6 +30,8 @@ export async function POST(request: Request) {
 
     const orderNumber = `CTT-${Date.now().toString(36).toUpperCase()}`;
 
+    let savedToDb = false;
+
     // Save to database if configured
     if (isDatabaseConfigured()) {
       try {
@@ -55,8 +58,40 @@ export async function POST(request: Request) {
             ].filter(Boolean).join('\n'),
           },
         });
+        savedToDb = true;
       } catch (dbErr) {
-        console.error('Order DB save failed (continuing with email):', dbErr);
+        console.error('Order DB save failed (continuing with JSON + email):', dbErr);
+      }
+    }
+
+    // Save to JSON file as fallback
+    if (!savedToDb) {
+      try {
+        const orders = readJsonFile<Record<string, unknown>[]>('orders.json', []);
+        orders.unshift({
+          id: `local-${Date.now()}`,
+          orderNumber,
+          customerName: name,
+          customerEmail: email,
+          customerPhone: phone || '',
+          company: company || '',
+          shippingAddress: shippingAddress || '',
+          shippingCity: city || '',
+          shippingState: state || '',
+          shippingZip: zip || '',
+          items,
+          subtotal: Math.round(subtotal),
+          setupFees: Math.round(setupFees || 0),
+          total: Math.round(total),
+          status: 'pending',
+          notes: notes || '',
+          isDistributor: !!isDistributor,
+          distributorCompany: distributorCompany || '',
+          submittedAt: new Date().toISOString(),
+        });
+        writeJsonFile('orders.json', orders);
+      } catch (jsonErr) {
+        console.error('Order JSON save failed:', jsonErr);
       }
     }
 
@@ -75,7 +110,7 @@ export async function POST(request: Request) {
 
     const distributorBadge = isDistributor
       ? `<div style="background:#ecfdf5;border:1px solid #6ee7b7;border-radius:6px;padding:8px 12px;margin-bottom:16px;font-size:13px;color:#047857;font-weight:600;">
-          ✓ Distributor Order — ${distributorCompany}
+          Distributor Order — ${distributorCompany}
         </div>`
       : '';
 

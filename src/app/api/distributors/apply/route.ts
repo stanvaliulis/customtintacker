@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { isDatabaseConfigured } from '@/lib/env';
 import { sendNotificationEmail } from '@/lib/email';
 import { distributorApplicationEmail } from '@/lib/email-templates';
+import { readJsonFile, writeJsonFile } from '@/lib/json-store';
 
 const distributorApplicationSchema = z.object({
   companyName: z.string().min(1, 'Company name is required.'),
@@ -66,7 +67,35 @@ export async function POST(request: Request) {
         });
         applicationId = application.id;
       } catch (dbErr) {
-        console.error('Distributor DB save failed (continuing with email):', dbErr);
+        console.error('Distributor DB save failed (continuing with JSON + email):', dbErr);
+      }
+    }
+
+    // Save to JSON file as fallback
+    if (!isDatabaseConfigured() || applicationId.startsWith('local-')) {
+      try {
+        const distributors = readJsonFile<Record<string, unknown>[]>('distributors.json', []);
+        distributors.unshift({
+          id: applicationId,
+          companyName: result.data.companyName,
+          contactName: result.data.contactName,
+          email: result.data.email,
+          phone: result.data.phone,
+          website: result.data.website,
+          asiNumber: result.data.asiNumber,
+          sageNumber: result.data.sageNumber,
+          ppaiNumber: result.data.ppaiNumber,
+          estimatedVolume: result.data.monthlyVolume,
+          primaryIndustry: result.data.primaryIndustry,
+          referralSource: result.data.hearAboutUs,
+          additionalNotes: result.data.additionalNotes,
+          agreeTerms: result.data.agreeTerms,
+          status: 'pending',
+          submittedAt: new Date().toISOString(),
+        });
+        writeJsonFile('distributors.json', distributors);
+      } catch (jsonErr) {
+        console.error('Distributor JSON save failed:', jsonErr);
       }
     }
 

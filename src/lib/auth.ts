@@ -1,46 +1,32 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import bcrypt from 'bcryptjs';
-import { isDatabaseConfigured } from '@/lib/env';
-
-function getWholesaleCredentials() {
-  const raw = process.env.WHOLESALE_CREDENTIALS || '';
-  if (!raw) return [];
-  return raw.split(',').map((entry) => {
-    const [username, password, name] = entry.split(':');
-    return {
-      username: username?.trim(),
-      password: password?.trim(),
-      name: name?.trim() || username?.trim(),
-    };
-  });
-}
+import { findDistributorByEmail, parseEnvCredentials } from '@/lib/distributors';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
     Credentials({
       name: 'Distributor Login',
       credentials: {
-        username: { label: 'Username', type: 'text' },
+        email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
       },
       async authorize(credentials) {
-        const email = (credentials?.username as string)?.trim();
+        const email = (credentials?.email as string)?.trim().toLowerCase();
         const password = (credentials?.password as string)?.trim();
         if (!email || !password) return null;
 
-        // 1. Check hardcoded env var credentials (legacy)
-        const accounts = getWholesaleCredentials();
-        const envAccount = accounts.find(
-          (a) => a.username === email && a.password === password
+        // 1. Check WHOLESALE_CREDENTIALS env var (format: "email:password:name")
+        const envAccounts = parseEnvCredentials();
+        const envMatch = envAccounts.find(
+          (a) => a.email.toLowerCase() === email && a.password === password
         );
-        if (envAccount) {
+        if (envMatch) {
           return {
-            id: envAccount.username,
-            name: envAccount.name,
-            email: `${envAccount.username}@wholesale`,
+            id: envMatch.email,
+            name: envMatch.companyName,
+            email: envMatch.email,
             role: 'distributor',
-            companyName: envAccount.name,
+            companyName: envMatch.companyName,
             asiNumber: '',
             sageNumber: '',
             ppaiNumber: '',
@@ -48,37 +34,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           } as Record<string, unknown>;
         }
 
-        // 2. Check approved distributors in database
-        if (isDatabaseConfigured()) {
-          try {
-            const { prisma } = await import('@/lib/db');
-            const distributor = await prisma.distributorApplication.findFirst({
-              where: { email, status: 'approved' },
-            });
-
-            if (distributor && distributor.notes) {
-              // Extract the bcrypt hash from notes field
-              const hashMatch = distributor.notes.match(/Temp password hash: (\$2[aby]\$.+)/);
-              if (hashMatch) {
-                const isValid = await bcrypt.compare(password, hashMatch[1]);
-                if (isValid) {
-                  return {
-                    id: distributor.id,
-                    name: distributor.contactName,
-                    email: distributor.email,
-                    role: 'distributor',
-                    companyName: distributor.companyName,
-                    asiNumber: distributor.asiNumber || '',
-                    sageNumber: distributor.sageNumber || '',
-                    ppaiNumber: distributor.ppaiNumber || '',
-                    discountTier: 0.40,
-                  } as Record<string, unknown>;
-                }
-              }
-            }
-          } catch (err) {
-            console.error('Distributor auth check failed:', err);
-          }
+        // 2. Check data/distributors.json for approved distributors
+        const distributor = findDistributorByEmail(email);
+        if (distributor && distributor.password === password) {
+          return {
+            id: distributor.email,
+            name: distributor.contactName || distributor.companyName,
+            email: distributor.email,
+            role: 'distributor',
+            companyName: distributor.companyName,
+            asiNumber: distributor.asiNumber || '',
+            sageNumber: distributor.sageNumber || '',
+            ppaiNumber: distributor.ppaiNumber || '',
+            discountTier: distributor.discountTier ?? 0.40,
+          } as Record<string, unknown>;
         }
 
         return null;
@@ -88,25 +57,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        const u = user as Record<string, unknown>;
-        token.role = u.role || 'distributor';
-        token.companyName = u.companyName || '';
-        token.asiNumber = u.asiNumber || '';
-        token.sageNumber = u.sageNumber || '';
-        token.ppaiNumber = u.ppaiNumber || '';
-        token.discountTier = u.discountTier ?? 0.40;
+        token.role = (user as Record<string, unknown>).role as string || 'distributor';
+        token.companyName = (user as Record<string, unknown>).companyName as string || '';
+        token.asiNumber = (user as Record<string, unknown>).asiNumber as string || '';
+        token.sageNumber = (user as Record<string, unknown>).sageNumber as string || '';
+        token.ppaiNumber = (user as Record<string, unknown>).ppaiNumber as string || '';
+        token.discountTier = (user as Record<string, unknown>).discountTier as number ?? 0.40;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        const user = session.user as unknown as Record<string, unknown>;
-        user.role = token.role;
-        user.companyName = token.companyName;
-        user.asiNumber = token.asiNumber;
-        user.sageNumber = token.sageNumber;
-        user.ppaiNumber = token.ppaiNumber;
-        user.discountTier = token.discountTier;
+        session.user.role = token.role;
+        session.user.companyName = token.companyName;
+        session.user.asiNumber = token.asiNumber;
+        session.user.sageNumber = token.sageNumber;
+        session.user.ppaiNumber = token.ppaiNumber;
+        session.user.discountTier = token.discountTier;
       }
       return session;
     },
@@ -117,4 +84,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   session: {
     strategy: 'jwt',
   },
+  trustHost: true,
 });

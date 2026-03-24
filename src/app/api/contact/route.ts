@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { isDatabaseConfigured } from '@/lib/env';
 import { sendNotificationEmail } from '@/lib/email';
 import { contactFormEmail } from '@/lib/email-templates';
+import { readJsonFile, writeJsonFile } from '@/lib/json-store';
 
 const contactSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -46,7 +47,27 @@ export async function POST(request: Request) {
         });
         contactId = contact.id;
       } catch (dbErr) {
-        console.error('Contact DB save failed (continuing with email):', dbErr);
+        console.error('Contact DB save failed (continuing with JSON + email):', dbErr);
+      }
+    }
+
+    // Save to JSON file as fallback
+    if (!isDatabaseConfigured() || contactId.startsWith('local-')) {
+      try {
+        const contacts = readJsonFile<Record<string, unknown>[]>('contacts.json', []);
+        contacts.unshift({
+          id: contactId,
+          name: result.data.name,
+          email: result.data.email,
+          phone: result.data.phone,
+          company: result.data.company,
+          message: result.data.message,
+          status: 'new',
+          submittedAt: new Date().toISOString(),
+        });
+        writeJsonFile('contacts.json', contacts);
+      } catch (jsonErr) {
+        console.error('Contact JSON save failed:', jsonErr);
       }
     }
 

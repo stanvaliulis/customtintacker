@@ -1,6 +1,26 @@
 import { NextResponse } from 'next/server';
 import { isAdminAuthenticated } from '@/lib/admin-auth';
 import { isDatabaseConfigured } from '@/lib/env';
+import { readJsonFile } from '@/lib/json-store';
+
+interface DistributorRecord {
+  id: string;
+  companyName: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  website: string;
+  asiNumber: string;
+  sageNumber: string;
+  ppaiNumber: string;
+  estimatedVolume: string;
+  primaryIndustry: string;
+  referralSource: string;
+  additionalNotes: string;
+  agreeTerms: boolean;
+  status: string;
+  submittedAt: string;
+}
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
@@ -35,5 +55,7 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json([]);
+  // JSON file fallback
+  const distributors = readJsonFile<DistributorRecord[]>('distributors.json', []);
+  return NextResponse.json(distributors);
 }

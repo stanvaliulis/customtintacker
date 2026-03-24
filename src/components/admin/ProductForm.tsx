@@ -169,7 +169,7 @@ export default function ProductForm({ initialData }: ProductFormProps) {
         throw new Error(err.error || 'Failed to save');
       }
 
-      router.push('/admin');
+      router.push('/admin/products');
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save product');

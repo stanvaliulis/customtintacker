@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { isDatabaseConfigured } from '@/lib/env';
 import { sendNotificationEmail } from '@/lib/email';
 import { quoteRequestEmail } from '@/lib/email-templates';
+import { readJsonFile, writeJsonFile } from '@/lib/json-store';
 
 const quoteRequestSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -53,7 +54,31 @@ export async function POST(request: Request) {
         });
         quoteId = quote.id;
       } catch (dbErr) {
-        console.error('Quote DB save failed (continuing with email):', dbErr);
+        console.error('Quote DB save failed (continuing with JSON + email):', dbErr);
+      }
+    }
+
+    // Save to JSON file as fallback (always, when no DB; or when DB save failed)
+    if (!isDatabaseConfigured() || quoteId.startsWith('local-')) {
+      try {
+        const quotes = readJsonFile<Record<string, unknown>[]>('quotes.json', []);
+        quotes.unshift({
+          id: quoteId,
+          name: result.data.name,
+          email: result.data.email,
+          phone: result.data.phone,
+          company: result.data.company,
+          size: result.data.size,
+          quantity: result.data.quantity,
+          backing: result.data.backing,
+          colors: result.data.colors,
+          notes: result.data.notes,
+          status: 'new',
+          submittedAt: new Date().toISOString(),
+        });
+        writeJsonFile('quotes.json', quotes);
+      } catch (jsonErr) {
+        console.error('Quote JSON save failed:', jsonErr);
       }
     }
 

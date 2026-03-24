@@ -1,6 +1,18 @@
 import { NextResponse } from 'next/server';
 import { isAdminAuthenticated } from '@/lib/admin-auth';
 import { isDatabaseConfigured } from '@/lib/env';
+import { readJsonFile } from '@/lib/json-store';
+
+interface ContactRecord {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  company?: string;
+  message: string;
+  status: string;
+  submittedAt: string;
+}
 
 export async function GET() {
   if (!(await isAdminAuthenticated())) {
@@ -27,5 +39,7 @@ export async function GET() {
     }
   }
 
-  return NextResponse.json([]);
+  // JSON file fallback
+  const contacts = readJsonFile<ContactRecord[]>('contacts.json', []);
+  return NextResponse.json(contacts);
 }
