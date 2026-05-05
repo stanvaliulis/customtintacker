@@ -2,6 +2,7 @@
 
 import { useState, FormEvent } from 'react';
 import { Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
+import { useSpamProtection } from '@/hooks/useSpamProtection';
 
 const SAMPLE_PACKS = [
   { id: 'basic', label: 'Basic Sample ($15)', price: 15 },
@@ -40,6 +41,7 @@ export default function SampleOrderForm() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success' | 'error'>('idle');
   const [serverError, setServerError] = useState('');
+  const { getSpamFields } = useSpamProtection();
 
   function set<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -68,11 +70,15 @@ export default function SampleOrderForm() {
     setStatus('submitting');
     setServerError('');
 
+    const hpEl = (ev.currentTarget as HTMLFormElement).querySelector('#address2') as HTMLInputElement;
+    const spamFields = getSpamFields();
+    if (hpEl?.value) spamFields._hp = hpEl.value;
+
     try {
       const res = await fetch('/api/samples', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, ...spamFields }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -269,6 +275,12 @@ export default function SampleOrderForm() {
           {serverError}
         </div>
       )}
+
+      {/* Honeypot — invisible to humans */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
+        <label htmlFor="address2">Address 2</label>
+        <input type="text" id="address2" name="address2" tabIndex={-1} autoComplete="off" />
+      </div>
 
       {/* Submit */}
       <button

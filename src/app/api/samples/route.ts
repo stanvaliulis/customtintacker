@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { sendNotificationEmail } from '@/lib/email';
 import { sampleOrderEmail } from '@/lib/email-templates';
+import { detectSpam, rateLimit } from '@/lib/spam-protection';
 
 const sampleOrderSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -26,7 +27,14 @@ const SAMPLE_LABELS: Record<string, string> = {
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = rateLimit(request);
+    if (rateLimited) return rateLimited;
+
     const body = await request.json();
+
+    const spamDetected = detectSpam(body);
+    if (spamDetected) return spamDetected;
+
     const result = sampleOrderSchema.safeParse(body);
 
     if (!result.success) {

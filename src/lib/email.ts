@@ -12,6 +12,7 @@ export interface EmailPayload {
   subject: string;
   html: string;
   text: string;
+  replyTo?: string;
 }
 
 function isResendConfigured(): boolean {
@@ -36,8 +37,9 @@ export async function sendNotificationEmail(payload: EmailPayload): Promise<void
       const resend = new Resend(env.email.resendApiKey);
 
       await resend.emails.send({
-        from: env.email.resendFrom || 'Custom Tin Tackers <notifications@customtintackers.com>',
+        from: env.email.resendFrom || 'Custom Tin Tackers <notifications@igiprint.com>',
         to,
+        ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
         subject: payload.subject,
         html: payload.html,
         text: payload.text,
@@ -62,6 +64,7 @@ export async function sendNotificationEmail(payload: EmailPayload): Promise<void
       await transporter.sendMail({
         from: `"Custom Tin Tackers" <${smtpUser}>`,
         to,
+        ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
         subject: payload.subject,
         text: payload.text,
         html: payload.html,
@@ -94,8 +97,9 @@ export async function sendEmailTo(to: string, payload: EmailPayload): Promise<vo
       const resend = new Resend(env.email.resendApiKey);
 
       await resend.emails.send({
-        from: env.email.resendFrom || 'Custom Tin Tackers <notifications@customtintackers.com>',
+        from: env.email.resendFrom || 'Custom Tin Tackers <notifications@igiprint.com>',
         to,
+        ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
         subject: payload.subject,
         html: payload.html,
         text: payload.text,
@@ -119,6 +123,7 @@ export async function sendEmailTo(to: string, payload: EmailPayload): Promise<vo
       await transporter.sendMail({
         from: `"Custom Tin Tackers" <${smtpUser}>`,
         to,
+        ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
         subject: payload.subject,
         text: payload.text,
         html: payload.html,

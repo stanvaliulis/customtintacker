@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
+import { useSpamProtection } from '@/hooks/useSpamProtection';
 
 const sizeOptions = [
   { value: '', label: 'Select a size' },
@@ -32,6 +33,7 @@ export default function QuoteForm() {
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const { getSpamFields } = useSpamProtection();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -52,11 +54,15 @@ export default function QuoteForm() {
       notes: (form.querySelector('#q-notes') as HTMLTextAreaElement)?.value ?? '',
     };
 
+    const honeypot = (form.querySelector('#fax_number') as HTMLInputElement)?.value ?? '';
+    const spamFields = getSpamFields();
+    if (honeypot) spamFields._hp = honeypot;
+
     try {
       const res = await fetch('/api/quote', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, ...spamFields }),
       });
 
       const data = await res.json();
@@ -134,6 +140,12 @@ export default function QuoteForm() {
           <p className="text-sm text-red-700">{serverError}</p>
         </div>
       )}
+
+      {/* Honeypot — invisible to humans */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
+        <label htmlFor="fax_number">Fax</label>
+        <input type="text" id="fax_number" name="fax_number" tabIndex={-1} autoComplete="off" />
+      </div>
 
       <Button type="submit" loading={loading} size="lg">Submit Quote Request</Button>
     </form>

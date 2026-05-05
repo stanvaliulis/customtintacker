@@ -7,6 +7,7 @@ import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import Button from '@/components/ui/Button';
 import { CheckCircle, ArrowLeft } from 'lucide-react';
+import { useSpamProtection } from '@/hooks/useSpamProtection';
 
 const volumeOptions = [
   { value: '', label: 'Select estimated volume...' },
@@ -65,6 +66,7 @@ export default function DistributorApplyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const { getSpamFields } = useSpamProtection();
 
   function updateField(field: keyof FormData, value: string | boolean) {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -110,11 +112,15 @@ export default function DistributorApplyPage() {
     setSubmitting(true);
     setServerError(null);
 
+    const hpEl = document.querySelector('#org_id') as HTMLInputElement;
+    const spamFields = getSpamFields();
+    if (hpEl?.value) spamFields._hp = hpEl.value;
+
     try {
       const res = await fetch('/api/distributors/apply', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, ...spamFields }),
       });
 
       const data = await res.json();
@@ -354,6 +360,12 @@ export default function DistributorApplyPage() {
                 {errors.agreeTerms && (
                   <p className="text-sm text-red-600 mt-1 ml-7">{errors.agreeTerms}</p>
                 )}
+              </div>
+
+              {/* Honeypot — invisible to humans */}
+              <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
+                <label htmlFor="org_id">Organization ID</label>
+                <input type="text" id="org_id" name="org_id" tabIndex={-1} autoComplete="off" />
               </div>
 
               {/* Server Error */}

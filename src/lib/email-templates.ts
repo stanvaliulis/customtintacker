@@ -14,6 +14,15 @@ const BRAND_BG = '#fffbeb'; // amber-50
 const BRAND_NAME = 'Custom Tin Tackers';
 const COMPANY = 'Interstate Graphics';
 
+/** Escape HTML special characters to prevent broken rendering and spam signals. */
+function esc(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 function layout(title: string, body: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -54,8 +63,8 @@ function layout(title: string, body: string): string {
 function row(label: string, value: string | number | undefined | null): string {
   if (value === undefined || value === null || String(value).trim() === '') return '';
   return `<tr>
-    <td style="padding:6px 12px;color:#6b7280;font-size:14px;white-space:nowrap;vertical-align:top;">${label}</td>
-    <td style="padding:6px 12px;color:#111827;font-size:14px;">${String(value)}</td>
+    <td style="padding:6px 12px;color:#6b7280;font-size:14px;white-space:nowrap;vertical-align:top;">${esc(label)}</td>
+    <td style="padding:6px 12px;color:#111827;font-size:14px;">${esc(String(value))}</td>
   </tr>`;
 }
 
@@ -198,7 +207,7 @@ export interface ContactFormData {
 export function contactFormEmail(data: ContactFormData) {
   const subject = `New Contact Form: ${data.name}`;
 
-  const messageHtml = `<p style="margin:16px 0 0;color:#111827;font-size:14px;line-height:1.6;white-space:pre-wrap;">${data.message}</p>`;
+  const messageHtml = `<p style="margin:16px 0 0;color:#111827;font-size:14px;line-height:1.6;white-space:pre-wrap;">${esc(data.message)}</p>`;
 
   const rows = [
     row('Name', data.name),
@@ -228,7 +237,7 @@ ${data.message}
 Submission ID: ${data.id || 'N/A'}
 Submitted: ${data.submittedAt || 'N/A'}`;
 
-  return { subject, html, text };
+  return { subject, html, text, replyTo: data.email };
 }
 
 // ---------------------------------------------------------------------------

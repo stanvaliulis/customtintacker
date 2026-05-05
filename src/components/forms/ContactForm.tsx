@@ -4,12 +4,14 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
+import { useSpamProtection } from '@/hooks/useSpamProtection';
 
 export default function ContactForm() {
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState<string | null>(null);
+  const { getSpamFields } = useSpamProtection();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -26,11 +28,16 @@ export default function ContactForm() {
       message: (form.querySelector('#message') as HTMLTextAreaElement)?.value ?? '',
     };
 
+    // Read honeypot value — bots will fill this hidden field
+    const honeypot = (form.querySelector('#website_url') as HTMLInputElement)?.value ?? '';
+    const spamFields = getSpamFields();
+    if (honeypot) spamFields._hp = honeypot;
+
     try {
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, ...spamFields }),
       });
 
       const data = await res.json();
@@ -97,6 +104,12 @@ export default function ContactForm() {
           <p className="text-sm text-red-700">{serverError}</p>
         </div>
       )}
+
+      {/* Honeypot — invisible to humans */}
+      <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', top: '-9999px', opacity: 0, height: 0, overflow: 'hidden' }}>
+        <label htmlFor="website_url">Website</label>
+        <input type="text" id="website_url" name="website_url" tabIndex={-1} autoComplete="off" />
+      </div>
 
       <Button type="submit" loading={loading} size="lg">Send Message</Button>
     </form>

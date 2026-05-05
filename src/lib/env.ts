@@ -44,7 +44,7 @@ export const env = {
   email: {
     // Resend (preferred — just needs an API key)
     resendApiKey: process.env.RESEND_API_KEY || '',
-    resendFrom: process.env.RESEND_FROM || 'Custom Tin Tackers <notifications@customtintackers.com>',
+    resendFrom: process.env.RESEND_FROM || 'Custom Tin Tackers <notifications@igiprint.com>',
     // SMTP fallback
     smtpHost: process.env.SMTP_HOST || '',
     smtpPort: process.env.SMTP_PORT || '',

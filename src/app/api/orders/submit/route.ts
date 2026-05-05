@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { isDatabaseConfigured } from '@/lib/env';
 import { sendNotificationEmail } from '@/lib/email';
 import { readJsonFile, writeJsonFile } from '@/lib/json-store';
+import { detectSpam, rateLimit } from '@/lib/spam-protection';
 
 interface OrderItem {
   productId: string;
@@ -16,7 +17,14 @@ interface OrderItem {
 
 export async function POST(request: Request) {
   try {
+    const rateLimited = rateLimit(request);
+    if (rateLimited) return rateLimited;
+
     const body = await request.json();
+
+    const spamDetected = detectSpam(body);
+    if (spamDetected) return spamDetected;
+
     const {
       name, email, phone, company,
       shippingAddress, city, state, zip,

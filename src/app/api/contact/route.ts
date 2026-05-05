@@ -4,6 +4,7 @@ import { isDatabaseConfigured } from '@/lib/env';
 import { sendNotificationEmail } from '@/lib/email';
 import { contactFormEmail } from '@/lib/email-templates';
 import { readJsonFile, writeJsonFile } from '@/lib/json-store';
+import { detectSpam, rateLimit } from '@/lib/spam-protection';
 
 const contactSchema = z.object({
   name: z.string().min(1, 'Name is required.'),
@@ -15,7 +16,15 @@ const contactSchema = z.object({
 
 export async function POST(request: Request) {
   try {
+    // Spam & rate-limit checks
+    const rateLimited = rateLimit(request);
+    if (rateLimited) return rateLimited;
+
     const body = await request.json();
+
+    const spamDetected = detectSpam(body);
+    if (spamDetected) return spamDetected;
+
     const result = contactSchema.safeParse(body);
 
     if (!result.success) {
