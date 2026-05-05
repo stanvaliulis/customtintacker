@@ -3,9 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Product, ProductShape } from '@/types/product';
-import { formatPrice, getLowestPrice, getLowestCatalogPrice } from '@/lib/utils';
-import { ArrowRight, Tag } from 'lucide-react';
-import { useDistributor } from '@/context/DistributorContext';
+import { ArrowRight } from 'lucide-react';
 import ProductImagePlaceholder from './ProductImagePlaceholder';
 
 interface ProductCardProps {
@@ -13,19 +11,6 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { isDistributor, distributorDiscount } = useDistributor();
-  const lowestRetailPrice = getLowestPrice(product.pricingTiers);
-  const maxQtyTier = product.pricingTiers.find((t) => t.maxQuantity === null);
-  const firstTierPrice = product.pricingTiers[0]?.pricePerUnit ?? lowestRetailPrice;
-  const savingsPercent = Math.round(((firstTierPrice - lowestRetailPrice) / firstTierPrice) * 100);
-
-  // Distributor pricing
-  const lowestCatalogPrice = getLowestCatalogPrice(product.pricingTiers);
-  const distributorCost = Math.round(lowestCatalogPrice * (1 - distributorDiscount));
-  const distributorSavingsVsRetail = lowestRetailPrice > 0
-    ? Math.round(((lowestRetailPrice - distributorCost) / lowestRetailPrice) * 100)
-    : 0;
-
   return (
     <Link href={`/products/${product.slug}`} className="group block h-full">
       <div className="h-full flex flex-col rounded-xl border border-gray-800 bg-gray-900/80 overflow-hidden transition-all duration-300 hover:border-amber-500/50 hover:shadow-lg hover:shadow-amber-500/5 hover:-translate-y-1">
@@ -64,12 +49,6 @@ export default function ProductCard({ product }: ProductCardProps) {
             <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-800/90 text-gray-300 backdrop-blur-sm border border-gray-700/50">
               {product.shape}
             </span>
-            {isDistributor && (
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-400 backdrop-blur-sm border border-amber-500/30">
-                <Tag className="w-3 h-3" />
-                Distributor Price
-              </span>
-            )}
           </div>
 
           {/* Hover overlay */}
@@ -90,53 +69,10 @@ export default function ProductCard({ product }: ProductCardProps) {
             {product.shortDescription}
           </p>
 
-          {/* Price row */}
-          <div className="flex items-end justify-between gap-2 pt-3 border-t border-gray-800/50">
-            {product.pricingTiers.length > 0 ? (
-              <>
-                <div>
-                  {isDistributor ? (
-                    <>
-                      <span className="text-sm text-gray-500 line-through block">
-                        Retail: {formatPrice(lowestRetailPrice)}
-                      </span>
-                      <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">
-                        From {formatPrice(distributorCost)}
-                      </span>
-                      <span className="text-xs text-gray-500 block mt-0.5">
-                        /unit at {maxQtyTier?.minQuantity?.toLocaleString()}+
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">
-                        From {formatPrice(lowestRetailPrice)}
-                      </span>
-                      <span className="text-xs text-gray-500 block mt-0.5">
-                        /unit at {maxQtyTier?.minQuantity?.toLocaleString()}+
-                      </span>
-                    </>
-                  )}
-                </div>
-                {isDistributor ? (
-                  distributorSavingsVsRetail > 0 && (
-                    <span className="text-xs font-medium text-amber-400 bg-amber-400/10 px-2 py-1 rounded-full border border-amber-400/20">
-                      Save {distributorSavingsVsRetail}%
-                    </span>
-                  )
-                ) : (
-                  savingsPercent > 0 && (
-                    <span className="text-xs font-medium text-emerald-400 bg-emerald-400/10 px-2 py-1 rounded-full border border-emerald-400/20">
-                      Save {savingsPercent}%
-                    </span>
-                  )
-                )}
-              </>
-            ) : (
-              <span className="text-base font-semibold text-amber-400">
-                Contact for Quote
-              </span>
-            )}
+          <div className="pt-3 border-t border-gray-800/50">
+            <span className="text-base font-semibold text-amber-400">
+              Request Pricing
+            </span>
           </div>
         </div>
       </div>

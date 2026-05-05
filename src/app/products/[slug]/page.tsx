@@ -5,7 +5,7 @@ import Container from '@/components/ui/Container';
 import AddToCartForm from '@/components/products/AddToCartForm';
 import ProductImagePlaceholder from '@/components/products/ProductImagePlaceholder';
 import { getAllProducts, getProductBySlug } from '@/lib/products';
-import { formatPrice, getLowestPrice } from '@/lib/utils';
+import { getLowestPrice } from '@/lib/utils';
 import Link from 'next/link';
 import JsonLd from '@/components/seo/JsonLd';
 import { getProductSchema, getBreadcrumbSchema } from '@/lib/structured-data';
@@ -92,10 +92,6 @@ export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params;
   const product = await getProductBySlug(slug);
   if (!product) notFound();
-
-  const lowestPrice = getLowestPrice(product.pricingTiers);
-  const firstTierPrice = product.pricingTiers[0]?.pricePerUnit ?? lowestPrice;
-  const maxSavings = Math.round(((firstTierPrice - lowestPrice) / firstTierPrice) * 100);
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -217,14 +213,9 @@ export default async function ProductDetailPage({ params }: Props) {
               </h1>
 
               <div className="flex items-baseline gap-3 mb-5">
-                <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-yellow-500">
-                  From {formatPrice(lowestPrice)}/unit
+                <span className="text-lg font-semibold text-amber-400">
+                  Request a quote for pricing
                 </span>
-                {maxSavings > 0 && (
-                  <span className="text-sm font-medium text-emerald-400 bg-emerald-400/10 px-2.5 py-1 rounded-full border border-emerald-400/20">
-                    Save up to {maxSavings}%
-                  </span>
-                )}
               </div>
 
               <p className="text-gray-400 leading-relaxed mb-8 text-base">

@@ -268,14 +268,13 @@ export default function DesignToolbar({
 
         <ToolbarSeparator />
 
-        <button
-          type="button"
-          onClick={onAddToCart}
+        <a
+          href="/quote"
           className="flex items-center gap-1.5 h-8 px-3 rounded-md text-sm font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors"
         >
           <ShoppingCart className="w-4 h-4" />
-          <span className="hidden md:inline">Add to Cart</span>
-        </button>
+          <span className="hidden md:inline">Request Pricing</span>
+        </a>
       </div>
     </div>
   );
