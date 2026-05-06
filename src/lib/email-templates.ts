@@ -146,6 +146,7 @@ export interface QuoteRequestData {
   email: string;
   phone?: string;
   company: string;
+  product?: string;
   size: string;
   quantity: number;
   backing?: string;
@@ -156,13 +157,16 @@ export interface QuoteRequestData {
 }
 
 export function quoteRequestEmail(data: QuoteRequestData) {
-  const subject = `New Quote Request: ${data.name} - ${data.size}`;
+  const subject = data.product
+    ? `New Quote Request: ${data.name} - ${data.product}`
+    : `New Quote Request: ${data.name} - ${data.size}`;
 
   const rows = [
     row('Name', data.name),
     row('Email', data.email),
     row('Phone', data.phone),
     row('Company', data.company),
+    row('Product', data.product),
     row('Size / Shape', data.size),
     row('Quantity', data.quantity),
     row('Backing', data.backing),
@@ -179,6 +183,7 @@ Name: ${data.name}
 Email: ${data.email}
 Phone: ${data.phone || 'N/A'}
 Company: ${data.company}
+Product: ${data.product || 'N/A'}
 Size / Shape: ${data.size}
 Quantity: ${data.quantity}
 Backing: ${data.backing || 'N/A'}
@@ -187,7 +192,7 @@ Notes: ${data.notes || 'N/A'}
 Quote ID: ${data.id || 'N/A'}
 Submitted: ${data.submittedAt || 'N/A'}`;
 
-  return { subject, html, text };
+  return { subject, html, text, replyTo: data.email };
 }
 
 // ---------------------------------------------------------------------------

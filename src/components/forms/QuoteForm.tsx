@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -28,7 +29,28 @@ const backingOpts = [
   { value: 'unsure', label: 'Not sure yet' },
 ];
 
+/** Try to match a product's displaySize + shape to one of the size select options */
+function matchSize(displaySize: string, shape: string): string {
+  const s = displaySize.toLowerCase();
+  const sh = shape.toLowerCase();
+  if (sh.includes('bottle') || sh.includes('cap')) return 'bottle-cap';
+  if (sh.includes('can')) return 'can-shape';
+  if (sh.includes('circle') && s.includes('18')) return 'circle-18';
+  if (sh.includes('circle') && s.includes('12')) return 'circle-12';
+  if (s.includes('8') && s.includes('x') && s.includes('8')) return '8x8';
+  if (s.includes('12') && s.includes('x') && s.includes('12')) return '12x12';
+  if (s.includes('16') && s.includes('x') && s.includes('16')) return '16x16';
+  if (s.includes('18') && s.includes('x') && s.includes('18')) return '18x18';
+  if (s.includes('24') && s.includes('x') && s.includes('24')) return '24x24';
+  return 'custom';
+}
+
 export default function QuoteForm() {
+  const searchParams = useSearchParams();
+  const productParam = searchParams.get('product') ?? '';
+  const sizeParam = searchParams.get('size') ?? '';
+  const shapeParam = searchParams.get('shape') ?? '';
+
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -47,6 +69,7 @@ export default function QuoteForm() {
       email: (form.querySelector('#q-email') as HTMLInputElement)?.value ?? '',
       phone: (form.querySelector('#q-phone') as HTMLInputElement)?.value ?? '',
       company: (form.querySelector('#q-company') as HTMLInputElement)?.value ?? '',
+      product: (form.querySelector('#q-product') as HTMLInputElement)?.value ?? '',
       size: (form.querySelector('#q-size') as HTMLSelectElement)?.value ?? '',
       quantity: (form.querySelector('#q-quantity') as HTMLInputElement)?.value ?? '',
       backing: (form.querySelector('#q-backing') as HTMLSelectElement)?.value ?? '',
@@ -116,7 +139,16 @@ export default function QuoteForm() {
       <div>
         <h3 className="font-semibold text-gray-900 mb-4">Product Details</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <Select label="Size / Shape" id="q-size" required options={sizeOptions} error={errors.size} />
+          <div className="sm:col-span-2">
+            <Input
+              label="Product"
+              id="q-product"
+              placeholder="e.g., 22&quot; Bottle Cap Tacker"
+              defaultValue={productParam ? `${productParam}${shapeParam ? ` (${shapeParam})` : ''}` : ''}
+              error={errors.product}
+            />
+          </div>
+          <Select label="Size / Shape" id="q-size" required options={sizeOptions} defaultValue={sizeParam ? matchSize(sizeParam, shapeParam) : ''} error={errors.size} />
           <Input label="Quantity" id="q-quantity" type="number" required min={1} placeholder="e.g., 500" error={errors.quantity} />
           <Select label="Backing" id="q-backing" options={backingOpts} />
           <Input label="Colors" id="q-colors" placeholder="e.g., Full color, 2 spot colors" />

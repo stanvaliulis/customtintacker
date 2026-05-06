@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Metadata } from 'next';
 import Container from '@/components/ui/Container';
 import QuoteForm from '@/components/forms/QuoteForm';
@@ -53,7 +54,9 @@ export default function QuotePage() {
           </div>
 
           <div className="bg-white rounded-xl border border-gray-200 p-6 sm:p-8">
-            <QuoteForm />
+            <Suspense fallback={null}>
+              <QuoteForm />
+            </Suspense>
           </div>
         </div>
       </Container>

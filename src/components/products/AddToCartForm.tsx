@@ -25,7 +25,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
 
       {/* Request Pricing Button */}
       <Link
-        href="/quote"
+        href={`/quote?product=${encodeURIComponent(product.name)}&size=${encodeURIComponent(product.dimensions.displaySize)}&shape=${encodeURIComponent(product.shape)}`}
         className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-gray-950 font-bold shadow-lg shadow-amber-500/20 py-4 text-lg rounded-xl transition-all"
       >
         <MessageSquareQuote className="w-5 h-5" />
