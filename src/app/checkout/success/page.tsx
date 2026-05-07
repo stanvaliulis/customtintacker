@@ -19,18 +19,17 @@ export default function CheckoutSuccessPage() {
       <Container>
         <div className="text-center max-w-lg mx-auto">
           <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">Order Received!</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-3">Payment Successful!</h1>
           <p className="text-lg text-gray-600 mb-6">
-            Thank you for your order. A member of our team will reach out shortly
-            with payment details and to confirm everything.
+            Thank you for your order. You&apos;ll receive a confirmation email shortly.
           </p>
 
           <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8 text-left">
             <h2 className="font-semibold text-gray-900 mb-2">What happens next?</h2>
             <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
-              <li>We review your order and confirm availability</li>
-              <li>We send you a payment link or invoice</li>
-              <li>Once paid, we start production (~15 business days)</li>
+              <li>You&apos;ll receive an email confirmation with your order details</li>
+              <li>Our team reviews your order and begins production</li>
+              <li>Production takes approximately 15 business days</li>
               <li>Your signs ship and you get a tracking number</li>
             </ol>
           </div>

@@ -9,22 +9,20 @@ import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, CreditCard, Lock } from 'lucide-react';
+import { useSpamProtection } from '@/hooks/useSpamProtection';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  const { items, subtotal, setupFees, total, isDistributor: cartIsDistributor } = useCart();
-  const { isDistributor, distributorInfo } = useDistributor();
+  const { items, subtotal, rushFee, setupFees, total, isDistributor: cartIsDistributor } = useCart();
+  const { isDistributor, distributorInfo, distributorDiscount } = useDistributor();
+  const { getSpamFields } = useSpamProtection();
 
   const [form, setForm] = useState({
     name: distributorInfo?.contactName || '',
     email: distributorInfo?.email || '',
     phone: '',
     company: distributorInfo?.companyName || '',
-    shippingAddress: '',
-    city: '',
-    state: '',
-    zip: '',
     notes: '',
   });
   const [loading, setLoading] = useState(false);
@@ -44,38 +42,45 @@ export default function CheckoutPage() {
     setError('');
 
     try {
-      const res = await fetch('/api/orders/submit', {
+      const res = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...form,
+          ...getSpamFields(),
+          customerName: form.name,
+          customerEmail: form.email,
+          customerPhone: form.phone,
+          company: form.company,
+          notes: form.notes,
           isDistributor: isDistributor || cartIsDistributor,
-          distributorCompany: distributorInfo?.companyName || '',
+          distributorDiscount: distributorDiscount,
           items: items.map((i) => ({
             productId: i.product.id,
-            productName: i.product.name,
-            shape: i.product.shape,
-            size: i.product.dimensions.displaySize,
             quantity: i.quantity,
-            unitPrice: i.unitPrice,
-            backing: i.selectedBacking,
+            backingId: i.selectedBacking,
             priceTier: i.priceTier || 'retail',
+            isRush: i.isRush || false,
           })),
-          subtotal,
-          setupFees,
-          total,
         }),
       });
 
-      if (res.ok) {
-        router.push('/checkout/success');
-      } else {
-        const data = await res.json();
+      const data = await res.json();
+
+      if (!res.ok) {
         setError(data.error || 'Something went wrong. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError('Failed to create checkout session.');
         setLoading(false);
       }
     } catch {
-      setError('Failed to submit order. Please try again.');
+      setError('Failed to connect. Please try again.');
       setLoading(false);
     }
   }
@@ -104,7 +109,7 @@ export default function CheckoutPage() {
         </Link>
 
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 mb-8">Place Your Order</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-8">Checkout</h1>
 
           <div className="grid gap-6">
             {/* Order Summary */}
@@ -114,14 +119,23 @@ export default function CheckoutPage() {
                 <div key={item.product.id} className="flex justify-between text-sm py-2 border-b border-gray-50 last:border-0">
                   <div>
                     <span className="text-gray-900">{item.product.name}</span>
-                    <span className="text-gray-400 ml-1">× {item.quantity}</span>
+                    <span className="text-gray-400 ml-1">&times; {item.quantity}</span>
                     <span className="text-gray-400 text-xs ml-2">({formatPrice(item.unitPrice)}/ea)</span>
+                    {item.isRush && (
+                      <span className="ml-2 text-xs font-medium text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded">RUSH</span>
+                    )}
                   </div>
                   <span className="text-gray-900 font-medium">
                     {formatPrice(item.unitPrice * item.quantity)}
                   </span>
                 </div>
               ))}
+              {rushFee > 0 && (
+                <div className="flex justify-between text-sm py-2 border-t border-gray-100">
+                  <span className="text-amber-600">Rush Processing Fee</span>
+                  <span className="text-amber-600 font-medium">{formatPrice(rushFee)}</span>
+                </div>
+              )}
               {setupFees > 0 && (
                 <div className="flex justify-between text-sm py-2 border-t border-gray-100">
                   <span className="text-gray-600">Setup Fees</span>
@@ -129,12 +143,9 @@ export default function CheckoutPage() {
                 </div>
               )}
               <div className="flex justify-between pt-3 mt-2 border-t border-gray-200 font-semibold text-gray-900 text-lg">
-                <span>Estimated Total</span>
+                <span>Total</span>
                 <span>{formatPrice(total)}</span>
               </div>
-              <p className="text-xs text-gray-400 mt-2">
-                Final total may vary based on shipping and any applicable taxes.
-              </p>
             </div>
 
             {/* Contact Info */}
@@ -176,43 +187,6 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* Shipping */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-semibold text-gray-900 mb-4">Shipping Address</h2>
-              <div className="grid gap-4">
-                <Input
-                  label="Street Address"
-                  id="shippingAddress"
-                  value={form.shippingAddress}
-                  onChange={(e) => updateField('shippingAddress', e.target.value)}
-                  placeholder="123 Main St"
-                />
-                <div className="grid gap-4 sm:grid-cols-3">
-                  <Input
-                    label="City"
-                    id="city"
-                    value={form.city}
-                    onChange={(e) => updateField('city', e.target.value)}
-                    placeholder="City"
-                  />
-                  <Input
-                    label="State"
-                    id="state"
-                    value={form.state}
-                    onChange={(e) => updateField('state', e.target.value)}
-                    placeholder="IL"
-                  />
-                  <Input
-                    label="ZIP Code"
-                    id="zip"
-                    value={form.zip}
-                    onChange={(e) => updateField('zip', e.target.value)}
-                    placeholder="61115"
-                  />
-                </div>
-              </div>
-            </div>
-
             {/* Notes */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="font-semibold text-gray-900 mb-4">Order Notes</h2>
@@ -231,13 +205,14 @@ export default function CheckoutPage() {
             )}
 
             <Button type="submit" loading={loading} size="lg" className="w-full">
-              Submit Order
+              <CreditCard className="w-5 h-5 mr-2" />
+              Proceed to Payment
             </Button>
 
-            <p className="text-xs text-gray-400 text-center">
-              A member of our team will reach out shortly with payment details and to confirm your order.
-              No payment is collected at this time.
-            </p>
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+              <Lock className="w-3.5 h-3.5" />
+              <span>Secure checkout powered by Stripe. Shipping address collected on the next page.</span>
+            </div>
           </div>
         </form>
       </Container>
