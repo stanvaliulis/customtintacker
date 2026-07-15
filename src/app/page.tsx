@@ -3,6 +3,7 @@ import HeroSection from '@/components/home/HeroSection';
 import ValueProps from '@/components/home/ValueProps';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 import BrandShowcase from '@/components/home/BrandShowcase';
+import StateTackersShowcase from '@/components/home/StateTackersShowcase';
 import DistributorBanner from '@/components/home/DistributorBanner';
 import CTABanner from '@/components/home/CTABanner';
 
@@ -43,6 +44,7 @@ export default function HomePage() {
       <ValueProps />
       <FeaturedProducts />
       <BrandShowcase />
+      <StateTackersShowcase />
       <DistributorBanner />
       <CTABanner />
     </>

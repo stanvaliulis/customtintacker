@@ -56,7 +56,7 @@ export default function HeroSection() {
         {/* Trust badges — simple text row */}
         <div className="mt-20 pt-10 border-t border-white/10">
           <p className="text-sm sm:text-base text-gray-400 tracking-wide">
-            Made in USA &bull; 25 minimum &bull; Full color &bull; ~15 business days
+            Made in USA &bull; 50 minimum &bull; Full color &bull; ~15 business days
           </p>
         </div>
       </Container>
