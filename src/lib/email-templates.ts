@@ -152,6 +152,7 @@ export interface QuoteRequestData {
   backing?: string;
   colors?: string;
   notes?: string;
+  designId?: string;
   id?: string;
   submittedAt?: string;
 }
@@ -172,6 +173,7 @@ export function quoteRequestEmail(data: QuoteRequestData) {
     row('Backing', data.backing),
     row('Colors', data.colors),
     row('Notes', data.notes),
+    row('Design ID', data.designId),
     row('Quote ID', data.id),
     row('Submitted', data.submittedAt),
   ].filter(Boolean).join('');

@@ -8,6 +8,7 @@ import {
   Ellipse,
   Path,
   Line,
+  Polygon,
   Textbox,
   FabricImage,
   ActiveSelection,
@@ -56,11 +57,19 @@ export interface UseDesignCanvasReturn {
   canvas: Canvas | null;
   zoom: number;
   fitZoom: number;
-  addText: (text?: string) => void;
+  addText: (text?: string, options?: { fontFamily?: string; fill?: string }) => void;
   addImage: (url: string) => Promise<void>;
-  addShape: (type: 'rect' | 'circle' | 'ellipse') => void;
+  addShape: (type: 'rect' | 'circle' | 'ellipse' | 'triangle' | 'star' | 'line' | 'arrow', options?: { fill?: string; stroke?: string }) => void;
   deleteSelected: () => void;
   selectAll: () => void;
+  copySelected: () => void;
+  pasteFromClipboard: () => Promise<void>;
+  duplicateSelected: () => Promise<void>;
+  bringToFront: () => void;
+  sendToBack: () => void;
+  bringForward: () => void;
+  sendBackward: () => void;
+  nudgeSelected: (dx: number, dy: number) => void;
   zoomIn: () => void;
   zoomOut: () => void;
   resetZoom: () => void;
@@ -89,6 +98,7 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
 
   // Snap guide lines stored on canvas (rendered/removed dynamically)
   const snapLinesRef = useRef<FabricObject[]>([]);
+  const clipboardRef = useRef<string | null>(null);
 
   /* ---------------------------------------------------------------- */
   /*  Calculate fit zoom                                               */
@@ -470,7 +480,7 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
   /* ---------------------------------------------------------------- */
   /*  addText                                                          */
   /* ---------------------------------------------------------------- */
-  const addText = useCallback((text = 'Your Text') => {
+  const addText = useCallback((text = 'Your Text', options?: { fontFamily?: string; fill?: string }) => {
     const fc = fabricRef.current;
     if (!fc) return;
 
@@ -478,8 +488,8 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
       left: width / 2 - 100,
       top: height / 2 - 20,
       fontSize: Math.max(24, Math.min(48, width * 0.04)),
-      fontFamily: 'Arial',
-      fill: '#000000',
+      fontFamily: options?.fontFamily ?? 'Arial',
+      fill: options?.fill ?? '#000000',
       width: Math.min(400, width * 0.6),
       textAlign: 'center',
       editable: true,
@@ -526,7 +536,10 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
   /* ---------------------------------------------------------------- */
   /*  addShape                                                         */
   /* ---------------------------------------------------------------- */
-  const addShape = useCallback((type: 'rect' | 'circle' | 'ellipse') => {
+  const addShape = useCallback((
+    type: 'rect' | 'circle' | 'ellipse' | 'triangle' | 'star' | 'line' | 'arrow',
+    options?: { fill?: string; stroke?: string },
+  ) => {
     const fc = fabricRef.current;
     if (!fc) return;
 
@@ -535,8 +548,8 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
     const baseProps = {
       left: width / 2 - size / 2,
       top: height / 2 - size / 2,
-      fill: '#d97706',
-      stroke: '#92400e',
+      fill: options?.fill ?? '#d97706',
+      stroke: options?.stroke ?? '#92400e',
       strokeWidth: 2,
     };
 
@@ -550,6 +563,52 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
       case 'ellipse':
         obj = new Ellipse({ ...baseProps, rx: size / 2, ry: size / 3 });
         break;
+      case 'triangle': {
+        const th = size * 0.866;
+        obj = new Polygon(
+          [{ x: size / 2, y: 0 }, { x: size, y: th }, { x: 0, y: th }],
+          { ...baseProps, top: height / 2 - th / 2 },
+        );
+        break;
+      }
+      case 'star': {
+        const outerR = size / 2;
+        const innerR = outerR * 0.4;
+        const pts: { x: number; y: number }[] = [];
+        for (let i = 0; i < 10; i++) {
+          const r = i % 2 === 0 ? outerR : innerR;
+          const a = (Math.PI / 5) * i - Math.PI / 2;
+          pts.push({ x: outerR + r * Math.cos(a), y: outerR + r * Math.sin(a) });
+        }
+        obj = new Polygon(pts, baseProps);
+        break;
+      }
+      case 'line':
+        obj = new Line([0, 0, size, 0], {
+          left: width / 2 - size / 2,
+          top: height / 2,
+          stroke: options?.stroke ?? '#92400e',
+          strokeWidth: 3,
+          fill: '',
+        });
+        break;
+      case 'arrow': {
+        const aw = size;
+        const ah = size * 0.6;
+        obj = new Polygon(
+          [
+            { x: 0, y: ah * 0.3 },
+            { x: aw * 0.6, y: ah * 0.3 },
+            { x: aw * 0.6, y: 0 },
+            { x: aw, y: ah * 0.5 },
+            { x: aw * 0.6, y: ah },
+            { x: aw * 0.6, y: ah * 0.7 },
+            { x: 0, y: ah * 0.7 },
+          ],
+          { ...baseProps, top: height / 2 - ah / 2 },
+        );
+        break;
+      }
     }
 
     fc.add(obj);
@@ -600,6 +659,107 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
     fc.discardActiveObject();
     const sel = new ActiveSelection(objects, { canvas: fc });
     fc.setActiveObject(sel);
+    fc.requestRenderAll();
+  }, []);
+
+  /* ---------------------------------------------------------------- */
+  /*  Copy / Paste / Duplicate                                         */
+  /* ---------------------------------------------------------------- */
+  const copySelected = useCallback(() => {
+    const fc = fabricRef.current;
+    if (!fc) return;
+    const active = fc.getActiveObject();
+    if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
+    clipboardRef.current = JSON.stringify(active.toJSON());
+  }, []);
+
+  const pasteFromClipboard = useCallback(async () => {
+    const fc = fabricRef.current;
+    if (!fc || !clipboardRef.current) return;
+    try {
+      const parsed = JSON.parse(clipboardRef.current);
+      const [obj] = await util.enlivenObjects([parsed]) as FabricObject[];
+      if (!obj) return;
+      obj.set({ left: (obj.left ?? 0) + 20, top: (obj.top ?? 0) + 20 });
+      fc.add(obj);
+      fc.setActiveObject(obj);
+      fc.requestRenderAll();
+    } catch { /* ignore */ }
+  }, []);
+
+  const duplicateSelected = useCallback(async () => {
+    const fc = fabricRef.current;
+    if (!fc) return;
+    const active = fc.getActiveObject();
+    if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
+    try {
+      const json = active.toJSON();
+      const [obj] = await util.enlivenObjects([json]) as FabricObject[];
+      if (!obj) return;
+      obj.set({ left: (obj.left ?? 0) + 20, top: (obj.top ?? 0) + 20 });
+      fc.add(obj);
+      fc.setActiveObject(obj);
+      fc.requestRenderAll();
+    } catch { /* ignore */ }
+  }, []);
+
+  /* ---------------------------------------------------------------- */
+  /*  Layer ordering                                                   */
+  /* ---------------------------------------------------------------- */
+  const bringToFront = useCallback(() => {
+    const fc = fabricRef.current;
+    if (!fc) return;
+    const active = fc.getActiveObject();
+    if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
+    fc.bringObjectToFront(active);
+    fc.requestRenderAll();
+  }, []);
+
+  const sendToBack = useCallback(() => {
+    const fc = fabricRef.current;
+    if (!fc) return;
+    const active = fc.getActiveObject();
+    if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
+    fc.sendObjectToBack(active);
+    const bgRect = fc.getObjects().find(
+      (obj) => (obj as FabricObject & { _isBgRect?: boolean })._isBgRect
+    );
+    if (bgRect) fc.sendObjectToBack(bgRect);
+    fc.requestRenderAll();
+  }, []);
+
+  const bringForward = useCallback(() => {
+    const fc = fabricRef.current;
+    if (!fc) return;
+    const active = fc.getActiveObject();
+    if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
+    fc.bringObjectForward(active);
+    fc.requestRenderAll();
+  }, []);
+
+  const sendBackward = useCallback(() => {
+    const fc = fabricRef.current;
+    if (!fc) return;
+    const active = fc.getActiveObject();
+    if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
+    fc.sendObjectBackwards(active);
+    const bgRect = fc.getObjects().find(
+      (obj) => (obj as FabricObject & { _isBgRect?: boolean })._isBgRect
+    );
+    if (bgRect) fc.sendObjectToBack(bgRect);
+    fc.requestRenderAll();
+  }, []);
+
+  /* ---------------------------------------------------------------- */
+  /*  Nudge selected object                                            */
+  /* ---------------------------------------------------------------- */
+  const nudgeSelected = useCallback((dx: number, dy: number) => {
+    const fc = fabricRef.current;
+    if (!fc) return;
+    const active = fc.getActiveObject();
+    if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
+    active.set({ left: (active.left ?? 0) + dx, top: (active.top ?? 0) + dy });
+    active.setCoords();
     fc.requestRenderAll();
   }, []);
 
@@ -874,6 +1034,14 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
     addShape,
     deleteSelected,
     selectAll,
+    copySelected,
+    pasteFromClipboard,
+    duplicateSelected,
+    bringToFront,
+    sendToBack,
+    bringForward,
+    sendBackward,
+    nudgeSelected,
     zoomIn,
     zoomOut,
     resetZoom,

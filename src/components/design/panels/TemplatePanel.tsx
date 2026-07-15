@@ -28,6 +28,8 @@ interface TemplateItem {
   name: string;
   category: string;
   tags: string;
+  previewBg?: string;
+  previewTexts?: string[];
 }
 
 export default function TemplatePanel({
@@ -100,11 +102,28 @@ export default function TemplatePanel({
               onClick={() => onApplyTemplate(tpl.id)}
               className="group flex flex-col items-center gap-1.5 p-2 rounded-lg border border-gray-700 bg-gray-800/50 hover:border-amber-600/50 hover:bg-gray-800 transition-colors"
             >
-              <div className="w-full aspect-square rounded bg-gray-700/50 flex items-center justify-center">
-                <div className="text-center">
-                  <ImageIcon className="w-5 h-5 text-gray-500 group-hover:text-amber-500 transition-colors mx-auto mb-1" />
-                  <span className="text-[9px] text-gray-600 capitalize">{tpl.category}</span>
-                </div>
+              <div
+                className="w-full aspect-square rounded flex flex-col items-center justify-center overflow-hidden px-1.5 py-2"
+                style={{ backgroundColor: tpl.previewBg || '#1f2937' }}
+              >
+                {tpl.previewTexts && tpl.previewTexts.length > 0 ? (
+                  tpl.previewTexts.map((text, i) => (
+                    <span
+                      key={i}
+                      className="block truncate w-full text-center leading-tight"
+                      style={{
+                        fontSize: i === 0 ? '9px' : '7px',
+                        fontWeight: i === 0 ? 700 : 400,
+                        color: i === 0 ? '#fbbf24' : '#9ca3af',
+                      }}
+                    >
+                      {text.replace(/\n/g, ' ')}
+                    </span>
+                  ))
+                ) : (
+                  <ImageIcon className="w-5 h-5 text-gray-500 group-hover:text-amber-500 transition-colors" />
+                )}
+                <span className="text-[7px] text-gray-500 capitalize mt-auto">{tpl.category}</span>
               </div>
               <span className="text-[11px] text-gray-400 group-hover:text-gray-200 text-center leading-tight w-full">
                 {tpl.name}

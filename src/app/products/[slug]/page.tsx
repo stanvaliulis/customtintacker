@@ -5,7 +5,7 @@ import Container from '@/components/ui/Container';
 import AddToCartForm from '@/components/products/AddToCartForm';
 import ProductImagePlaceholder from '@/components/products/ProductImagePlaceholder';
 import { getAllProducts, getProductBySlug } from '@/lib/products';
-import { getLowestPrice } from '@/lib/utils';
+import { getLowestPrice, formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import JsonLd from '@/components/seo/JsonLd';
 import { getProductSchema, getBreadcrumbSchema } from '@/lib/structured-data';
@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       url: `https://customtintackers.com/products/${slug}`,
-      type: 'website',
+      type: 'article',
       images: product.images.length > 0
         ? [{ url: product.images[0].startsWith('http') ? product.images[0] : `https://customtintackers.com${product.images[0]}`, width: 800, height: 800, alt: `${product.name} — Custom ${shapeTitleCase} Tin Tacker Sign` }]
         : undefined,
@@ -212,11 +212,14 @@ export default async function ProductDetailPage({ params }: Props) {
                 {product.name}
               </h1>
 
-              <div className="flex items-baseline gap-3 mb-5">
-                <span className="text-lg font-semibold text-amber-400">
-                  Request a quote for pricing
-                </span>
-              </div>
+              {product.pricingTiers.length > 0 && (
+                <div className="flex items-baseline gap-3 mb-5">
+                  <span className="text-lg font-semibold text-amber-400">
+                    From {formatPrice(product.pricingTiers[product.pricingTiers.length - 1].pricePerUnit)}/ea
+                  </span>
+                  <span className="text-sm text-gray-500">at volume</span>
+                </div>
+              )}
 
               <p className="text-gray-400 leading-relaxed mb-8 text-base">
                 {product.longDescription}

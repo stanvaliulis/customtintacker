@@ -149,7 +149,18 @@ export default function Header() {
               </Link>
             )}
 
-            {/* Cart hidden while pricing is quote-only */}
+            <Link
+              href="/cart"
+              className="relative p-2 text-gray-600 hover:text-amber-600 transition-colors"
+              aria-label="Shopping cart"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {itemCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 flex items-center justify-center text-[10px] font-bold text-white bg-amber-600 rounded-full min-w-[18px] h-[18px] px-1">
+                  {itemCount}
+                </span>
+              )}
+            </Link>
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}

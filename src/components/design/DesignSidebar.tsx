@@ -41,9 +41,9 @@ const TABS: TabDef[] = [
 
 interface DesignSidebarProps {
   shape: ProductShape;
-  onAddText: (preset: 'heading' | 'subheading' | 'body') => void;
+  onAddText: (preset: 'heading' | 'subheading' | 'body', options?: { fontFamily?: string; fill?: string }) => void;
   onAddImage: (url: string) => void;
-  onAddShape: (type: string) => void;
+  onAddShape: (type: string, options?: { fill?: string; stroke?: string }) => void;
   onApplyTemplate: (templateId: string) => void;
   onDownloadTemplate: (format: DesignExportFormat) => void;
   /** Mobile bottom sheet mode */

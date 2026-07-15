@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 /* ------------------------------------------------------------------ */
 
 interface ShapesPanelProps {
-  onAddShape: (type: string) => void;
+  onAddShape: (type: string, options?: { fill?: string; stroke?: string }) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -75,7 +75,7 @@ export default function ShapesPanel({ onAddShape }: ShapesPanelProps) {
             <button
               key={shape.type}
               type="button"
-              onClick={() => onAddShape(shape.type)}
+              onClick={() => onAddShape(shape.type, { fill: fillColor, stroke: strokeColor })}
               className="flex flex-col items-center gap-1.5 p-3 rounded-lg border border-gray-700 bg-gray-800/50 text-gray-400 hover:border-amber-600/50 hover:bg-gray-800 hover:text-amber-400 transition-colors"
             >
               {shape.icon}

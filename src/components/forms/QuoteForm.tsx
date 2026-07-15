@@ -50,6 +50,7 @@ export default function QuoteForm() {
   const productParam = searchParams.get('product') ?? '';
   const sizeParam = searchParams.get('size') ?? '';
   const shapeParam = searchParams.get('shape') ?? '';
+  const designIdParam = searchParams.get('designId') ?? '';
 
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -75,6 +76,7 @@ export default function QuoteForm() {
       backing: (form.querySelector('#q-backing') as HTMLSelectElement)?.value ?? '',
       colors: (form.querySelector('#q-colors') as HTMLInputElement)?.value ?? '',
       notes: (form.querySelector('#q-notes') as HTMLTextAreaElement)?.value ?? '',
+      designId: designIdParam || undefined,
     };
 
     const honeypot = (form.querySelector('#fax_number') as HTMLInputElement)?.value ?? '';
@@ -126,6 +128,18 @@ export default function QuoteForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {designIdParam && (
+        <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
+          <div className="w-8 h-8 rounded bg-amber-100 flex items-center justify-center shrink-0">
+            <svg className="w-4 h-4 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <div>
+            <p className="text-sm font-medium text-amber-800">Design attached</p>
+            <p className="text-xs text-amber-600">Your design from the editor will be included with this quote request.</p>
+          </div>
+        </div>
+      )}
+
       <div>
         <h3 className="font-semibold text-gray-900 mb-4">Contact Information</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

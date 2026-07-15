@@ -43,18 +43,36 @@ export async function GET(req: NextRequest) {
     // ── Fallback: static template data ───────────────────────────────
     const staticTemplates = getTemplatesByShape(shape);
 
-    const result = staticTemplates.map((t) => ({
-      id: t.id,
-      name: t.name,
-      slug: t.slug,
-      shape: t.shape,
-      width: t.width,
-      height: t.height,
-      thumbnail: t.thumbnail,
-      category: t.category,
-      tags: t.tags,
-      sortOrder: t.sortOrder,
-    }));
+    const result = staticTemplates.map((t) => {
+      let previewBg = '#1f2937';
+      let previewTexts: string[] = [];
+      try {
+        const parsed = JSON.parse(t.canvasJson);
+        previewBg = parsed.background || '#1f2937';
+        const objs = parsed.objects as { type?: string; text?: string }[] | undefined;
+        if (objs) {
+          previewTexts = objs
+            .filter((o) => o.type === 'Textbox' && o.text)
+            .map((o) => o.text!)
+            .slice(0, 3);
+        }
+      } catch { /* ignore */ }
+
+      return {
+        id: t.id,
+        name: t.name,
+        slug: t.slug,
+        shape: t.shape,
+        width: t.width,
+        height: t.height,
+        thumbnail: t.thumbnail,
+        category: t.category,
+        tags: t.tags,
+        sortOrder: t.sortOrder,
+        previewBg,
+        previewTexts,
+      };
+    });
 
     return NextResponse.json(result);
   } catch (err) {

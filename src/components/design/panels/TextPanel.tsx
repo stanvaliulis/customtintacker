@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 /* ------------------------------------------------------------------ */
 
 interface TextPanelProps {
-  onAddText: (preset: 'heading' | 'subheading' | 'body') => void;
+  onAddText: (preset: 'heading' | 'subheading' | 'body', options?: { fontFamily?: string; fill?: string }) => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -96,7 +96,7 @@ export default function TextPanel({ onAddText }: TextPanelProps) {
           <button
             key={preset.id}
             type="button"
-            onClick={() => onAddText(preset.id)}
+            onClick={() => onAddText(preset.id, { fontFamily: selectedFont, fill: selectedColor })}
             className="flex items-center gap-3 w-full px-3 py-3 rounded-lg border border-gray-700 bg-gray-800/50 hover:border-amber-600/50 hover:bg-gray-800 transition-colors text-left"
           >
             <div className="flex items-center justify-center w-9 h-9 rounded-md bg-gray-700 text-gray-400 shrink-0">

@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import {
   Textbox,
+  FabricImage,
   type FabricObject,
 } from 'fabric';
 import type { ProductShape } from '@/types/product';
@@ -69,6 +70,15 @@ export default function DesignEditor({
     addImage,
     addShape,
     deleteSelected,
+    selectAll,
+    copySelected,
+    pasteFromClipboard,
+    duplicateSelected,
+    bringToFront,
+    sendToBack,
+    bringForward,
+    sendBackward,
+    nudgeSelected,
     zoomIn,
     zoomOut,
     fitToScreen,
@@ -95,6 +105,9 @@ export default function DesignEditor({
   const [selectedObject, setSelectedObject] = useState<ObjectProperties | null>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [imageHint, setImageHint] = useState<string | null>(null);
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'unsaved' | 'saving' | 'saved'>('idle');
+  const [savedDesignId, setSavedDesignId] = useState<string | null>(null);
+  const autoSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 767px)');
@@ -104,15 +117,71 @@ export default function DesignEditor({
     return () => mq.removeEventListener('change', handler);
   }, []);
 
+  /* ---- Auto-save (debounced 3s after last change) ---- */
+  const doAutoSave = useCallback(async () => {
+    if (!canvas) return;
+    setSaveStatus('saving');
+    const json = toJSON();
+    const thumbnailDataUrl = exportPNG();
+    try {
+      const res = await fetch('/api/design/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sessionId: getSessionId(),
+          productId,
+          shape,
+          width: widthInches,
+          height: heightInches,
+          canvasJson: JSON.stringify(json),
+          thumbnailDataUrl,
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.id) setSavedDesignId(data.id);
+        setSaveStatus('saved');
+      } else {
+        localStorage.setItem(`design-${productId}`, JSON.stringify(json));
+        setSaveStatus('saved');
+      }
+    } catch {
+      localStorage.setItem(`design-${productId}`, JSON.stringify(json));
+      setSaveStatus('saved');
+    }
+  }, [canvas, toJSON, exportPNG, productId, shape, widthInches, heightInches]);
+
+  const scheduleAutoSave = useCallback(() => {
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    setSaveStatus('unsaved');
+    autoSaveTimerRef.current = setTimeout(() => { doAutoSave(); }, 3000);
+  }, [doAutoSave]);
+
+  useEffect(() => {
+    if (!canvas) return;
+    const handler = () => setTimeout(() => scheduleAutoSave(), 0);
+    canvas.on('object:modified', handler);
+    canvas.on('object:added', handler);
+    canvas.on('object:removed', handler);
+    return () => {
+      canvas.off('object:modified', handler);
+      canvas.off('object:added', handler);
+      canvas.off('object:removed', handler);
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    };
+  }, [canvas, scheduleAutoSave]);
+
   /* ---- Listen to canvas selection events ---- */
   useEffect(() => {
     if (!canvas) return;
 
     function extractProps(obj: FabricObject): ObjectProperties {
       const isText = obj instanceof Textbox;
+      const isImage = obj instanceof FabricImage;
+      const objType = isText ? 'text' : isImage ? 'image' : 'shape';
       return {
         id: (obj as FabricObject & { id?: string }).id || '',
-        type: isText ? 'text' : 'image',
+        type: objType,
         x: Math.round(obj.left ?? 0),
         y: Math.round(obj.top ?? 0),
         width: Math.round((obj.width ?? 0) * (obj.scaleX ?? 1)),
@@ -127,6 +196,10 @@ export default function DesignEditor({
           italic: (obj as Textbox).fontStyle === 'italic',
           underline: !!(obj as Textbox).underline,
           textAlign: ((obj as Textbox).textAlign || 'left') as 'left' | 'center' | 'right',
+        } : {}),
+        ...(!isText && !isImage ? {
+          fill: (typeof obj.fill === 'string' ? obj.fill : '#d97706') as string,
+          stroke: (typeof obj.stroke === 'string' ? obj.stroke : '#92400e') as string,
         } : {}),
       };
     }
@@ -172,11 +245,31 @@ export default function DesignEditor({
         if (e.shiftKey) redo();
         else undo();
       }
-      // Fit to screen shortcut
       if ((e.ctrlKey || e.metaKey) && e.key === '0') {
         e.preventDefault();
         fitToScreen();
       }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'c') {
+        copySelected();
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+        e.preventDefault();
+        pasteFromClipboard().then(() => saveState());
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        duplicateSelected().then(() => saveState());
+      }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        selectAll();
+      }
+      // Arrow key nudging (1px, or 10px with Shift)
+      const nudge = e.shiftKey ? 10 : 1;
+      if (e.key === 'ArrowLeft') { e.preventDefault(); nudgeSelected(-nudge, 0); saveState(); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); nudgeSelected(nudge, 0); saveState(); }
+      if (e.key === 'ArrowUp') { e.preventDefault(); nudgeSelected(0, -nudge); saveState(); }
+      if (e.key === 'ArrowDown') { e.preventDefault(); nudgeSelected(0, nudge); saveState(); }
     };
     window.addEventListener('keydown', onKeyDown);
 
@@ -190,7 +283,7 @@ export default function DesignEditor({
       canvas.off('object:rotating', onModified);
       window.removeEventListener('keydown', onKeyDown);
     };
-  }, [canvas, deleteSelected, undo, redo, fitToScreen]);
+  }, [canvas, deleteSelected, undo, redo, fitToScreen, copySelected, pasteFromClipboard, duplicateSelected, selectAll, nudgeSelected, saveState]);
 
   /* ---- Toolbar handlers ---- */
   const handleZoomIn = useCallback(() => { zoomIn(); }, [zoomIn]);
@@ -281,9 +374,9 @@ export default function DesignEditor({
   }, []);
 
   /* ---- Sidebar handlers ---- */
-  const handleAddText = useCallback((preset: 'heading' | 'subheading' | 'body') => {
+  const handleAddText = useCallback((preset: 'heading' | 'subheading' | 'body', options?: { fontFamily?: string; fill?: string }) => {
     const sizes = { heading: 'YOUR HEADLINE', subheading: 'Subheading text', body: 'Body text goes here' };
-    addText(sizes[preset]);
+    addText(sizes[preset], options);
     saveState();
   }, [addText, saveState]);
 
@@ -294,16 +387,16 @@ export default function DesignEditor({
     setTimeout(() => setImageHint(null), 4000);
   }, [addImage, saveState]);
 
-  const handleAddShape = useCallback((type: string) => {
-    const shapeMap: Record<string, 'rect' | 'circle' | 'ellipse'> = {
+  const handleAddShape = useCallback((type: string, options?: { fill?: string; stroke?: string }) => {
+    const typeMap: Record<string, 'rect' | 'circle' | 'ellipse' | 'triangle' | 'star' | 'line' | 'arrow'> = {
       rectangle: 'rect',
       circle: 'circle',
-      triangle: 'rect',
-      star: 'circle',
-      line: 'rect',
-      arrow: 'rect',
+      triangle: 'triangle',
+      star: 'star',
+      line: 'line',
+      arrow: 'arrow',
     };
-    addShape(shapeMap[type] || 'rect');
+    addShape(typeMap[type] || 'rect', options);
     saveState();
   }, [addShape, saveState]);
 
@@ -351,6 +444,10 @@ export default function DesignEditor({
       (active as Textbox).set('fontStyle', value ? 'italic' : 'normal');
     } else if (property === 'underline') {
       (active as Textbox).set('underline', !!value);
+    } else if (property === 'fill') {
+      active.set('fill', value as string);
+    } else if (property === 'stroke') {
+      active.set('stroke', value as string);
     } else {
       const fabricProp = propMap[property] || property;
       active.set(fabricProp as keyof FabricObject, value);
@@ -398,6 +495,8 @@ export default function DesignEditor({
         canRedo={canRedo}
         showBleed={showBleed}
         showSafeArea={showSafeArea}
+        saveStatus={saveStatus}
+        quoteUrl={`/quote?product=${encodeURIComponent(productName)}&shape=${encodeURIComponent(shape)}${savedDesignId ? `&designId=${encodeURIComponent(savedDesignId)}` : ''}`}
         onUndo={undo}
         onRedo={redo}
         onZoomIn={handleZoomIn}
@@ -489,6 +588,11 @@ export default function DesignEditor({
             selectedObject={selectedObject}
             onUpdateProperty={handleUpdateProperty}
             onDelete={handleDeleteObject}
+            onDuplicate={async () => { await duplicateSelected(); saveState(); }}
+            onBringToFront={() => { bringToFront(); saveState(); }}
+            onSendToBack={() => { sendToBack(); saveState(); }}
+            onBringForward={() => { bringForward(); saveState(); }}
+            onSendBackward={() => { sendBackward(); saveState(); }}
           />
         )}
       </div>

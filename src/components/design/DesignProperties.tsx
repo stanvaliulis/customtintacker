@@ -11,6 +11,11 @@ import {
   AlignLeft,
   AlignCenter,
   AlignRight,
+  ChevronsUp,
+  ChevronUp,
+  ChevronDown,
+  ChevronsDown,
+  Copy,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -37,12 +42,20 @@ export interface ObjectProperties {
   italic?: boolean;
   underline?: boolean;
   textAlign?: 'left' | 'center' | 'right';
+  // Shape-specific
+  fill?: string;
+  stroke?: string;
 }
 
 interface DesignPropertiesProps {
   selectedObject: ObjectProperties | null;
   onUpdateProperty: (property: string, value: number | string | boolean) => void;
   onDelete: () => void;
+  onDuplicate?: () => void;
+  onBringToFront?: () => void;
+  onSendToBack?: () => void;
+  onBringForward?: () => void;
+  onSendBackward?: () => void;
 }
 
 /* ------------------------------------------------------------------ */
@@ -129,6 +142,11 @@ export default function DesignProperties({
   selectedObject,
   onUpdateProperty,
   onDelete,
+  onDuplicate,
+  onBringToFront,
+  onSendToBack,
+  onBringForward,
+  onSendBackward,
 }: DesignPropertiesProps) {
   const [lockAspectRatio, setLockAspectRatio] = useState(false);
 
@@ -156,6 +174,7 @@ export default function DesignProperties({
   if (!selectedObject) return null;
 
   const isText = selectedObject.type === 'text';
+  const isShape = selectedObject.type === 'shape';
 
   return (
     <div className="hidden md:flex flex-col w-[260px] shrink-0 bg-gray-900 border-l border-gray-800 overflow-y-auto">
@@ -428,10 +447,144 @@ export default function DesignProperties({
             </section>
           </>
         )}
+
+        {/* ---- Shape-specific properties ---- */}
+        {isShape && (
+          <>
+            {/* Fill color */}
+            <section>
+              <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Fill Color
+              </h4>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {COLOR_SWATCHES.map((color) => (
+                  <button
+                    key={color}
+                    type="button"
+                    title={color}
+                    onClick={() => onUpdateProperty('fill', color)}
+                    className={cn(
+                      'w-6 h-6 rounded border transition-all',
+                      selectedObject.fill === color
+                        ? 'border-amber-400 ring-1 ring-amber-400 scale-110'
+                        : 'border-gray-600 hover:border-gray-400',
+                    )}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={selectedObject.fill ?? '#d97706'}
+                  onChange={(e) => onUpdateProperty('fill', e.target.value)}
+                  className="w-8 h-8 rounded border border-gray-700 cursor-pointer bg-transparent"
+                />
+                <input
+                  type="text"
+                  value={selectedObject.fill ?? '#d97706'}
+                  onChange={(e) => onUpdateProperty('fill', e.target.value)}
+                  placeholder="#d97706"
+                  className="flex-1 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+                />
+              </div>
+            </section>
+
+            {/* Stroke color */}
+            <section>
+              <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+                Stroke Color
+              </h4>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {COLOR_SWATCHES.map((color) => (
+                  <button
+                    key={`stroke-${color}`}
+                    type="button"
+                    title={color}
+                    onClick={() => onUpdateProperty('stroke', color)}
+                    className={cn(
+                      'w-6 h-6 rounded border transition-all',
+                      selectedObject.stroke === color
+                        ? 'border-amber-400 ring-1 ring-amber-400 scale-110'
+                        : 'border-gray-600 hover:border-gray-400',
+                    )}
+                    style={{ backgroundColor: color }}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center gap-2">
+                <input
+                  type="color"
+                  value={selectedObject.stroke ?? '#92400e'}
+                  onChange={(e) => onUpdateProperty('stroke', e.target.value)}
+                  className="w-8 h-8 rounded border border-gray-700 cursor-pointer bg-transparent"
+                />
+                <input
+                  type="text"
+                  value={selectedObject.stroke ?? '#92400e'}
+                  onChange={(e) => onUpdateProperty('stroke', e.target.value)}
+                  placeholder="#92400e"
+                  className="flex-1 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+                />
+              </div>
+            </section>
+          </>
+        )}
+
+        {/* ---- Layer ordering ---- */}
+        <section>
+          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            Layer Order
+          </h4>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              title="Bring to Front"
+              onClick={onBringToFront}
+              className="flex items-center justify-center w-8 h-8 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+            >
+              <ChevronsUp className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              title="Bring Forward"
+              onClick={onBringForward}
+              className="flex items-center justify-center w-8 h-8 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+            >
+              <ChevronUp className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              title="Send Backward"
+              onClick={onSendBackward}
+              className="flex items-center justify-center w-8 h-8 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+            >
+              <ChevronDown className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              title="Send to Back"
+              onClick={onSendToBack}
+              className="flex items-center justify-center w-8 h-8 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
+            >
+              <ChevronsDown className="w-4 h-4" />
+            </button>
+          </div>
+        </section>
       </div>
 
-      {/* ---- Delete button ---- */}
-      <div className="p-4 border-t border-gray-800">
+      {/* ---- Action buttons ---- */}
+      <div className="p-4 border-t border-gray-800 space-y-2">
+        {onDuplicate && (
+          <button
+            type="button"
+            onClick={onDuplicate}
+            className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-sm font-medium text-gray-300 bg-gray-800 border border-gray-700 hover:bg-gray-700 hover:text-white transition-colors"
+          >
+            <Copy className="w-4 h-4" />
+            Duplicate
+          </button>
+        )}
         <button
           type="button"
           onClick={onDelete}

@@ -31,6 +31,8 @@ interface DesignToolbarProps {
   canRedo: boolean;
   showBleed: boolean;
   showSafeArea: boolean;
+  saveStatus: 'idle' | 'unsaved' | 'saving' | 'saved';
+  quoteUrl: string;
   onUndo: () => void;
   onRedo: () => void;
   onZoomIn: () => void;
@@ -188,6 +190,8 @@ export default function DesignToolbar({
   canRedo,
   showBleed,
   showSafeArea,
+  saveStatus,
+  quoteUrl,
   onUndo,
   onRedo,
   onZoomIn,
@@ -263,13 +267,24 @@ export default function DesignToolbar({
         <ToolbarButton label="Save" onClick={onSave}>
           <Save className="w-4 h-4" />
         </ToolbarButton>
+        {saveStatus !== 'idle' && (
+          <span className={`text-[10px] font-medium select-none ${
+            saveStatus === 'saving' ? 'text-amber-400' :
+            saveStatus === 'saved' ? 'text-green-400' :
+            'text-gray-500'
+          }`}>
+            {saveStatus === 'saving' ? 'Saving...' :
+             saveStatus === 'saved' ? 'Saved' :
+             'Unsaved'}
+          </span>
+        )}
 
         <ExportDropdown onExport={onExport} />
 
         <ToolbarSeparator />
 
         <a
-          href="/quote"
+          href={quoteUrl}
           className="flex items-center gap-1.5 h-8 px-3 rounded-md text-sm font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors"
         >
           <ShoppingCart className="w-4 h-4" />

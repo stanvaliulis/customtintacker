@@ -17,6 +17,7 @@ const quoteRequestSchema = z.object({
   backing: z.string().optional().default(''),
   colors: z.string().optional().default(''),
   notes: z.string().optional().default(''),
+  designId: z.string().optional(),
 });
 
 export async function POST(request: Request) {
@@ -83,6 +84,7 @@ export async function POST(request: Request) {
           backing: result.data.backing,
           colors: result.data.colors,
           notes: result.data.notes,
+          designId: result.data.designId || '',
           status: 'new',
           submittedAt: new Date().toISOString(),
         });
