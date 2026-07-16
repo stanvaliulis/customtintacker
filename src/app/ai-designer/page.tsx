@@ -19,6 +19,8 @@ import {
   Star,
 } from 'lucide-react';
 import Link from 'next/link';
+import EmbossedMockup from '@/components/ai-designer/EmbossedMockup';
+import type { ProductShape } from '@/types/product';
 
 interface AnalysisResult {
   assessment: string;
@@ -48,7 +50,7 @@ interface ProductInfo {
   id: string;
   name: string;
   shape: string;
-  dimensions: { displaySize: string };
+  dimensions: { displaySize: string; width: number; height: number };
   pricingTiers: PricingTier[];
 }
 
@@ -303,94 +305,24 @@ export default function AIDesignerPage() {
               </div>
             )}
 
-            {analysis && productInfo && (
+            {analysis && productInfo && imagePreview && (
               <>
-                {/* Confidence Score */}
-                <div className={`rounded-2xl border p-6 ${qualityBg[analysis.artworkQuality]}`}>
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold flex items-center gap-2">
-                      <CheckCircle className={`w-5 h-5 ${qualityColor[analysis.artworkQuality]}`} />
-                      Design Assessment
-                    </h3>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: 10 }).map((_, i) => (
-                        <Star
-                          key={i}
-                          className={`w-4 h-4 ${i < analysis.confidenceScore ? 'text-amber-400 fill-amber-400' : 'text-gray-700'}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-gray-300 text-sm leading-relaxed">{analysis.assessment}</p>
-                  <p className="mt-2 text-xs text-gray-500">
-                    Production readiness: <span className={`font-semibold ${qualityColor[analysis.artworkQuality]}`}>{analysis.confidenceScore}/10</span>
-                  </p>
-                </div>
-
-                {/* Layout */}
+                {/* Embossed Mockup — the hero output */}
                 <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Ruler className="w-5 h-5 text-amber-400" />
-                    Layout Recommendation
-                  </h3>
-                  <p className="text-gray-300 text-sm leading-relaxed mb-3">{analysis.layout.recommendation}</p>
-                  <div className="flex gap-4 text-xs">
-                    <span className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-400">
-                      Fill: <span className="text-white font-medium">{analysis.layout.fillPercentage}</span>
-                    </span>
-                    <span className="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-400">
-                      Orientation: <span className="text-white font-medium capitalize">{analysis.layout.orientation}</span>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Embossing */}
-                <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold mb-4 flex items-center gap-2">
                     <Layers className="w-5 h-5 text-amber-400" />
-                    Embossing Suggestions
+                    Your Embossed Tin Tacker
                   </h3>
-                  <p className="text-gray-300 text-sm leading-relaxed mb-3">{analysis.embossing.recommendation}</p>
-                  <div className="flex flex-wrap gap-2">
-                    {analysis.embossing.suggestedZones.map((zone) => (
-                      <span
-                        key={zone}
-                        className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium"
-                      >
-                        {zone}
-                      </span>
-                    ))}
-                  </div>
+                  <EmbossedMockup
+                    imageUrl={imagePreview}
+                    shape={productInfo.shape as ProductShape}
+                    width={productInfo.dimensions.width}
+                    height={productInfo.dimensions.height}
+                    productName={productInfo.name}
+                  />
                 </div>
 
-                {/* Color & Production */}
-                <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-                  <h3 className="font-semibold mb-3 flex items-center gap-2">
-                    <Palette className="w-5 h-5 text-amber-400" />
-                    Print & Color Notes
-                  </h3>
-                  <p className="text-gray-300 text-sm leading-relaxed">{analysis.colorNotes}</p>
-                  {analysis.productionNotes && (
-                    <p className="mt-3 text-gray-400 text-sm leading-relaxed">{analysis.productionNotes}</p>
-                  )}
-                </div>
-
-                {/* Suggested Changes */}
-                {analysis.suggestedChanges && analysis.suggestedChanges.length > 0 && (
-                  <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
-                    <h3 className="font-semibold mb-3">Suggested Improvements</h3>
-                    <ul className="space-y-2">
-                      {analysis.suggestedChanges.map((change, i) => (
-                        <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
-                          <span className="text-amber-400 mt-0.5">•</span>
-                          {change}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {/* Pricing */}
+                {/* Pricing — right below the mockup */}
                 <div className="rounded-2xl border border-gray-800 bg-gray-900/50 p-6">
                   <h3 className="font-semibold mb-4 flex items-center gap-2">
                     <ShoppingCart className="w-5 h-5 text-amber-400" />
@@ -437,6 +369,63 @@ export default function AIDesignerPage() {
                     Request Quote
                   </Link>
                 </div>
+
+                {/* AI Analysis — collapsible details */}
+                <details className="rounded-2xl border border-gray-800 bg-gray-900/50">
+                  <summary className="p-6 cursor-pointer font-semibold flex items-center gap-2 text-gray-300 hover:text-white transition-colors">
+                    <Sparkles className="w-5 h-5 text-amber-400" />
+                    AI Design Analysis
+                    <span className={`ml-auto text-xs px-2 py-1 rounded-full ${qualityBg[analysis.artworkQuality]}`}>
+                      {analysis.confidenceScore}/10 ready
+                    </span>
+                  </summary>
+                  <div className="px-6 pb-6 space-y-4 border-t border-gray-800 pt-4">
+                    <p className="text-gray-300 text-sm leading-relaxed">{analysis.assessment}</p>
+
+                    {/* Embossing zones */}
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Embossing zones</h4>
+                      <div className="flex flex-wrap gap-2">
+                        {analysis.embossing.suggestedZones.map((zone) => (
+                          <span key={zone} className="px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-medium">
+                            {zone}
+                          </span>
+                        ))}
+                      </div>
+                      <p className="text-gray-400 text-sm mt-2">{analysis.embossing.recommendation}</p>
+                    </div>
+
+                    {/* Layout */}
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Layout</h4>
+                      <p className="text-gray-300 text-sm">{analysis.layout.recommendation}</p>
+                    </div>
+
+                    {/* Color & production */}
+                    <div>
+                      <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Print notes</h4>
+                      <p className="text-gray-300 text-sm">{analysis.colorNotes}</p>
+                      {analysis.productionNotes && (
+                        <p className="text-gray-400 text-sm mt-1">{analysis.productionNotes}</p>
+                      )}
+                    </div>
+
+                    {/* Suggested changes */}
+                    {analysis.suggestedChanges?.length > 0 && (
+                      <div>
+                        <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Suggestions</h4>
+                        <ul className="space-y-1">
+                          {analysis.suggestedChanges.map((change, i) => (
+                            <li key={i} className="flex items-start gap-2 text-sm text-gray-300">
+                              <span className="text-amber-400 mt-0.5">•</span>
+                              {change}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </details>
               </>
             )}
           </div>
