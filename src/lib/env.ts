@@ -51,7 +51,7 @@ export const env = {
     smtpUser: process.env.SMTP_USER || '',
     smtpPass: process.env.SMTP_PASS || '',
     // Where notifications go
-    notificationEmail: process.env.NOTIFICATION_EMAIL || 'web@igiprint.com',
+    notificationEmail: process.env.NOTIFICATION_EMAIL || 'sales@customtintackers.com',
   },
 
   // ── Site ──────────────────────────────────────────────────────────────────
