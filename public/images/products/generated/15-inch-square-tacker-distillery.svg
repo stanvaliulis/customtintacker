@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1080 1080" width="1080" height="1080">
+
+  <rect width="1080" height="1080" fill="#111827"/>
+  <rect x="43.2" y="43.2" width="993.6" height="993.6" fill="none" stroke="#d97706" stroke-width="3" rx="4"/>
+  <rect x="86.4" y="86.4" width="907.2" height="907.2" fill="none" stroke="#fbbf24" stroke-width="1.5" rx="2"/>
+  <line x1="216" y1="367.20000000000005" x2="864" y2="367.20000000000005" stroke="#d97706" stroke-width="1.5"/>
+  <text x="540" y="237.6" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-weight="bold" font-size="53" fill="#ffffff" letter-spacing="2">YOUR BRAND</text>
+  <text x="540" y="324" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="30" fill="#fbbf24" letter-spacing="4">PREMIUM SPIRITS</text>
+  <rect x="302.4" y="432" width="475.2" height="302.40000000000003" rx="8" fill="#1f2937" stroke="#fbbf24" stroke-width="2"/>
+  <text x="540" y="546.912" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-weight="bold" font-size="37" fill="#fbbf24">YOUR LOGO</text>
+  <text x="540" y="628.5600000000001" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="29.6" fill="#fbbf24">HERE</text>
+  <line x1="216" y1="799.2" x2="864" y2="799.2" stroke="#d97706" stroke-width="1.5"/>
+  <text x="540" y="885.5999999999999" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="30" fill="#fbbf24" letter-spacing="3">SMALL BATCH</text>
+  <text x="540" y="993.6" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-size="27" fill="#9ca3af" letter-spacing="6">EST. 2024</text>
+  
+</svg>

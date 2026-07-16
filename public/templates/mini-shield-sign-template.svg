@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 450 450"
+     width="450" height="450"
+     style="background:#ffffff">
+
+  <!-- Template Info -->
+  <!-- Product: mini-shield-sign -->
+  <!-- Shape: Shield -->
+  <!-- Size: 6" x 6" -->
+  <!-- Bleed: 0.125" on all sides -->
+  <!-- Safe Area: 0.25" from trim edge -->
+
+  <defs>
+    <style>
+      .label { font-family: Arial, Helvetica, sans-serif; }
+      .trim-line { fill: none; stroke: #000000; stroke-width: 1.5; }
+      .bleed-line { fill: none; stroke: #FF0000; stroke-width: 1; stroke-dasharray: 6 3; }
+      .safe-line { fill: none; stroke: #00AA00; stroke-width: 1; stroke-dasharray: 4 4; }
+    </style>
+  </defs>
+
+  <!-- Light gray background for bleed area -->
+  <rect x="0" y="0" width="450" height="450" fill="#f5f5f5" />
+
+  <!-- White fill for trim area -->
+  <rect x="9" y="9" width="432" height="432" rx="8.64" fill="#ffffff" />
+
+  <!-- Bleed line (red dashed) -->
+  <rect x="0" y="0" width="450" height="450" rx="8.64" class="bleed-line" />
+
+  <!-- Trim / Cut line (solid black) -->
+  <rect x="9" y="9" width="432" height="432" rx="8.64" class="trim-line" />
+
+  <!-- Safe area line (green dashed) -->
+  <rect x="27" y="27" width="396" height="396" rx="8.64" class="safe-line" />
+
+  <!-- Center text -->
+  <text x="225" y="205" text-anchor="middle" class="label"
+        font-size="18" font-weight="bold" fill="#888888">
+    YOUR ARTWORK HERE
+  </text>
+  <text x="225" y="231" text-anchor="middle" class="label"
+        font-size="11" fill="#aaaaaa">
+    6" x 6" Shield Tin Tacker
+  </text>
+  <text x="225" y="249" text-anchor="middle" class="label"
+        font-size="9" fill="#bbbbbb">
+    customtintackers.com
+  </text>
+
+  <!-- Dimension labels -->
+  <!-- Width -->
+  <line x1="9" y1="-6" x2="441" y2="-6"
+        stroke="#666666" stroke-width="0.5" marker-start="url(#arrow)" marker-end="url(#arrow)" />
+  <text x="225" y="-11" text-anchor="middle" class="label"
+        font-size="10" fill="#666666">
+    6&quot;
+  </text>
+
+  <!-- Height -->
+  <line x1="456" y1="9" x2="456" y2="441"
+        stroke="#666666" stroke-width="0.5" />
+  <text x="461" y="229" text-anchor="start" class="label"
+        font-size="10" fill="#666666" transform="rotate(90, 461, 229)">
+    6&quot;
+  </text>
+
+  <!-- Legend -->
+  <g transform="translate(17, 391)">
+    <line x1="0" y1="0" x2="25" y2="0" class="bleed-line" />
+    <text x="30" y="4" class="label" font-size="8" fill="#FF0000">Bleed (0.125&quot;)</text>
+
+    <line x1="0" y1="14" x2="25" y2="14" class="trim-line" />
+    <text x="30" y="18" class="label" font-size="8" fill="#000000">Trim / Cut Line</text>
+
+    <line x1="0" y1="28" x2="25" y2="28" class="safe-line" />
+    <text x="30" y="32" class="label" font-size="8" fill="#00AA00">Safe Area (0.25&quot;)</text>
+  </g>
+
+</svg>

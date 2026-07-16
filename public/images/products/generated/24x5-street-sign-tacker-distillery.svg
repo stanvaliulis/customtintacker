@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1692 353" width="1692" height="353">
+
+  <rect width="1692" height="353" fill="transparent"/>
+  <path d="
+    M 123.55 0
+    L 1692 0
+    L 1692 353
+    L 123.55 353
+    L 0 176.5
+    Z
+  " fill="#1e3a5f" stroke="#60a5fa" stroke-width="3"/>
+  <path d="
+    M 144.73 21.18
+    L 1670.82 21.18
+    L 1670.82 331.82
+    L 144.73 331.82
+    L 33.535 176.5
+    Z
+  " fill="none" stroke="#ffffff" stroke-width="2"/>
+  <text x="907.775" y="148.26" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-weight="bold" font-size="64" fill="#ffffff" letter-spacing="3">YOUR BRAND</text>
+  <text x="907.775" y="254.16" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="29" fill="#fbbf24" letter-spacing="2">SMALL BATCH</text>
+  
+</svg>

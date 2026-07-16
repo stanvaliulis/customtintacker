@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1116 1116" width="1116" height="1116">
+
+  <circle cx="558" cy="558" r="558" fill="#1f2937"/>
+  <circle cx="558" cy="558" r="535.68" fill="none" stroke="#b45309" stroke-width="3"/>
+  <circle cx="558" cy="558" r="492.82559999999995" fill="none" stroke="#d97706" stroke-width="1.5" stroke-dasharray="8 4"/>
+  <circle cx="558" cy="558" r="471.3984" fill="none" stroke="#d97706" stroke-width="2"/>
+  <text x="558" y="234.35999999999999" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-weight="bold" font-size="62" fill="#ffffff" letter-spacing="2">YOUR BREWERY</text>
+  <text x="558" y="323.64" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="34" fill="#d97706" letter-spacing="4">CRAFT BEER</text>
+  <rect x="435.24" y="401.76" width="245.52" height="184.14000000000001" rx="8" fill="#374151" stroke="#d97706" stroke-width="2"/>
+  <text x="558" y="493.83" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-weight="bold" font-size="41" fill="#d97706">YOUR LOGO</text>
+  <text x="558" y="549.072" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="28.7" fill="#d97706">HERE</text>
+  <text x="558" y="864.9" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-size="31" fill="#9ca3af" letter-spacing="6">EST. 2024</text>
+  
+</svg>

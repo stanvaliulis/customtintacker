@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1692 1692" width="1692" height="1692">
+
+  <rect width="1692" height="1692" fill="#1f2937"/>
+  <rect x="67.68" y="67.68" width="1556.6399999999999" height="1556.6399999999999" fill="none" stroke="#b45309" stroke-width="3" rx="4"/>
+  <rect x="135.36" y="135.36" width="1421.28" height="1421.28" fill="none" stroke="#d97706" stroke-width="1.5" rx="2"/>
+  <line x1="338.40000000000003" y1="575.2800000000001" x2="1353.6000000000001" y2="575.2800000000001" stroke="#b45309" stroke-width="1.5"/>
+  <text x="846" y="372.24" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-weight="bold" font-size="84" fill="#ffffff" letter-spacing="2">YOUR BREWERY</text>
+  <text x="846" y="507.59999999999997" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="47" fill="#d97706" letter-spacing="4">CRAFT BEER</text>
+  <rect x="473.76" y="676.8000000000001" width="744.48" height="473.76000000000005" rx="8" fill="#374151" stroke="#d97706" stroke-width="2"/>
+  <text x="846" y="856.8288000000001" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-weight="bold" font-size="57" fill="#d97706">YOUR LOGO</text>
+  <text x="846" y="984.7440000000001" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="45.6" fill="#d97706">HERE</text>
+  <line x1="338.40000000000003" y1="1252.08" x2="1353.6000000000001" y2="1252.08" stroke="#b45309" stroke-width="1.5"/>
+  <text x="846" y="1387.4399999999998" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="47" fill="#d97706" letter-spacing="3">TAPROOM</text>
+  <text x="846" y="1556.64" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-size="42" fill="#9ca3af" letter-spacing="6">EST. 2024</text>
+  
+</svg>

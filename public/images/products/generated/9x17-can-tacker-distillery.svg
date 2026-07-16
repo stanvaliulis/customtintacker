@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 648 1260" width="648" height="1260">
+
+  <rect width="648" height="1260" fill="transparent"/>
+  <path d="
+    M 77.75999999999999 95.03999999999999
+    Q 77.75999999999999 75.6, 129.6 45.35999999999999
+    Q 226.79999999999998 0, 324 0
+    Q 421.2 0, 518.4 45.35999999999999
+    Q 570.24 75.6, 570.24 95.03999999999999
+    L 570.24 1190.1599999999999
+    Q 570.24 1209.6, 518.4 1239.84
+    Q 421.2 1260, 324 1260
+    Q 226.79999999999998 1260, 129.6 1239.84
+    Q 77.75999999999999 1209.6, 77.75999999999999 1190.1599999999999
+    Z
+  " fill="#111827" stroke="#d97706" stroke-width="2"/>
+  <line x1="90.72000000000001" y1="99.03999999999999" x2="557.28" y2="99.03999999999999" stroke="#fbbf24" stroke-width="1.5"/>
+  <line x1="90.72000000000001" y1="1186.1599999999999" x2="557.28" y2="1186.1599999999999" stroke="#fbbf24" stroke-width="1.5"/>
+  <text x="324" y="226.79999999999998" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-weight="bold" font-size="52" fill="#ffffff" letter-spacing="1">YOUR BRAND</text>
+  <line x1="129.6" y1="302.4" x2="518.4" y2="302.4" stroke="#d97706" stroke-width="1.5"/>
+  <text x="324" y="378" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="28" fill="#fbbf24" letter-spacing="3">PREMIUM SPIRITS</text>
+  <rect x="129.6" y="478.8" width="388.8" height="201.6" rx="6" fill="#1f2937" stroke="#fbbf24" stroke-width="2"/>
+  <text x="324" y="555.408" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-weight="bold" font-size="36" fill="#fbbf24">YOUR LOGO</text>
+  <text x="324" y="623.952" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="27" fill="#fbbf24">HERE</text>
+  <line x1="129.6" y1="781.2" x2="518.4" y2="781.2" stroke="#d97706" stroke-width="1.5"/>
+  <text x="324" y="882" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="28" fill="#fbbf24" letter-spacing="3">SMALL BATCH</text>
+  <text x="324" y="1008" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-size="22" fill="#9ca3af" letter-spacing="4">EST. 2024</text>
+  
+</svg>

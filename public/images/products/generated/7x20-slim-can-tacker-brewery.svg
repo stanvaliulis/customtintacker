@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 540 1458" width="540" height="1458">
+
+  <rect width="540" height="1458" fill="transparent"/>
+  <path d="
+    M 64.8 103.67999999999999
+    Q 64.8 87.47999999999999, 108 52.48799999999999
+    Q 189 0, 270 0
+    Q 351 0, 432 52.48799999999999
+    Q 475.2 87.47999999999999, 475.2 103.67999999999999
+    L 475.2 1383.48
+    Q 475.2 1399.68, 432 1434.672
+    Q 351 1458, 270 1458
+    Q 189 1458, 108 1434.672
+    Q 64.8 1399.68, 64.8 1383.48
+    Z
+  " fill="#1f2937" stroke="#b45309" stroke-width="2"/>
+  <line x1="75.60000000000001" y1="107.67999999999999" x2="464.4" y2="107.67999999999999" stroke="#d97706" stroke-width="1.5"/>
+  <line x1="75.60000000000001" y1="1379.48" x2="464.4" y2="1379.48" stroke="#d97706" stroke-width="1.5"/>
+  <text x="270" y="262.44" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-weight="bold" font-size="43" fill="#ffffff" letter-spacing="1">YOUR BREWERY</text>
+  <line x1="108" y1="349.91999999999996" x2="432" y2="349.91999999999996" stroke="#b45309" stroke-width="1.5"/>
+  <text x="270" y="437.4" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="23" fill="#d97706" letter-spacing="3">CRAFT BEER</text>
+  <rect x="108" y="554.04" width="324" height="233.28" rx="6" fill="#374151" stroke="#d97706" stroke-width="2"/>
+  <text x="270" y="642.6863999999999" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-weight="bold" font-size="30" fill="#d97706">YOUR LOGO</text>
+  <text x="270" y="722.0015999999999" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="22.5" fill="#d97706">HERE</text>
+  <line x1="108" y1="903.96" x2="432" y2="903.96" stroke="#b45309" stroke-width="1.5"/>
+  <text x="270" y="1020.5999999999999" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="23" fill="#d97706" letter-spacing="3">TAPROOM</text>
+  <text x="270" y="1166.4" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-size="18" fill="#9ca3af" letter-spacing="4">EST. 2024</text>
+  
+</svg>

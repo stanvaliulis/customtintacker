@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1008 1008" width="1008" height="1008">
+
+  <rect width="1008" height="1008" fill="transparent"/>
+  <path d="M 504.0 15.1 L 547.5 62.6 L 645.9 36.2 L 713.1 112.9 L 814.1 126.1 L 846.8 222.6 L 935.2 273.5 L 928.4 375.3 L 990.5 456.1 L 945.4 547.5 L 971.8 645.9 L 895.1 713.1 L 881.9 814.1 L 785.4 846.8 L 734.5 935.2 L 632.7 928.4 L 551.9 990.5 L 460.5 945.4 L 362.1 971.8 L 294.9 895.1 L 193.9 881.9 L 161.2 785.4 L 72.8 734.5 L 79.6 632.7 L 17.5 551.9 L 62.6 460.5 L 36.2 362.1 L 112.9 294.9 L 126.1 193.9 L 222.6 161.2 L 273.5 72.8 L 375.3 79.6 L 456.1 17.5 Z" fill="#111827" stroke="#d97706" stroke-width="2"/>
+  <circle cx="504" cy="504" r="403.20000000000005" fill="none" stroke="#fbbf24" stroke-width="2"/>
+  <circle cx="504" cy="504" r="378" fill="none" stroke="#fbbf24" stroke-width="1" stroke-dasharray="6 3"/>
+  <text x="504" y="262.08" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-weight="bold" font-size="46" fill="#ffffff" letter-spacing="2">YOUR BRAND</text>
+  <text x="504" y="332.64000000000004" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="25" fill="#fbbf24" letter-spacing="4">PREMIUM SPIRITS</text>
+  <rect x="393.12" y="393.12" width="221.76" height="155.23199999999997" rx="8" fill="#1f2937" stroke="#fbbf24" stroke-width="2"/>
+  <text x="504" y="454.104" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-weight="bold" font-size="31" fill="#fbbf24">YOUR LOGO</text>
+  <text x="504" y="509.544" text-anchor="middle" dominant-baseline="central" font-family="Arial, sans-serif" font-size="23.25" fill="#fbbf24">HERE</text>
+  <text x="504" y="745.92" text-anchor="middle" dominant-baseline="central" font-family="Georgia, serif" font-size="23" fill="#9ca3af" letter-spacing="6">EST. 2024</text>
+  
+</svg>
