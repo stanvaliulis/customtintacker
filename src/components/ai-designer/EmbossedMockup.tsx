@@ -72,40 +72,36 @@ export default function EmbossedMockup({
             </clipPath>
 
             {/*
-              Core emboss effect: uses the image luminance as a bump map.
-              Bright areas (text, logos) appear raised; dark areas stay flat.
-              The feSpecularLighting creates highlights where edges are,
-              simulating light hitting raised metal surfaces.
+              Emboss highlight overlay — generates ONLY the raised-edge
+              highlights and shadows from the artwork luminance, rendered
+              as a transparent overlay so original colors stay untouched.
             */}
-            <filter id="embossStamp" x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
-              {/* Create bump map from image luminance */}
+            <filter id="embossOverlay" x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
               <feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="luma" />
-              <feGaussianBlur in="luma" stdDeviation="1.5" result="bumpMap" />
+              <feGaussianBlur in="luma" stdDeviation="1.2" result="bump" />
 
-              {/* Specular highlight — light from upper-left hitting raised surfaces */}
-              <feSpecularLighting in="bumpMap" surfaceScale="8" specularConstant="1.5" specularExponent="20" result="specHi" lightingColor="#ffffff">
-                <feDistantLight azimuth="225" elevation="35" />
+              {/* Specular highlights on raised edges */}
+              <feSpecularLighting in="bump" surfaceScale="10" specularConstant="1.8" specularExponent="25" result="spec" lightingColor="#ffffff">
+                <feDistantLight azimuth="225" elevation="40" />
               </feSpecularLighting>
-              <feComposite in="specHi" in2="SourceAlpha" operator="in" result="specClipped" />
-
-              {/* Second diffuse light for depth */}
-              <feDiffuseLighting in="bumpMap" surfaceScale="6" diffuseConstant="1.0" result="diffuse" lightingColor="#e0ddd5">
-                <feDistantLight azimuth="225" elevation="50" />
-              </feDiffuseLighting>
-              <feComposite in="diffuse" in2="SourceAlpha" operator="in" result="diffClipped" />
-
-              {/* Combine: original artwork + diffuse shading + specular highlights */}
-              <feComposite in="SourceGraphic" in2="diffClipped" operator="arithmetic" k1="0.15" k2="0.85" k3="0.25" k4="0" result="lit" />
-              <feComposite in="lit" in2="specClipped" operator="arithmetic" k1="0" k2="1" k3="0.6" k4="0" />
+              <feComposite in="spec" in2="SourceAlpha" operator="in" />
             </filter>
 
-            {/* Edge emboss for the sign border — stamped edge look */}
-            <filter id="edgeEmboss">
-              <feConvolveMatrix
-                order="3"
-                kernelMatrix="-2 -1 0 -1 1 1 0 1 2"
-                preserveAlpha="true"
-              />
+            {/*
+              Shadow overlay — dark edges on the bottom-right of raised areas
+            */}
+            <filter id="embossShadow" x="-5%" y="-5%" width="110%" height="110%" colorInterpolationFilters="sRGB">
+              <feColorMatrix in="SourceGraphic" type="luminanceToAlpha" result="luma" />
+              <feGaussianBlur in="luma" stdDeviation="1.5" result="bump" />
+
+              <feDiffuseLighting in="bump" surfaceScale="5" diffuseConstant="0.8" result="diff" lightingColor="#000000">
+                <feDistantLight azimuth="45" elevation="30" />
+              </feDiffuseLighting>
+              <feColorMatrix in="diff" type="matrix" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 1 1 0 0" result="shadowMask" />
+              <feComponentTransfer in="shadowMask" result="fadedShadow">
+                <feFuncA type="linear" slope="0.15" />
+              </feComponentTransfer>
+              <feComposite in="fadedShadow" in2="SourceAlpha" operator="in" />
             </filter>
 
             {/* Sign drop shadow */}
@@ -113,42 +109,39 @@ export default function EmbossedMockup({
               <feDropShadow dx="4" dy="4" stdDeviation="8" floodColor="#000" floodOpacity="0.5" />
             </filter>
 
-            {/* Hole shadow */}
             <filter id="holeShadow">
               <feDropShadow dx="0.5" dy="1" stdDeviation="0.5" floodColor="#000" floodOpacity="0.6" />
             </filter>
 
-            {/* Aluminum base */}
+            {/* White aluminum base */}
             <radialGradient id="alumBg" cx="40%" cy="35%">
-              <stop offset="0%" stopColor="#e8e8ec" />
-              <stop offset="50%" stopColor="#d0d0d6" />
-              <stop offset="100%" stopColor="#b0b0b8" />
+              <stop offset="0%" stopColor="#f5f5f7" />
+              <stop offset="50%" stopColor="#ececf0" />
+              <stop offset="100%" stopColor="#dddde2" />
             </radialGradient>
 
-            {/* Top-left light reflection on the sign surface */}
+            {/* Subtle surface reflection */}
             <radialGradient id="surfaceSheen" cx="30%" cy="25%" r="70%">
-              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.12" />
-              <stop offset="50%" stopColor="#ffffff" stopOpacity="0.03" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="0.05" />
+              <stop offset="0%" stopColor="#ffffff" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0.03" />
             </radialGradient>
 
-            {/* Edge bevels */}
             <linearGradient id="bevelTop" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#ffffff" stopOpacity="0.5" />
               <stop offset="100%" stopColor="#ffffff" stopOpacity="0" />
             </linearGradient>
             <linearGradient id="bevelBot" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stopColor="#000000" stopOpacity="0" />
-              <stop offset="100%" stopColor="#000000" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#000000" stopOpacity="0.2" />
             </linearGradient>
           </defs>
 
           <g filter="url(#signShadow)">
-            {/* Aluminum base underneath */}
+            {/* White aluminum base */}
             <path d={shapePath} fill="url(#alumBg)" />
 
-            {/* Artwork with emboss stamp effect */}
-            <g clipPath="url(#tc)" filter="url(#embossStamp)">
+            {/* Full-color artwork — NO filter, colors untouched */}
+            <g clipPath="url(#tc)">
               <image
                 href={imageUrl}
                 x="0" y="0"
@@ -157,22 +150,44 @@ export default function EmbossedMockup({
               />
             </g>
 
-            {/* Surface sheen overlay */}
+            {/* Emboss highlights — white edges on raised areas, blended on top */}
+            <g clipPath="url(#tc)" style={{ mixBlendMode: 'screen' }} opacity="0.7">
+              <g filter="url(#embossOverlay)">
+                <image
+                  href={imageUrl}
+                  x="0" y="0"
+                  width={svgW} height={svgH}
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              </g>
+            </g>
+
+            {/* Emboss shadows — dark edges on bottom-right of raised areas */}
+            <g clipPath="url(#tc)" style={{ mixBlendMode: 'multiply' }} opacity="0.5">
+              <g filter="url(#embossShadow)">
+                <image
+                  href={imageUrl}
+                  x="0" y="0"
+                  width={svgW} height={svgH}
+                  preserveAspectRatio="xMidYMid slice"
+                />
+              </g>
+            </g>
+
+            {/* Surface sheen */}
             <path d={shapePath} fill="url(#surfaceSheen)" />
 
-            {/* Edge highlight (top-left light) */}
+            {/* Edge bevels */}
             <path d={shapePath} fill="none" stroke="url(#bevelTop)" strokeWidth="2.5" />
-            {/* Edge shadow (bottom-right) */}
             <path d={shapePath} fill="none" stroke="url(#bevelBot)" strokeWidth="2" transform="translate(1,1)" />
-            {/* Fine outer edge */}
-            <path d={shapePath} fill="none" stroke="rgba(60,60,70,0.4)" strokeWidth="0.8" />
+            <path d={shapePath} fill="none" stroke="rgba(60,60,70,0.35)" strokeWidth="0.8" />
 
             {/* Mounting holes */}
             {holePositions.map((pos, i) => (
               <g key={i} filter="url(#holeShadow)">
-                <circle cx={pos.x} cy={pos.y} r={holeR * 1.3} fill="rgba(0,0,0,0.35)" />
-                <circle cx={pos.x} cy={pos.y} r={holeR} fill="#999" />
-                <circle cx={pos.x} cy={pos.y} r={holeR * 0.55} fill="#666" />
+                <circle cx={pos.x} cy={pos.y} r={holeR * 1.3} fill="rgba(0,0,0,0.3)" />
+                <circle cx={pos.x} cy={pos.y} r={holeR} fill="#aaa" />
+                <circle cx={pos.x} cy={pos.y} r={holeR * 0.55} fill="#777" />
                 <circle cx={pos.x - holeR * 0.2} cy={pos.y - holeR * 0.2} r={holeR * 0.2} fill="rgba(255,255,255,0.5)" />
               </g>
             ))}
