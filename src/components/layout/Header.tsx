@@ -21,6 +21,7 @@ const industryLinks = [
 
 const navLinks = [
   { href: '/products', label: 'Products' },
+  { href: '/ai-designer', label: 'AI Designer' },
   { href: '/quote', label: 'Get a Quote' },
   { href: '/distributors', label: 'Distributors' },
   { href: '/about', label: 'About' },
