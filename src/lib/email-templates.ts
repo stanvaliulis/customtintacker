@@ -150,6 +150,7 @@ export interface QuoteRequestData {
   size: string;
   quantity: number;
   backing?: string;
+  embossing?: string;
   colors?: string;
   notes?: string;
   designId?: string;
@@ -171,6 +172,7 @@ export function quoteRequestEmail(data: QuoteRequestData) {
     row('Size / Shape', data.size),
     row('Quantity', data.quantity),
     row('Backing', data.backing),
+    row('Embossing', data.embossing),
     row('Colors', data.colors),
     row('Notes', data.notes),
     row('Design ID', data.designId),
@@ -189,6 +191,7 @@ Product: ${data.product || 'N/A'}
 Size / Shape: ${data.size}
 Quantity: ${data.quantity}
 Backing: ${data.backing || 'N/A'}
+Embossing: ${data.embossing || 'N/A'}
 Colors: ${data.colors || 'N/A'}
 Notes: ${data.notes || 'N/A'}
 Quote ID: ${data.id || 'N/A'}

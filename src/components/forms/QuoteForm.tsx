@@ -29,6 +29,13 @@ const backingOpts = [
   { value: 'unsure', label: 'Not sure yet' },
 ];
 
+const embossingOpts = [
+  { value: '', label: 'Select an option' },
+  { value: 'yes', label: 'Yes — embossed' },
+  { value: 'no', label: 'No — flat / non-embossed' },
+  { value: 'unsure', label: 'Not sure yet' },
+];
+
 /** Try to match a product's displaySize + shape to one of the size select options */
 function matchSize(displaySize: string, shape: string): string {
   const s = displaySize.toLowerCase();
@@ -74,6 +81,7 @@ export default function QuoteForm() {
       size: (form.querySelector('#q-size') as HTMLSelectElement)?.value ?? '',
       quantity: (form.querySelector('#q-quantity') as HTMLInputElement)?.value ?? '',
       backing: (form.querySelector('#q-backing') as HTMLSelectElement)?.value ?? '',
+      embossing: (form.querySelector('#q-embossing') as HTMLSelectElement)?.value ?? '',
       colors: (form.querySelector('#q-colors') as HTMLInputElement)?.value ?? '',
       notes: (form.querySelector('#q-notes') as HTMLTextAreaElement)?.value ?? '',
       designId: designIdParam || undefined,
@@ -165,6 +173,7 @@ export default function QuoteForm() {
           <Select label="Size / Shape" id="q-size" required options={sizeOptions} defaultValue={sizeParam ? matchSize(sizeParam, shapeParam) : ''} error={errors.size} />
           <Input label="Quantity" id="q-quantity" type="number" required min={1} placeholder="e.g., 500" error={errors.quantity} />
           <Select label="Backing" id="q-backing" options={backingOpts} />
+          <Select label="Embossing" id="q-embossing" required options={embossingOpts} error={errors.embossing} />
           <Input label="Colors" id="q-colors" placeholder="e.g., Full color, 2 spot colors" />
         </div>
       </div>

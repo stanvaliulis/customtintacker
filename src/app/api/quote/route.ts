@@ -15,6 +15,7 @@ const quoteRequestSchema = z.object({
   size: z.string().min(1, 'Please select a size or shape.'),
   quantity: z.coerce.number().min(1, 'Quantity must be at least 1.'),
   backing: z.string().optional().default(''),
+  embossing: z.string().min(1, 'Please select an embossing option.'),
   colors: z.string().optional().default(''),
   notes: z.string().optional().default(''),
   designId: z.string().optional(),
@@ -58,7 +59,10 @@ export async function POST(request: Request) {
             quantity: result.data.quantity,
             backing: result.data.backing,
             colors: result.data.colors,
-            message: result.data.notes,
+            message: [
+              result.data.embossing ? `Embossing: ${result.data.embossing}` : '',
+              result.data.notes,
+            ].filter(Boolean).join('\n'),
             status: 'new',
           },
         });
@@ -82,6 +86,7 @@ export async function POST(request: Request) {
           size: result.data.size,
           quantity: result.data.quantity,
           backing: result.data.backing,
+          embossing: result.data.embossing,
           colors: result.data.colors,
           notes: result.data.notes,
           designId: result.data.designId || '',
