@@ -3,12 +3,13 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { signOut } from 'next-auth/react';
-import { ShoppingCart, Menu, X, User, LogOut, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Menu, X, User, LogOut, ChevronDown, Search } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useCart } from '@/context/CartContext';
 import { useDistributor } from '@/context/DistributorContext';
 import Container from '@/components/ui/Container';
 import Logo from '@/components/ui/Logo';
+import SearchDialog from '@/components/search/SearchDialog';
 
 const industryLinks = [
   { href: '/brewery-signs', label: 'Brewery Signs' },
@@ -30,6 +31,7 @@ const navLinks = [
 
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
   const [industriesOpen, setIndustriesOpen] = useState(false);
   const [mobileIndustriesOpen, setMobileIndustriesOpen] = useState(false);
   const industriesRef = useRef<HTMLDivElement>(null);
@@ -46,6 +48,18 @@ export default function Header() {
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Cmd/Ctrl+K opens search from anywhere on the site
+  useEffect(() => {
+    function handleShortcut(event: KeyboardEvent) {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
+        event.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    document.addEventListener('keydown', handleShortcut);
+    return () => document.removeEventListener('keydown', handleShortcut);
   }, []);
 
   return (
@@ -123,6 +137,28 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
+            {/* Desktop search trigger */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="hidden md:flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300 hover:text-gray-600 transition-colors"
+              aria-label="Search the site"
+            >
+              <Search className="w-4 h-4" />
+              <span className="text-sm">Search</span>
+              <kbd className="ml-2 text-[10px] font-sans font-medium text-gray-400 bg-white border border-gray-200 rounded px-1.5 py-0.5">
+                ⌘K
+              </kbd>
+            </button>
+
+            {/* Mobile search trigger */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className="md:hidden p-2 text-gray-600 hover:text-amber-600 transition-colors"
+              aria-label="Search the site"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+
             {isDistributor ? (
               <div className="hidden sm:flex items-center gap-2">
                 <Link
@@ -270,6 +306,8 @@ export default function Header() {
           </nav>
         </div>
       )}
+
+      <SearchDialog open={searchOpen} onClose={() => setSearchOpen(false)} />
     </header>
   );
 }
