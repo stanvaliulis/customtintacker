@@ -79,15 +79,6 @@ const staticPages: SearchDoc[] = [
     body: 'tell us shape size quantity and embossing and we will send pricing',
   },
   {
-    id: 'page-samples',
-    type: 'page',
-    title: 'Request Samples',
-    description: 'Order a physical sample pack to see and feel the embossing before you buy.',
-    url: '/samples',
-    keywords: ['sample', 'samples', 'sample pack', 'swatch', 'proof', 'free sample'],
-    body: 'physical sample kit showing aluminum gauge embossing depth and print quality',
-  },
-  {
     id: 'page-artwork-templates',
     type: 'page',
     title: 'Artwork Templates',

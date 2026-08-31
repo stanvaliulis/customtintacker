@@ -212,10 +212,10 @@ export default async function GalleryPage({ searchParams }: Props) {
               <ArrowRight className="w-5 h-5" />
             </Link>
             <Link
-              href="/samples"
+              href="/products"
               className="inline-flex items-center gap-2 px-8 py-3.5 border-2 border-amber-600 text-amber-400 font-semibold rounded-lg hover:bg-amber-600/10 transition-colors text-lg"
             >
-              Order a Sample Pack
+              Browse All Products
             </Link>
           </div>
         </Container>

@@ -35,7 +35,6 @@ const quickLinks = [
   { label: 'Get a Quote', href: '/quote' },
   { label: 'AI Designer', href: '/ai-designer' },
   { label: 'Brewery Signs', href: '/brewery-signs' },
-  { label: 'Request Samples', href: '/samples' },
   { label: 'Distributor Pricing', href: '/distributors' },
 ];
 
