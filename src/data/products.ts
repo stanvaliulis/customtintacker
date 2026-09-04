@@ -1843,7 +1843,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Alabama Shape' },
-    images: [],
+    images: ['/images/products/373575871.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2869, catalogPrice: 2869 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2509, catalogPrice: 2509 },
@@ -1875,7 +1875,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Alaska Shape' },
-    images: [],
+    images: ['/images/products/373575050.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2885, catalogPrice: 2885 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2526, catalogPrice: 2526 },
@@ -1907,7 +1907,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Arizona Shape' },
-    images: [],
+    images: ['/images/products/373577352.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3830, catalogPrice: 3830 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3367, catalogPrice: 3367 },
@@ -1939,7 +1939,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Arkansas Shape' },
-    images: [],
+    images: ['/images/products/373576972.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3905, catalogPrice: 3905 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3440, catalogPrice: 3440 },
