@@ -25,6 +25,7 @@ interface ProductFormProps {
   initialData?: {
     id: string;
     slug: string;
+    sku?: string;
     name: string;
     shortDescription: string;
     longDescription: string;
@@ -62,6 +63,7 @@ export default function ProductForm({ initialData }: ProductFormProps) {
 
   const [name, setName] = useState(initialData?.name || '');
   const [slug, setSlug] = useState(initialData?.slug || '');
+  const [sku, setSku] = useState(initialData?.sku || '');
   const [shortDescription, setShortDescription] = useState(initialData?.shortDescription || '');
   const [longDescription, setLongDescription] = useState(initialData?.longDescription || '');
   const [category, setCategory] = useState(initialData?.category || 'standard');
@@ -69,7 +71,7 @@ export default function ProductForm({ initialData }: ProductFormProps) {
   const [width, setWidth] = useState(initialData?.width || 12);
   const [height, setHeight] = useState(initialData?.height || 12);
   const [displaySize, setDisplaySize] = useState(initialData?.displaySize || '');
-  const [wholesaleDiscount, setWholesaleDiscount] = useState(initialData?.wholesaleDiscount ?? 0.20);
+  const [wholesaleDiscount, setWholesaleDiscount] = useState(initialData?.wholesaleDiscount ?? 0.40);
   const [minimumOrder, setMinimumOrder] = useState(initialData?.minimumOrder || 25);
   const [leadTimeDays, setLeadTimeDays] = useState(initialData?.leadTimeDays || 30);
   const [setupFee, setSetupFee] = useState(initialData?.setupFee || 20000);
@@ -126,6 +128,7 @@ export default function ProductForm({ initialData }: ProductFormProps) {
     const body = {
       slug,
       name,
+      sku: sku.trim() || null,
       shortDescription,
       longDescription,
       category,
@@ -203,6 +206,21 @@ export default function ProductForm({ initialData }: ProductFormProps) {
                 onChange={(e) => setSlug(e.target.value)}
                 className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"
               />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Product ID <span className="font-normal text-gray-400">(ASI / SAGE)</span>
+              </label>
+              <input
+                type="text"
+                value={sku}
+                onChange={(e) => setSku(e.target.value.toUpperCase())}
+                placeholder="TSASQ01150115"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm font-mono"
+              />
+              <p className="mt-1 text-xs text-gray-400">
+                Must match the Product ID on the TackerProducts sheet.
+              </p>
             </div>
           </div>
           <div>

@@ -143,7 +143,8 @@ export function getProductSchema(product: Product) {
     name: product.name,
     description: product.longDescription,
     url: `${siteConfig.url}/products/${product.slug}`,
-    sku: product.id,
+    sku: product.sku || product.id,
+    ...(product.sku ? { mpn: product.sku } : {}),
     category: 'Tin Tacker Signs',
     image: product.images.map((img) =>
       img.startsWith('http') ? img : `${siteConfig.url}${img}`

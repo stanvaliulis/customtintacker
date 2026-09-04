@@ -22,6 +22,7 @@ import {
   Package,
   Clock,
   Star,
+  Hash,
 } from 'lucide-react';
 
 export async function generateStaticParams() {
@@ -208,9 +209,18 @@ export default async function ProductDetailPage({ params }: Props) {
               </div>
 
               {/* Title and Price */}
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-3">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">
                 {product.name}
               </h1>
+
+              {product.sku && (
+                <p className="mb-3 text-sm text-gray-500">
+                  Product ID:{' '}
+                  <span className="font-mono tracking-wide text-gray-300 select-all">
+                    {product.sku}
+                  </span>
+                </p>
+              )}
 
               {product.pricingTiers.length > 0 && (
                 <div className="flex items-baseline gap-3 mb-5">
@@ -292,6 +302,14 @@ export default async function ProductDetailPage({ params }: Props) {
                   Specifications
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
+                  {product.sku && (
+                    <SpecItem
+                      icon={<Hash className="w-4 h-4" />}
+                      label="Product ID"
+                      value={product.sku}
+                      mono
+                    />
+                  )}
                   <SpecItem
                     icon={<Package className="w-4 h-4" />}
                     label="Material"
@@ -332,14 +350,28 @@ export default async function ProductDetailPage({ params }: Props) {
   );
 }
 
-function SpecItem({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function SpecItem({
+  icon,
+  label,
+  value,
+  mono,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  mono?: boolean;
+}) {
   return (
     <div className="bg-gray-900/50 rounded-xl border border-gray-800/50 p-4">
       <div className="flex items-center gap-2 text-amber-400/60 mb-1.5">
         {icon}
         <dt className="text-xs font-medium text-gray-500 uppercase tracking-wider">{label}</dt>
       </div>
-      <dd className="font-semibold text-white text-sm">{value}</dd>
+      <dd
+        className={`font-semibold text-white text-sm ${mono ? 'font-mono tracking-wide select-all' : ''}`}
+      >
+        {value}
+      </dd>
     </div>
   );
 }

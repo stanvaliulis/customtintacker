@@ -10,6 +10,7 @@ generator client {
 
 model Product {
   id               String   @id @default(cuid())
+  sku              String?  @unique
   slug             String   @unique
   name             String
   shortDescription String
@@ -19,7 +20,7 @@ model Product {
   width            Float
   height           Float
   displaySize      String
-  wholesaleDiscount Float   @default(0.20)
+  wholesaleDiscount Float   @default(0.40)
   minimumOrder     Int      @default(25)
   leadTimeDays     Int      @default(30)
   setupFee         Int      @default(20000)

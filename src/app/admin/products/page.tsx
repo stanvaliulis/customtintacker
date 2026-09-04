@@ -13,6 +13,7 @@ interface PricingTier {
 
 interface ProductRow {
   id: string;
+  sku?: string;
   name: string;
   slug: string;
   category: string;
@@ -185,7 +186,8 @@ export default function AdminProductsPage() {
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.category.toLowerCase().includes(search.toLowerCase()) ||
       (p.shape || '').toLowerCase().includes(search.toLowerCase()) ||
-      p.slug.toLowerCase().includes(search.toLowerCase())
+      p.slug.toLowerCase().includes(search.toLowerCase()) ||
+      (p.sku || '').toLowerCase().includes(search.toLowerCase())
   );
 
   return (
@@ -311,6 +313,13 @@ export default function AdminProductsPage() {
                             <div>
                               <div className="font-medium text-gray-900">{product.name}</div>
                               <div className="text-xs text-gray-400 mt-0.5">{product.slug}</div>
+                              <div className="text-xs mt-0.5 font-mono">
+                                {product.sku ? (
+                                  <span className="text-gray-500">{product.sku}</span>
+                                ) : (
+                                  <span className="text-amber-600">no product ID</span>
+                                )}
+                              </div>
                             </div>
                           )}
                         </td>

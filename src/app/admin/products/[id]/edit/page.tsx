@@ -13,6 +13,7 @@ function normalizeProduct(raw: any) {
 
   return {
     id: raw.id,
+    sku: raw.sku,
     slug: raw.slug,
     name: raw.name,
     shortDescription: raw.shortDescription,
@@ -22,7 +23,7 @@ function normalizeProduct(raw: any) {
     width: raw.dimensions?.width ?? 12,
     height: raw.dimensions?.height ?? 12,
     displaySize: raw.dimensions?.displaySize ?? '',
-    wholesaleDiscount: raw.wholesaleDiscount ?? 0.20,
+    wholesaleDiscount: raw.wholesaleDiscount ?? 0.40,
     minimumOrder: raw.minimumOrder ?? 25,
     leadTimeDays: raw.leadTimeDays ?? 30,
     setupFee: raw.setupFee ?? 20000,
