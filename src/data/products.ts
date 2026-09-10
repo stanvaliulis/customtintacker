@@ -1843,7 +1843,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Alabama Shape' },
-    images: ['/images/products/373575871.png'],
+    images: ['/images/products/alabama-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2869, catalogPrice: 2869 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2509, catalogPrice: 2509 },
@@ -1875,7 +1875,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Alaska Shape' },
-    images: ['/images/products/373575050.png'],
+    images: ['/images/products/alaska-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2885, catalogPrice: 2885 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2526, catalogPrice: 2526 },
@@ -1907,7 +1907,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Arizona Shape' },
-    images: ['/images/products/373577352.png'],
+    images: ['/images/products/arizona-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3830, catalogPrice: 3830 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3367, catalogPrice: 3367 },
@@ -1939,7 +1939,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Arkansas Shape' },
-    images: ['/images/products/373576972.png'],
+    images: ['/images/products/arkansas-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3905, catalogPrice: 3905 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3440, catalogPrice: 3440 },
@@ -1971,7 +1971,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'California Shape' },
-    images: [],
+    images: ['/images/products/california-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3788, catalogPrice: 3788 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3326, catalogPrice: 3326 },
@@ -2003,7 +2003,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Colorado Shape' },
-    images: [],
+    images: ['/images/products/colorado-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3809, catalogPrice: 3809 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3347, catalogPrice: 3347 },
@@ -2035,7 +2035,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Connecticut Shape' },
-    images: [],
+    images: ['/images/products/connecticut-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3837, catalogPrice: 3837 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3374, catalogPrice: 3374 },
@@ -2067,7 +2067,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Delaware Shape' },
-    images: [],
+    images: ['/images/products/delaware-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2467, catalogPrice: 2467 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2064, catalogPrice: 2064 },
@@ -2099,7 +2099,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Florida Shape' },
-    images: [],
+    images: ['/images/products/florida-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3875, catalogPrice: 3875 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3412, catalogPrice: 3412 },
@@ -2131,7 +2131,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Georgia Shape' },
-    images: [],
+    images: ['/images/products/georgia-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3863, catalogPrice: 3863 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3398, catalogPrice: 3398 },
@@ -2163,7 +2163,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Hawaii Shape' },
-    images: [],
+    images: ['/images/products/hawaii-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3842, catalogPrice: 3842 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3380, catalogPrice: 3380 },
@@ -2195,7 +2195,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Idaho Shape' },
-    images: [],
+    images: ['/images/products/idaho-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2873, catalogPrice: 2873 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2513, catalogPrice: 2513 },
@@ -2227,7 +2227,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Illinois Shape' },
-    images: [],
+    images: ['/images/products/illinois-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2848, catalogPrice: 2848 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2488, catalogPrice: 2488 },
@@ -2259,7 +2259,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Indiana Shape' },
-    images: [],
+    images: ['/images/products/indiana-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2873, catalogPrice: 2873 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2513, catalogPrice: 2513 },
@@ -2291,7 +2291,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Iowa Shape' },
-    images: [],
+    images: ['/images/products/iowa-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3784, catalogPrice: 3784 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3322, catalogPrice: 3322 },
@@ -2323,7 +2323,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Kansas Shape' },
-    images: [],
+    images: ['/images/products/kansas-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2857, catalogPrice: 2857 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2499, catalogPrice: 2499 },
@@ -2355,7 +2355,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Kentucky Shape' },
-    images: [],
+    images: ['/images/products/kentucky-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2832, catalogPrice: 2832 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2472, catalogPrice: 2472 },
@@ -2387,7 +2387,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Louisiana Shape' },
-    images: [],
+    images: ['/images/products/louisiana-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3881, catalogPrice: 3881 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3417, catalogPrice: 3417 },
@@ -2419,7 +2419,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Maine Shape' },
-    images: [],
+    images: ['/images/products/maine-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2877, catalogPrice: 2877 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2517, catalogPrice: 2517 },
@@ -2451,7 +2451,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Maryland Shape' },
-    images: [],
+    images: ['/images/products/maryland-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2846, catalogPrice: 2846 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2488, catalogPrice: 2488 },
@@ -2483,7 +2483,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Massachusetts Shape' },
-    images: [],
+    images: ['/images/products/massachusetts-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2894, catalogPrice: 2894 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2534, catalogPrice: 2534 },
@@ -2515,7 +2515,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Michigan Shape' },
-    images: [],
+    images: ['/images/products/michigan-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3899, catalogPrice: 3899 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3434, catalogPrice: 3434 },
@@ -2547,7 +2547,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Minnesota Shape' },
-    images: [],
+    images: ['/images/products/minnesota-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3836, catalogPrice: 3836 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3373, catalogPrice: 3373 },
@@ -2579,7 +2579,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Mississippi Shape' },
-    images: [],
+    images: ['/images/products/mississippi-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2860, catalogPrice: 2860 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2500, catalogPrice: 2500 },
@@ -2611,7 +2611,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Missouri Shape' },
-    images: [],
+    images: ['/images/products/missouri-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3868, catalogPrice: 3868 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3405, catalogPrice: 3405 },
@@ -2643,7 +2643,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Montana Shape' },
-    images: [],
+    images: ['/images/products/montana-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2877, catalogPrice: 2877 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2517, catalogPrice: 2517 },
@@ -2675,7 +2675,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Nebraska Shape' },
-    images: [],
+    images: ['/images/products/nebraska-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2836, catalogPrice: 2836 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2477, catalogPrice: 2477 },
@@ -2707,7 +2707,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Nevada Shape' },
-    images: [],
+    images: ['/images/products/nevada-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2884, catalogPrice: 2884 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2524, catalogPrice: 2524 },
@@ -2739,7 +2739,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'New Hampshire Shape' },
-    images: [],
+    images: ['/images/products/new-hampshire-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2827, catalogPrice: 2827 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2467, catalogPrice: 2467 },
@@ -2771,7 +2771,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'New Jersey Shape' },
-    images: [],
+    images: ['/images/products/new-jersey-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2457, catalogPrice: 2457 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2054, catalogPrice: 2054 },
@@ -2803,7 +2803,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'New Mexico Shape' },
-    images: [],
+    images: ['/images/products/new-mexico-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3854, catalogPrice: 3854 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3391, catalogPrice: 3391 },
@@ -2835,7 +2835,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'New York Shape' },
-    images: [],
+    images: ['/images/products/new-york-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3837, catalogPrice: 3837 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3375, catalogPrice: 3375 },
@@ -2867,7 +2867,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'North Carolina Shape' },
-    images: [],
+    images: ['/images/products/north-carolina-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2456, catalogPrice: 2456 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2052, catalogPrice: 2052 },
@@ -2899,7 +2899,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'North Dakota Shape' },
-    images: [],
+    images: ['/images/products/north-dakota-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2888, catalogPrice: 2888 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2528, catalogPrice: 2528 },
@@ -2931,7 +2931,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Ohio Shape' },
-    images: [],
+    images: ['/images/products/ohio-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3847, catalogPrice: 3847 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3385, catalogPrice: 3385 },
@@ -2963,7 +2963,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Oklahoma Shape' },
-    images: [],
+    images: ['/images/products/oklahoma-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2848, catalogPrice: 2848 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2488, catalogPrice: 2488 },
@@ -2995,7 +2995,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Oregon Shape' },
-    images: [],
+    images: ['/images/products/oregon-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3818, catalogPrice: 3818 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3356, catalogPrice: 3356 },
@@ -3027,7 +3027,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Pennsylvania Shape' },
-    images: [],
+    images: ['/images/products/pennsylvania-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2880, catalogPrice: 2880 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2520, catalogPrice: 2520 },
@@ -3059,7 +3059,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Rhode Island Shape' },
-    images: [],
+    images: ['/images/products/rhode-island-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3798, catalogPrice: 3798 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3336, catalogPrice: 3336 },
@@ -3091,7 +3091,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'South Carolina Shape' },
-    images: [],
+    images: ['/images/products/south-carolina-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3830, catalogPrice: 3830 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3368, catalogPrice: 3368 },
@@ -3123,7 +3123,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'South Dakota Shape' },
-    images: [],
+    images: ['/images/products/south-dakota-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3779, catalogPrice: 3779 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3317, catalogPrice: 3317 },
@@ -3155,7 +3155,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Tennessee Shape' },
-    images: [],
+    images: ['/images/products/tennessee-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2051, catalogPrice: 2051 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 1557, catalogPrice: 1557 },
@@ -3187,7 +3187,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Texas Shape' },
-    images: [],
+    images: ['/images/products/texas-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3909, catalogPrice: 3909 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3585, catalogPrice: 3585 },
@@ -3219,7 +3219,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Utah Shape' },
-    images: [],
+    images: ['/images/products/utah-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3811, catalogPrice: 3811 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3349, catalogPrice: 3349 },
@@ -3251,7 +3251,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Vermont Shape' },
-    images: [],
+    images: ['/images/products/vermont-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2846, catalogPrice: 2846 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2486, catalogPrice: 2486 },
@@ -3283,7 +3283,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Virginia Shape' },
-    images: [],
+    images: ['/images/products/virginia-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 2834, catalogPrice: 2834 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 2474, catalogPrice: 2474 },
@@ -3315,7 +3315,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Washington Shape' },
-    images: [],
+    images: ['/images/products/washington-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3793, catalogPrice: 3793 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3331, catalogPrice: 3331 },
@@ -3347,7 +3347,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'West Virginia Shape' },
-    images: [],
+    images: ['/images/products/west-virginia-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3914, catalogPrice: 3914 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3450, catalogPrice: 3450 },
@@ -3379,7 +3379,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Wisconsin Shape' },
-    images: [],
+    images: ['/images/products/wisconsin-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3868, catalogPrice: 3868 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3405, catalogPrice: 3405 },
@@ -3411,7 +3411,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'Wyoming Shape' },
-    images: [],
+    images: ['/images/products/wyoming-state-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3842, catalogPrice: 3842 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3378, catalogPrice: 3378 },
@@ -3443,7 +3443,7 @@ export const products: Product[] = [
     category: 'specialty',
     shape: 'die-cut',
     dimensions: { width: 23, height: 23, displaySize: 'USA Shape' },
-    images: [],
+    images: ['/images/products/united-states-tacker.webp'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 3780, catalogPrice: 3780 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 3318, catalogPrice: 3318 },
@@ -3477,7 +3477,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'circle',
     dimensions: { width: 11.5, height: 11.5, displaySize: '12" diameter' },
-    images: [],
+    images: ['/images/products/12-inch-circle-tacker.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1128, catalogPrice: 1128 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 689, catalogPrice: 689 },
@@ -3509,7 +3509,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'circle',
     dimensions: { width: 14, height: 14, displaySize: '14" diameter' },
-    images: [],
+    images: ['/images/products/14-inch-circle-tacker.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1312, catalogPrice: 1312 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 930, catalogPrice: 930 },
@@ -3541,7 +3541,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'circle',
     dimensions: { width: 15.5, height: 15.5, displaySize: '16" diameter' },
-    images: [],
+    images: ['/images/products/335989684.png', '/images/products/336168646.png', '/images/products/335895470.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1347, catalogPrice: 1347 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 963, catalogPrice: 963 },
@@ -3573,7 +3573,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'circle',
     dimensions: { width: 18, height: 18, displaySize: '18" diameter' },
-    images: [],
+    images: ['/images/products/325183535.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1588, catalogPrice: 1588 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 1170, catalogPrice: 1170 },
@@ -3605,7 +3605,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'circle',
     dimensions: { width: 24, height: 24, displaySize: '24" diameter' },
-    images: [],
+    images: ['/images/products/325183535.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1733, catalogPrice: 1733 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 1309, catalogPrice: 1309 },
@@ -3637,7 +3637,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'square',
     dimensions: { width: 5.5, height: 5.5, displaySize: '6" x 6"' },
-    images: [],
+    images: ['/images/products/6-inch-square-tacker.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 930, catalogPrice: 930 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 525, catalogPrice: 525 },
@@ -3669,7 +3669,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'square',
     dimensions: { width: 11.5, height: 11.5, displaySize: '12" x 12"' },
-    images: [],
+    images: ['/images/products/12-inch-square-tacker.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1078, catalogPrice: 1078 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 661, catalogPrice: 661 },
@@ -3701,7 +3701,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'square',
     dimensions: { width: 18, height: 18, displaySize: '18" x 18"' },
-    images: [],
+    images: ['/images/products/335870844.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1547, catalogPrice: 1547 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 1149, catalogPrice: 1149 },
@@ -3733,7 +3733,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'square',
     dimensions: { width: 23.5, height: 23.5, displaySize: '24" x 24"' },
-    images: [],
+    images: ['/images/products/24-inch-square-tacker.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1679, catalogPrice: 1679 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 1275, catalogPrice: 1275 },
@@ -3765,7 +3765,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'rectangle',
     dimensions: { width: 7.67, height: 11.5, displaySize: '8" x 12"' },
-    images: [],
+    images: ['/images/products/8x12-rectangle-tacker.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1063, catalogPrice: 1063 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 624, catalogPrice: 624 },
@@ -3797,7 +3797,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'rectangle',
     dimensions: { width: 11.5, height: 16, displaySize: '11.5" x 16"' },
-    images: [],
+    images: ['/images/products/12x16-rectangle-tacker.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1183, catalogPrice: 1183 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 745, catalogPrice: 745 },
@@ -3829,7 +3829,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'rectangle',
     dimensions: { width: 11.5, height: 17.25, displaySize: '12" x 18"' },
-    images: [],
+    images: ['/images/products/332756734.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1198, catalogPrice: 1198 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 790, catalogPrice: 790 },
@@ -3861,7 +3861,7 @@ export const products: Product[] = [
     category: 'standard',
     shape: 'rectangle',
     dimensions: { width: 11.5, height: 23.5, displaySize: '12" x 24"' },
-    images: [],
+    images: ['/images/products/335866138.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1287, catalogPrice: 1287 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 890, catalogPrice: 890 },
@@ -3893,7 +3893,7 @@ export const products: Product[] = [
     category: 'can-shape',
     shape: 'can',
     dimensions: { width: 7.5, height: 20.25, displaySize: '7.5" x 20.25"' },
-    images: [],
+    images: ['/images/products/338696066.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1149, catalogPrice: 1149 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 710, catalogPrice: 710 },
@@ -3925,7 +3925,7 @@ export const products: Product[] = [
     category: 'can-shape',
     shape: 'can',
     dimensions: { width: 8.79, height: 22, displaySize: '8.79" x 22"' },
-    images: [],
+    images: ['/images/products/338695943.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1193, catalogPrice: 1193 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 784, catalogPrice: 784 },
@@ -3957,7 +3957,7 @@ export const products: Product[] = [
     category: 'can-shape',
     shape: 'can',
     dimensions: { width: 9, height: 17.5, displaySize: '9" x 17.5"' },
-    images: [],
+    images: ['/images/products/325058298.png', '/images/products/338695942.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1169, catalogPrice: 1169 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 762, catalogPrice: 762 },
@@ -3989,7 +3989,7 @@ export const products: Product[] = [
     category: 'can-shape',
     shape: 'can',
     dimensions: { width: 11.5, height: 22.25, displaySize: '11.5" x 22.25"' },
-    images: [],
+    images: ['/images/products/338696281.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1282, catalogPrice: 1282 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 886, catalogPrice: 886 },
@@ -4021,7 +4021,7 @@ export const products: Product[] = [
     category: 'license-plate',
     shape: 'license-plate',
     dimensions: { width: 12, height: 6, displaySize: '12" x 6"' },
-    images: [],
+    images: ['/images/products/325065346.png', '/images/products/325182585.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1042, catalogPrice: 1042 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 601, catalogPrice: 601 },
@@ -4053,7 +4053,7 @@ export const products: Product[] = [
     category: 'license-plate',
     shape: 'license-plate',
     dimensions: { width: 20, height: 4, displaySize: '20" x 4"' },
-    images: [],
+    images: ['/images/products/20x4-euro-license-plate.png'],
     pricingTiers: [
       { minQuantity: 50, maxQuantity: 99, pricePerUnit: 1009, catalogPrice: 1009 },
       { minQuantity: 100, maxQuantity: 249, pricePerUnit: 605, catalogPrice: 605 },
