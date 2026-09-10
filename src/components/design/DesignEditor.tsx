@@ -416,9 +416,16 @@ export default function DesignEditor({
     }
   }, [loadFromJSON, saveState]);
 
-  const handleDownloadTemplate = useCallback(() => {
-    toast.info('Artwork templates coming soon — contact us for files.');
-  }, []);
+  const handleDownloadTemplate = useCallback(
+    (format: DesignExportFormat) => {
+      // Dieline for this product: bleed, trim and safe-area guides.
+      window.open(`/api/templates/${productId}?format=${format}`, '_blank');
+      toast.success(
+        `${format.toUpperCase()} template downloading — bleed, trim and safe-area guides included.`
+      );
+    },
+    [productId]
+  );
 
   /* ---- Properties handlers ---- */
   const handleUpdateProperty = useCallback((property: string, value: number | string | boolean) => {

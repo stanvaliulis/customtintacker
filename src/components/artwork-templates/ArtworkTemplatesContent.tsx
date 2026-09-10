@@ -139,10 +139,9 @@ function groupProductsByShape(products: Product[]): Map<ProductShape, Product[]>
 export default function ArtworkTemplatesContent() {
   const grouped = useMemo(() => groupProductsByShape(products), []);
 
-  function handleDownload(product: Product) {
-    toast.success('Template downloading...', { duration: 2000 });
-    // Trigger download via the API route
-    window.open(`/api/templates/${product.id}`, '_blank');
+  function handleDownload(product: Product, format: 'svg' | 'pdf') {
+    toast.success(`${format.toUpperCase()} template downloading...`, { duration: 2000 });
+    window.open(`/api/templates/${product.id}?format=${format}`, '_blank');
   }
 
   return (
@@ -191,33 +190,23 @@ export default function ArtworkTemplatesContent() {
 
                   <div className="mt-auto flex gap-2">
                     <button
-                      onClick={() => handleDownload(product)}
+                      onClick={() => handleDownload(product, 'svg')}
                       className="flex-1 inline-flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
                     >
                       <Download className="w-3.5 h-3.5" />
                       SVG
                     </button>
                     <button
-                      onClick={() => {
-                        toast.success('Template downloading...', { duration: 2000 });
-                        window.open(`/api/templates/${product.id}`, '_blank');
-                      }}
+                      onClick={() => handleDownload(product, 'pdf')}
                       className="flex-1 inline-flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold px-3 py-2 rounded-lg transition-colors border border-gray-700/50"
                     >
                       <Download className="w-3.5 h-3.5" />
                       PDF
                     </button>
-                    <button
-                      onClick={() => {
-                        toast.success('Template downloading...', { duration: 2000 });
-                        window.open(`/api/templates/${product.id}`, '_blank');
-                      }}
-                      className="flex-1 inline-flex items-center justify-center gap-1.5 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-semibold px-3 py-2 rounded-lg transition-colors border border-gray-700/50"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      AI
-                    </button>
                   </div>
+                  <p className="mt-2 text-[10px] text-gray-600 leading-snug">
+                    Both open in Illustrator, CorelDRAW, Affinity and Inkscape.
+                  </p>
                 </div>
               ))}
             </div>
