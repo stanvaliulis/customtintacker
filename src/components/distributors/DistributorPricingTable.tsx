@@ -1,5 +1,5 @@
 import { PricingTier } from '@/types/product';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getResellerUnitPrice } from '@/lib/utils';
 
 interface DistributorPricingTableProps {
   productName: string;
@@ -17,7 +17,11 @@ export default function DistributorPricingTable({
       <div className="bg-gray-900 px-6 py-4">
         <h3 className="text-lg font-semibold text-white">{productName}</h3>
         <p className="text-sm text-gray-400">
-          Distributor discount: <span className="text-amber-400 font-semibold">{discountPercent}% off</span> retail pricing
+          {pricingTiers.some((t) => t.resellerPrice) ? (
+            <>Reseller pricing vs. <span className="text-amber-400 font-semibold">list</span> pricing</>
+          ) : (
+            <>Distributor discount: <span className="text-amber-400 font-semibold">{discountPercent}% off</span> retail pricing</>
+          )}
         </p>
       </div>
 
@@ -34,7 +38,7 @@ export default function DistributorPricingTable({
           <tbody>
             {pricingTiers.map((tier, idx) => {
               const retailPrice = tier.pricePerUnit;
-              const distributorPrice = Math.round(retailPrice * (1 - discountPercent / 100));
+              const distributorPrice = getResellerUnitPrice(tier, 1, discountPercent / 100);
               const savings = retailPrice - distributorPrice;
               const quantityLabel = tier.maxQuantity
                 ? `${tier.minQuantity} - ${tier.maxQuantity}`
