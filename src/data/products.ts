@@ -11,7 +11,8 @@ export const backingOptions: BackingConfig[] = [
   },
 ];
 
-export const products: Product[] = [
+/** Every product, including ones not yet on the TackerProducts sheet (admin only). */
+export const allProducts: Product[] = [
   // ─── BOTTLE CAP ───────────────────────────────────────────────────────
   {
     id: '22-inch-bottle-cap-tacker',
@@ -4079,4 +4080,10 @@ export const products: Product[] = [
 ];
 
 // Attach reseller prices from the TackerProducts sheet (Wholesale tab)
-products.forEach(applyResellerPricing);
+allProducts.forEach(applyResellerPricing);
+
+/**
+ * Products shown on the public site: only ones priced on the TackerProducts
+ * sheet. Unpriced items are hidden for now (admin still sees them via allProducts).
+ */
+export const products: Product[] = allProducts.filter((p) => p.pricingTiers.length > 0);
