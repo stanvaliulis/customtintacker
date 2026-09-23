@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { isAdminAuthenticated } from '@/lib/admin-auth';
 import { isDatabaseConfigured } from '@/lib/env';
-import { products } from '@/data/products';
+import { allProducts as products } from '@/data/products';
 import { readJsonFile } from '@/lib/json-store';
 
 export async function GET() {
