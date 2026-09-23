@@ -4082,8 +4082,16 @@ export const allProducts: Product[] = [
 // Attach reseller prices from the TackerProducts sheet (Wholesale tab)
 allProducts.forEach(applyResellerPricing);
 
+/** Unpriced products that stay visible as "Request a Quote" items. */
+export const QUOTE_ONLY_SLUGS = new Set(['custom-shape-tacker']);
+
 /**
- * Products shown on the public site: only ones priced on the TackerProducts
- * sheet. Unpriced items are hidden for now (admin still sees them via allProducts).
+ * Shown on the public site: products priced on the TackerProducts sheet,
+ * plus quote-only items. Other unpriced items are hidden for now
+ * (admin still sees them via allProducts).
  */
-export const products: Product[] = allProducts.filter((p) => p.pricingTiers.length > 0);
+export function isListedProduct(p: Pick<Product, 'slug' | 'pricingTiers'>): boolean {
+  return p.pricingTiers.length > 0 || QUOTE_ONLY_SLUGS.has(p.slug);
+}
+
+export const products: Product[] = allProducts.filter(isListedProduct);
