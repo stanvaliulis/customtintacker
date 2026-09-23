@@ -5,6 +5,7 @@ import { backingOptions } from '@/data/products';
 import { getAllProducts } from '@/lib/products';
 import { getResellerUnitPrice } from '@/lib/utils';
 import { detectSpam, rateLimit } from '@/lib/spam-protection';
+import { auth } from '@/lib/auth';
 
 interface CartItem {
   productId: string;
@@ -49,8 +50,14 @@ export async function POST(req: NextRequest) {
     if (spamDetected) return spamDetected;
 
     const { items, customerEmail, customerName, customerPhone, company,
-            shippingAddress, city, state, zip, notes,
-            isDistributor, distributorDiscount = 0.40 } = body;
+            shippingAddress, city, state, zip, notes } = body;
+
+    // Reseller pricing only for a logged-in distributor — decided on the
+    // server from the session, never from what the browser sends.
+    const authSession = await auth();
+    const role = authSession?.user?.role;
+    const isDistributor = role === 'distributor' || role === 'wholesale';
+    const distributorDiscount = authSession?.user?.discountTier ?? 0.40;
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       return NextResponse.json({ error: 'Cart is empty.' }, { status: 400 });
