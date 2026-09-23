@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { Product, ProductShape } from '@/types/product';
 import { ArrowRight } from 'lucide-react';
 import ProductImagePlaceholder from './ProductImagePlaceholder';
-import { formatPrice } from '@/lib/utils';
+import FromPrice from './FromPrice';
 
 interface ProductCardProps {
   product: Product;
@@ -72,9 +72,7 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           <div className="pt-3 border-t border-gray-800/50">
             {product.pricingTiers.length > 0 ? (
-              <span className="text-base font-semibold text-amber-400">
-                From {formatPrice(product.pricingTiers[product.pricingTiers.length - 1].pricePerUnit)}/ea
-              </span>
+              <FromPrice tiers={product.pricingTiers} className="text-base font-semibold text-amber-400" />
             ) : (
               <span className="text-base font-semibold text-amber-400">
                 Request Pricing
