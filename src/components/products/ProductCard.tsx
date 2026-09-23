@@ -75,7 +75,7 @@ export default function ProductCard({ product }: ProductCardProps) {
               <FromPrice tiers={product.pricingTiers} className="text-base font-semibold text-amber-400" />
             ) : (
               <span className="text-base font-semibold text-amber-400">
-                Request Pricing
+                Request a Quote
               </span>
             )}
           </div>
