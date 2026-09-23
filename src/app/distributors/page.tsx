@@ -256,7 +256,7 @@ export default function DistributorsPage() {
               discountPercent={30}
             />
             <p className="text-center text-sm text-gray-500 mt-4">
-              Pricing shown reflects a 30% distributor discount. All prices are per unit.
+              Reseller prices shown are what approved distributors pay per unit.
               Setup fees and backing upgrades are additional. Contact us for a complete price list.
             </p>
           </div>
