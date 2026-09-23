@@ -66,6 +66,11 @@ function dbProductToApp(p: any): AppProduct {
   });
 }
 
+/** Only products priced on the TackerProducts sheet are shown publicly. */
+function isListed(p: AppProduct): boolean {
+  return p.pricingTiers.length > 0;
+}
+
 export async function getAllProducts(): Promise<AppProduct[]> {
   if (!hasDatabase) return getStaticProducts();
 
@@ -77,7 +82,7 @@ export async function getAllProducts(): Promise<AppProduct[]> {
     });
     // Fall back to static data if DB has no products (not yet seeded)
     if (products.length === 0) return getStaticProducts();
-    return products.map(dbProductToApp);
+    return products.map(dbProductToApp).filter(isListed);
   } catch {
     return getStaticProducts();
   }
@@ -97,7 +102,8 @@ export async function getProductBySlug(slug: string): Promise<AppProduct | null>
       include: productIncludes,
     });
     if (!p) return staticMatch; // Fall back to static
-    return dbProductToApp(p);
+    const app = dbProductToApp(p);
+    return isListed(app) ? app : null;
   } catch {
     return staticMatch;
   }
@@ -116,7 +122,8 @@ export async function getProductById(id: string): Promise<AppProduct | null> {
       include: productIncludes,
     });
     if (!p) return staticMatch;
-    return dbProductToApp(p);
+    const app = dbProductToApp(p);
+    return isListed(app) ? app : null;
   } catch {
     return staticMatch;
   }
@@ -136,7 +143,7 @@ export async function getFeaturedProducts(): Promise<AppProduct[]> {
       orderBy: { sortOrder: 'asc' },
     });
     if (products.length === 0) return staticFeatured;
-    return products.map(dbProductToApp);
+    return products.map(dbProductToApp).filter(isListed);
   } catch {
     return staticFeatured;
   }
