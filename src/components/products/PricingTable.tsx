@@ -1,7 +1,7 @@
 'use client';
 
 import { PricingTier } from '@/types/product';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice, getResellerUnitPrice } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { TrendingDown, Star, Info, Tag } from 'lucide-react';
 import { useDistributor } from '@/context/DistributorContext';
@@ -36,7 +36,9 @@ export default function PricingTable({ tiers, selectedQuantity, backingMultiplie
         {isDistributor ? (
           <span className="text-xs text-amber-400 font-medium flex items-center gap-1">
             <Tag className="w-3 h-3" />
-            {Math.round(distributorDiscount * 100)}% distributor discount
+            {tiers.some((t) => t.resellerPrice)
+              ? 'Reseller pricing'
+              : `${Math.round(distributorDiscount * 100)}% distributor discount`}
           </span>
         ) : (
           firstTierPrice > 0 && (
@@ -75,7 +77,7 @@ export default function PricingTable({ tiers, selectedQuantity, backingMultiplie
               const isBestValue = index === bestValueIndex;
               const adjustedRetail = Math.round(tier.pricePerUnit * backingMultiplier);
               const adjustedCatalog = Math.round(tier.catalogPrice * backingMultiplier);
-              const distributorCost = Math.round(adjustedCatalog * (1 - distributorDiscount));
+              const distributorCost = getResellerUnitPrice(tier, backingMultiplier, distributorDiscount);
               const margin = adjustedCatalog - distributorCost;
               const marginPercent = adjustedCatalog > 0 ? Math.round((margin / adjustedCatalog) * 100) : 0;
               const savingsPercent = firstTierPrice > 0
