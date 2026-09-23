@@ -1,6 +1,7 @@
 import type { Product as AppProduct, PricingTier, BackingOption, ProductCategory, ProductShape } from '@/types/product';
 import { isDatabaseConfigured } from './env';
 import { applyResellerPricing } from '@/data/reseller-pricing';
+import { isListedProduct } from '@/data/products';
 
 // Check if database is configured
 const hasDatabase = isDatabaseConfigured();
@@ -66,9 +67,9 @@ function dbProductToApp(p: any): AppProduct {
   });
 }
 
-/** Only products priced on the TackerProducts sheet are shown publicly. */
+/** Sheet-priced products plus quote-only items are shown publicly. */
 function isListed(p: AppProduct): boolean {
-  return p.pricingTiers.length > 0;
+  return isListedProduct(p);
 }
 
 export async function getAllProducts(): Promise<AppProduct[]> {
