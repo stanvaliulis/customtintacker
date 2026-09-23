@@ -9,6 +9,7 @@ export interface PricingTier {
   maxQuantity: number | null;
   pricePerUnit: number; // cents (retail price)
   catalogPrice: number; // cents (ASI/SAGE list price — what distributors show in catalogs)
+  resellerPrice?: number; // cents — reseller/distributor cost from the TackerProducts sheet
 }
 
 export interface BackingConfig {
