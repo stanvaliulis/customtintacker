@@ -1,5 +1,6 @@
 import type { Product as AppProduct, PricingTier, BackingOption, ProductCategory, ProductShape } from '@/types/product';
 import { isDatabaseConfigured } from './env';
+import { applyResellerPricing } from '@/data/reseller-pricing';
 
 // Check if database is configured
 const hasDatabase = isDatabaseConfigured();
@@ -25,7 +26,7 @@ const productIncludes = {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function dbProductToApp(p: any): AppProduct {
-  return {
+  return applyResellerPricing({
     id: p.id,
     sku: p.sku ?? undefined,
     slug: p.slug,
@@ -62,7 +63,7 @@ function dbProductToApp(p: any): AppProduct {
       shrinkWrapped: p.shrinkWrapped,
       madeInUSA: p.madeInUSA,
     },
-  };
+  });
 }
 
 export async function getAllProducts(): Promise<AppProduct[]> {
