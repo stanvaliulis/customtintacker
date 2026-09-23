@@ -1,4 +1,5 @@
 import { Product, BackingConfig, ProductCategory } from '@/types/product';
+import { applyResellerPricing } from './reseller-pricing';
 
 export const backingOptions: BackingConfig[] = [
   {
@@ -4076,3 +4077,6 @@ export const products: Product[] = [
     metadata: { material: 'Embossed Vinyl', printMethod: 'Full Color Digital Print', mountingHoles: 2, shrinkWrapped: true, madeInUSA: true },
   },
 ];
+
+// Attach reseller prices from the TackerProducts sheet (Wholesale tab)
+products.forEach(applyResellerPricing);
