@@ -3,7 +3,7 @@
 import { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
 import { Product, BackingOption, CartItem, PriceTier } from '@/types/product';
 import { backingOptions } from '@/data/products';
-import { getPriceForQuantity, getCatalogPriceForQuantity } from '@/lib/utils';
+import { getPriceForQuantity, getResellerUnitPrice } from '@/lib/utils';
 
 interface CartState {
   items: CartItem[];
@@ -31,10 +31,11 @@ function calculateUnitPrice(
   const multiplier = backingConfig?.priceMultiplier ?? 1.0;
 
   if (priceTier === 'distributor') {
-    const catalogPrice = getCatalogPriceForQuantity(product.pricingTiers, quantity);
-    if (!catalogPrice) return 0;
-    const adjustedCatalog = Math.round(catalogPrice * multiplier);
-    return Math.round(adjustedCatalog * (1 - distributorDiscount));
+    const tier = product.pricingTiers.find(
+      (t) => quantity >= t.minQuantity && (t.maxQuantity === null || quantity <= t.maxQuantity)
+    );
+    if (!tier) return 0;
+    return getResellerUnitPrice(tier, multiplier, distributorDiscount);
   }
 
   const basePrice = getPriceForQuantity(product.pricingTiers, quantity);
