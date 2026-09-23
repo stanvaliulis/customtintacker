@@ -27,6 +27,19 @@ export function getCatalogPriceForQuantity(tiers: PricingTier[], quantity: numbe
   return tier ? tier.catalogPrice : null;
 }
 
+/**
+ * What a reseller pays per unit for a tier. Uses the sheet's reseller price
+ * when we have one; otherwise falls back to list price minus the discount.
+ */
+export function getResellerUnitPrice(
+  tier: PricingTier,
+  multiplier: number = 1,
+  distributorDiscount: number = 0.40
+): number {
+  if (tier.resellerPrice) return Math.round(tier.resellerPrice * multiplier);
+  return Math.round(Math.round(tier.catalogPrice * multiplier) * (1 - distributorDiscount));
+}
+
 export function getLowestPrice(tiers: PricingTier[]): number {
   return Math.min(...tiers.map((t) => t.pricePerUnit));
 }
@@ -60,7 +73,7 @@ export function getDistributorPrice(
 
   const retailPrice = tier.pricePerUnit;
   const catalogPrice = tier.catalogPrice;
-  const distributorCost = Math.round(catalogPrice * (1 - distributorDiscount));
+  const distributorCost = getResellerUnitPrice(tier, 1, distributorDiscount);
   const distributorSavings = retailPrice > 0
     ? Math.round(((retailPrice - distributorCost) / retailPrice) * 100)
     : 0;
