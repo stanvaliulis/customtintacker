@@ -3,6 +3,7 @@ import { stripe } from '@/lib/stripe';
 import { env } from '@/lib/env';
 import { backingOptions } from '@/data/products';
 import { getAllProducts } from '@/lib/products';
+import { getResellerUnitPrice } from '@/lib/utils';
 import { detectSpam, rateLimit } from '@/lib/spam-protection';
 
 interface CartItem {
@@ -84,8 +85,7 @@ export async function POST(req: NextRequest) {
 
       let unitPrice: number;
       if (isDistributor && item.priceTier === 'distributor') {
-        const catalogPrice = Math.round(tier.catalogPrice * multiplier);
-        unitPrice = Math.round(catalogPrice * (1 - distributorDiscount));
+        unitPrice = getResellerUnitPrice(tier, multiplier, distributorDiscount);
       } else {
         unitPrice = Math.round(tier.pricePerUnit * multiplier);
       }
