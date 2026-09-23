@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { isAdminAuthenticated } from '@/lib/admin-auth';
 import { isDatabaseConfigured } from '@/lib/env';
-import { products as staticProducts } from '@/data/products';
+import { allProducts as staticProducts } from '@/data/products';
 import { readJsonFile, writeJsonFile } from '@/lib/json-store';
 
 function getProductFromFiles(id: string) {
