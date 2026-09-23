@@ -3,9 +3,9 @@ import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Container from '@/components/ui/Container';
 import AddToCartForm from '@/components/products/AddToCartForm';
+import FromPrice from '@/components/products/FromPrice';
 import ProductImagePlaceholder from '@/components/products/ProductImagePlaceholder';
 import { getAllProducts, getProductBySlug } from '@/lib/products';
-import { getLowestPrice, formatPrice } from '@/lib/utils';
 import Link from 'next/link';
 import JsonLd from '@/components/seo/JsonLd';
 import { getProductSchema, getBreadcrumbSchema } from '@/lib/structured-data';
@@ -224,9 +224,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
               {product.pricingTiers.length > 0 && (
                 <div className="flex items-baseline gap-3 mb-5">
-                  <span className="text-lg font-semibold text-amber-400">
-                    From {formatPrice(product.pricingTiers[product.pricingTiers.length - 1].pricePerUnit)}/ea
-                  </span>
+                  <FromPrice tiers={product.pricingTiers} className="text-lg font-semibold text-amber-400" />
                   <span className="text-sm text-gray-500">at volume</span>
                 </div>
               )}
