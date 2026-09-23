@@ -4,6 +4,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { getBreadcrumbSchema } from '@/lib/structured-data';
 import { siteConfig } from '@/data/siteConfig';
 import { IndustryData } from '@/data/industries';
+import { products as listedProducts } from '@/data/products';
 import {
   Beer,
   Wine,
@@ -150,7 +151,9 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
             </p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {industry.recommendedProducts.map((product, i) => (
+            {industry.recommendedProducts
+              .filter((rp) => listedProducts.some((p) => p.slug === rp.slug))
+              .map((product, i) => (
               <Link
                 key={i}
                 href={`/products/${product.slug}`}
