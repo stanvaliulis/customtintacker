@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Container from '@/components/ui/Container';
 import JsonLd from '@/components/seo/JsonLd';
 import { getBreadcrumbSchema } from '@/lib/structured-data';
@@ -58,7 +59,8 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
           }}
         />
 
-        <Container className="relative py-16 sm:py-20 lg:py-28">
+        <Container className="relative py-16 sm:py-20 lg:py-24">
+          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
@@ -68,7 +70,7 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
                 {industry.name}
               </p>
             </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight">
+            <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold text-white tracking-tight">
               {industry.headline.split(' ').slice(0, -1).join(' ')}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-500">
                 {industry.headline.split(' ').slice(-1)}
@@ -102,6 +104,23 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
               <span className="w-1 h-1 rounded-full bg-gray-700" />
               <span>Made in USA</span>
             </div>
+          </div>
+          <div className="relative">
+            <div className="overflow-hidden rounded-2xl border border-gray-800/60 shadow-2xl shadow-black/40">
+              <Image
+                src={`/images/industries/${industry.slug}.webp`}
+                alt={`Sample custom embossed tin tacker signs for ${industry.name.toLowerCase()}`}
+                width={1600}
+                height={1000}
+                priority
+                sizes="(min-width: 1024px) 50vw, 100vw"
+                className="h-auto w-full"
+              />
+            </div>
+            <p className="mt-3 text-center text-xs text-gray-500">
+              Sample designs. Your artwork, any shape.
+            </p>
+          </div>
           </div>
         </Container>
       </section>
