@@ -48,19 +48,20 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
 
       {/* ── Hero Section ─────────────────────────────────────────────── */}
       <section className="relative bg-gray-950 overflow-hidden border-b border-gray-800/50">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-gray-900 to-amber-950/30" />
-        <div className="absolute -top-24 -right-24 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl" />
-        <div className="absolute -bottom-32 -left-32 w-80 h-80 bg-amber-600/5 rounded-full blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage:
-              'repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.1) 2px, rgba(255,255,255,0.1) 3px)',
-          }}
+        {/* Background photo of the kind of place these signs hang in */}
+        <Image
+          src={industry.heroPhoto.url}
+          alt=""
+          fill
+          priority
+          unoptimized
+          sizes="100vw"
+          className="object-cover"
         />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-950/95 via-gray-950/80 to-gray-950/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-gray-950 via-transparent to-gray-950/30" />
 
-        <Container className="relative py-16 sm:py-20 lg:py-24">
-          <div className="grid gap-10 lg:grid-cols-2 lg:items-center">
+        <Container className="relative py-20 sm:py-28 lg:py-36">
           <div className="max-w-3xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
@@ -70,13 +71,13 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
                 {industry.name}
               </p>
             </div>
-            <h1 className="text-4xl sm:text-5xl xl:text-6xl font-extrabold text-white tracking-tight">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white tracking-tight drop-shadow-lg">
               {industry.headline.split(' ').slice(0, -1).join(' ')}{' '}
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-300 to-yellow-500">
                 {industry.headline.split(' ').slice(-1)}
               </span>
             </h1>
-            <p className="mt-6 text-lg sm:text-xl text-gray-400 max-w-2xl leading-relaxed">
+            <p className="mt-6 text-lg sm:text-xl text-gray-300 max-w-2xl leading-relaxed">
               {industry.heroSubtext}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
@@ -94,7 +95,7 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
                 Get a Free Quote
               </Link>
             </div>
-            <div className="mt-6 flex items-center gap-4 text-sm text-gray-500">
+            <div className="mt-6 flex items-center gap-4 text-sm text-gray-400">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-amber-500/60" />
                 25 minimum order
@@ -105,24 +106,15 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
               <span>Made in USA</span>
             </div>
           </div>
-          <div className="relative">
-            <div className="overflow-hidden rounded-2xl border border-gray-800/60 shadow-2xl shadow-black/40">
-              <Image
-                src={`/images/industries/${industry.slug}.webp`}
-                alt={`Sample custom embossed tin tacker signs for ${industry.name.toLowerCase()}`}
-                width={1600}
-                height={1000}
-                priority
-                sizes="(min-width: 1024px) 50vw, 100vw"
-                className="h-auto w-full"
-              />
-            </div>
-            <p className="mt-3 text-center text-xs text-gray-500">
-              Sample designs. Your artwork, any shape.
-            </p>
-          </div>
-          </div>
         </Container>
+        <a
+          href={industry.heroPhoto.creditUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute bottom-3 right-4 text-[11px] text-gray-500 hover:text-gray-300"
+        >
+          Photo: {industry.heroPhoto.credit} / Unsplash
+        </a>
       </section>
 
       {/* ── Benefits Section ─────────────────────────────────────────── */}
