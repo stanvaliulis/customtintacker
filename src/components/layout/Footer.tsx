@@ -20,11 +20,12 @@ export default function Footer() {
           <div>
             <h3 className="font-semibold text-white mb-4">Products</h3>
             <ul className="space-y-2 text-sm">
-              <li><Link href="/products?category=standard" className="hover:text-white transition-colors">Standard Tackers</Link></li>
-              <li><Link href="/products?shape=circle" className="hover:text-white transition-colors">Circle Tackers</Link></li>
-              <li><Link href="/products?shape=can" className="hover:text-white transition-colors">Can Shapes</Link></li>
-              <li><Link href="/products?category=specialty" className="hover:text-white transition-colors">Specialty Shapes</Link></li>
-              <li><Link href="/products?category=custom" className="hover:text-white transition-colors">Custom Die-Cut</Link></li>
+              <li><Link href="/products?material=aluminum&sub=squares" className="hover:text-white transition-colors">Square Tackers</Link></li>
+              <li><Link href="/products?material=aluminum&sub=circles" className="hover:text-white transition-colors">Circle Tackers</Link></li>
+              <li><Link href="/products?material=aluminum&sub=cans" className="hover:text-white transition-colors">Can Shapes</Link></li>
+              <li><Link href="/products?material=aluminum&sub=states" className="hover:text-white transition-colors">State Shapes</Link></li>
+              <li><Link href="/products?material=vinyl" className="hover:text-white transition-colors">Embossed Vinyl</Link></li>
+              <li><Link href="/products?material=aluminum&sub=custom" className="hover:text-white transition-colors">Custom Shapes</Link></li>
             </ul>
           </div>
 
