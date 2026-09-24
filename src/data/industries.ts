@@ -25,6 +25,8 @@ export interface IndustryData {
   metaDescription: string;
   keywords: string[];
   breadcrumbLabel: string;
+  /** Hero background photo (free Unsplash License, hotlinked from Unsplash's CDN). */
+  heroPhoto: { url: string; credit: string; creditUrl: string };
 }
 
 export const industries: IndustryData[] = [
@@ -109,6 +111,11 @@ export const industries: IndustryData[] = [
       'custom beer signs',
     ],
     breadcrumbLabel: 'Brewery Signs',
+    heroPhoto: {
+      url: 'https://images.unsplash.com/photo-1779591211763-7a54431e16ab?auto=format&fit=crop&w=2000&q=70',
+      credit: 'Lens Fables',
+      creditUrl: 'https://unsplash.com/photos/iYqVcIoVf0o',
+    },
   },
 
   // ─── BAR SIGNS ────────────────────────────────────────────────────────
@@ -192,6 +199,11 @@ export const industries: IndustryData[] = [
       'bar signage',
     ],
     breadcrumbLabel: 'Bar Signs',
+    heroPhoto: {
+      url: 'https://images.unsplash.com/photo-1675419092955-3dfff1351e01?auto=format&fit=crop&w=2000&q=70',
+      credit: 'Evgeniy Smersh',
+      creditUrl: 'https://unsplash.com/photos/F-u9yyYHMKg',
+    },
   },
 
   // ─── CANNABIS SIGNS ───────────────────────────────────────────────────
@@ -275,6 +287,11 @@ export const industries: IndustryData[] = [
       'custom dispensary signs',
     ],
     breadcrumbLabel: 'Cannabis Signs',
+    heroPhoto: {
+      url: 'https://images.unsplash.com/photo-1764795849674-829c8d6b6c1b?auto=format&fit=crop&w=2000&q=70',
+      credit: 'Cova Software',
+      creditUrl: 'https://unsplash.com/photos/gNE33KKI7BY',
+    },
   },
 
   // ─── RESTAURANT SIGNS ─────────────────────────────────────────────────
@@ -358,6 +375,11 @@ export const industries: IndustryData[] = [
       'restaurant wall art',
     ],
     breadcrumbLabel: 'Restaurant Signs',
+    heroPhoto: {
+      url: 'https://images.unsplash.com/photo-1667388969250-1c7220bf3f37?auto=format&fit=crop&w=2000&q=70',
+      credit: 'Glenov Brankovic',
+      creditUrl: 'https://unsplash.com/photos/e4B5AvA7Jqo',
+    },
   },
 
   // ─── COFFEE SIGNS ─────────────────────────────────────────────────────
@@ -441,6 +463,11 @@ export const industries: IndustryData[] = [
       'custom coffee signs',
     ],
     breadcrumbLabel: 'Coffee Signs',
+    heroPhoto: {
+      url: 'https://images.unsplash.com/photo-1542181961-9590d0c79dab?auto=format&fit=crop&w=2000&q=70',
+      credit: 'RR Abrot',
+      creditUrl: 'https://unsplash.com/photos/pNIgH0y3upM',
+    },
   },
 
   // ─── SPORTS SIGNS ─────────────────────────────────────────────────────
@@ -524,6 +551,11 @@ export const industries: IndustryData[] = [
       'game day signs',
     ],
     breadcrumbLabel: 'Sports Signs',
+    heroPhoto: {
+      url: 'https://images.unsplash.com/photo-1671368913134-c211bc02487f?auto=format&fit=crop&w=2000&q=70',
+      credit: 'Amit Lahav',
+      creditUrl: 'https://unsplash.com/photos/6I-HWjwn-hk',
+    },
   },
 ];
 
