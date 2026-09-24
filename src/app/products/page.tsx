@@ -7,7 +7,10 @@ import JsonLd from '@/components/seo/JsonLd';
 import { getBreadcrumbSchema } from '@/lib/structured-data';
 import { siteConfig } from '@/data/siteConfig';
 import { getAllProducts } from '@/lib/products';
-import { Package, Sparkles } from 'lucide-react';
+import { Package, Sparkles, ChevronRight } from 'lucide-react';
+import { catalog, getMaterial, getSubcategory, getMaterialGroup, getSubcategoryLabel } from '@/data/categories';
+import type { Product } from '@/types/product';
+import Link from 'next/link';
 
 export const revalidate = 3600; // revalidate every hour
 
@@ -52,15 +55,47 @@ export default async function ProductsPage({ searchParams }: Props) {
   const params = await searchParams;
   const shapeFilter = params.shape || '';
   const categoryFilter = params.category || '';
+  const materialFilter = getMaterialGroup(params.material || '') ? params.material! : '';
+  const subFilter = materialFilter && getSubcategoryLabel(materialFilter, params.sub || '') ? params.sub! : '';
 
-  let products = await getAllProducts();
-  if (shapeFilter) {
-    products = products.filter((p) => p.shape === shapeFilter);
+  const allProducts = await getAllProducts();
+  allProducts.sort((a, b) => a.sortOrder - b.sortOrder);
+
+  // Counts for the sidebar
+  const counts: Record<string, number> = { all: allProducts.length };
+  for (const p of allProducts) {
+    const m = getMaterial(p);
+    const key = `${m}/${getSubcategory(p)}`;
+    counts[m] = (counts[m] ?? 0) + 1;
+    counts[key] = (counts[key] ?? 0) + 1;
   }
-  if (categoryFilter) {
-    products = products.filter((p) => p.category === categoryFilter);
+
+  let products = allProducts;
+  // Older links (?shape= / ?category=) keep working
+  if (shapeFilter) products = products.filter((p) => p.shape === shapeFilter);
+  if (categoryFilter) products = products.filter((p) => p.category === categoryFilter);
+  if (materialFilter) products = products.filter((p) => getMaterial(p) === materialFilter);
+  if (subFilter) products = products.filter((p) => getSubcategory(p) === subFilter);
+
+  // Browsing (no sub category picked): show products in sub category sections
+  const grouped = !subFilter && !shapeFilter && !categoryFilter;
+  const sections: { id: string; material: string; title: string; description: string; items: Product[] }[] = [];
+  if (grouped) {
+    for (const group of catalog) {
+      if (materialFilter && group.value !== materialFilter) continue;
+      for (const sc of group.subcategories) {
+        const items = products.filter((p) => getMaterial(p) === group.value && getSubcategory(p) === sc.value);
+        if (items.length) {
+          sections.push({ id: `${group.value}-${sc.value}`, material: group.label, title: sc.label, description: sc.description, items });
+        }
+      }
+    }
   }
-  products.sort((a, b) => a.sortOrder - b.sortOrder);
+  const heading = subFilter
+    ? `${getMaterialGroup(materialFilter)!.label} · ${getSubcategoryLabel(materialFilter, subFilter)}`
+    : materialFilter
+      ? getMaterialGroup(materialFilter)!.label
+      : '';
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -127,14 +162,59 @@ export default async function ProductsPage({ searchParams }: Props) {
             <aside className="w-full md:w-60 shrink-0">
               <div className="md:sticky md:top-24 bg-gray-900/50 rounded-xl border border-gray-800/50 p-5">
                 <Suspense>
-                  <ProductFilters />
+                  <ProductFilters counts={counts} />
                 </Suspense>
               </div>
             </aside>
 
             {/* Product Grid */}
-            <div className="flex-1">
-              <ProductGrid products={products} />
+            <div className="flex-1 min-w-0">
+              {heading && (
+                <nav className="mb-6 flex items-center gap-1.5 text-sm text-gray-500" aria-label="Category">
+                  <Link href="/products" className="hover:text-gray-300">All Products</Link>
+                  {materialFilter && (
+                    <>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                      <Link href={`/products?material=${materialFilter}`} className={subFilter ? 'hover:text-gray-300' : 'text-amber-400'}>
+                        {getMaterialGroup(materialFilter)!.label}
+                      </Link>
+                    </>
+                  )}
+                  {subFilter && (
+                    <>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                      <span className="text-amber-400">{getSubcategoryLabel(materialFilter, subFilter)}</span>
+                    </>
+                  )}
+                </nav>
+              )}
+              {grouped ? (
+                <div className="space-y-14">
+                  {sections.map((sec) => (
+                    <section key={sec.id} id={sec.id} className="scroll-mt-24">
+                      <div className="mb-5 flex items-end justify-between gap-4 border-b border-gray-800/60 pb-3">
+                        <div>
+                          {!materialFilter && (
+                            <p className="text-xs font-semibold uppercase tracking-wider text-amber-400/70">{sec.material}</p>
+                          )}
+                          <h2 className="text-2xl font-bold text-white">{sec.title}</h2>
+                          <p className="mt-1 text-sm text-gray-500">{sec.description}</p>
+                        </div>
+                        <span className="shrink-0 text-sm text-gray-500">
+                          {sec.items.length} product{sec.items.length !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <ProductGrid products={sec.items} />
+                    </section>
+                  ))}
+                  {sections.length === 0 && <ProductGrid products={[]} />}
+                </div>
+              ) : (
+                <>
+                  {heading && <h2 className="mb-5 text-2xl font-bold text-white">{heading}</h2>}
+                  <ProductGrid products={products} />
+                </>
+              )}
             </div>
           </div>
         </Container>
