@@ -6,6 +6,7 @@ import { ShoppingCart, ArrowRight, Check, Sparkles, Info, Clock } from 'lucide-r
 import { RUSH_FEE_RATE } from '@/context/CartContext';
 import { products, backingOptions } from '@/data/products';
 import { formatPrice, getPriceForQuantity } from '@/lib/utils';
+import { lowestTier, publicTiers } from '@/lib/catalog-pricing';
 import { useCart } from '@/context/CartContext';
 import { Product, BackingOption, ProductShape } from '@/types/product';
 import Button from '@/components/ui/Button';
@@ -244,7 +245,7 @@ export default function QuoteBuilder() {
           {availableProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {availableProducts.map((product) => {
-                const lowest = Math.min(...product.pricingTiers.map((t) => t.pricePerUnit));
+                const lowest = lowestTier(publicTiers(product.pricingTiers));
                 return (
                   <button
                     key={product.id}
@@ -260,8 +261,8 @@ export default function QuoteBuilder() {
                       <p className="text-xs text-gray-500 mt-0.5">{product.shortDescription.slice(0, 60)}...</p>
                     </div>
                     <div className="text-right shrink-0 ml-3">
-                      <span className="text-sm font-bold text-amber-600">from {formatPrice(lowest)}</span>
-                      <p className="text-xs text-gray-400">per unit</p>
+                      <span className="text-sm font-bold text-amber-600">{lowest ? `from ${formatPrice(lowest.pricePerUnit)}` : 'Request pricing'}</span>
+                      <p className="text-xs text-gray-400">{lowest ? `per unit at ${lowest.minQuantity.toLocaleString()} units` : 'Custom quote'}</p>
                     </div>
                   </button>
                 );
@@ -281,8 +282,8 @@ export default function QuoteBuilder() {
           <StepHeader step={3} title="Material" completed={!!selectedProduct} />
           <div className="grid grid-cols-1 gap-3">
             <div className="flex flex-col p-4 rounded-xl border-2 border-amber-500 bg-amber-50 text-left">
-              <span className="font-semibold text-gray-900 text-sm">{backingOptions[0]?.label ?? '.024" Gauge Aluminum'}</span>
-              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{backingOptions[0]?.description ?? 'Industry-standard recycled aluminum.'}</p>
+              <span className="font-semibold text-gray-900 text-sm">{selectedProduct?.metadata.material || 'Choose a product'}</span>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">{selectedProduct?.metadata.material.toLowerCase().includes('aluminum') ? backingConfig.description : 'Base material for the selected product. Confirm production details with your quote.'}</p>
               <span className="text-xs font-medium text-green-600 mt-2">Included</span>
             </div>
           </div>
@@ -438,7 +439,7 @@ export default function QuoteBuilder() {
                 label="Size"
                 value={selectedProduct?.dimensions.displaySize ?? '--'}
               />
-              <SummaryRow label="Gauge" value={backingConfig.label} />
+              <SummaryRow label="Material" value={selectedProduct?.metadata.material || '--'} />
               <SummaryRow label="Quantity" value={selectedProduct ? quantity.toLocaleString() : '--'} />
               <SummaryRow label="Rush" value={isRush ? 'Yes (+25%)' : 'Standard'} />
             </div>

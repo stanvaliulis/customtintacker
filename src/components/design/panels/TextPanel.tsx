@@ -120,6 +120,7 @@ export default function TextPanel({ onAddText }: TextPanelProps) {
           Font Family
         </h4>
         <select
+          aria-label="Font family"
           value={selectedFont}
           onChange={(e) => setSelectedFont(e.target.value)}
           className="w-full bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-2 focus:outline-none focus:ring-1 focus:ring-amber-500"
@@ -169,6 +170,7 @@ export default function TextPanel({ onAddText }: TextPanelProps) {
         <div className="flex items-center gap-2">
           <input
             type="color"
+            aria-label="Text color"
             value={selectedColor}
             onChange={(e) => {
               setSelectedColor(e.target.value);
@@ -178,6 +180,7 @@ export default function TextPanel({ onAddText }: TextPanelProps) {
           />
           <input
             type="text"
+            aria-label="Text color hex code"
             value={customHex}
             onChange={(e) => {
               setCustomHex(e.target.value);

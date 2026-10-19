@@ -98,7 +98,7 @@ export default function QuickQuote() {
           >
             {availableProducts.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.dimensions.displaySize}
+                {p.dimensions.displaySize} — {p.metadata.material}
               </option>
             ))}
           </select>
@@ -153,7 +153,7 @@ export default function QuickQuote() {
           <ArrowRight className="w-4 h-4" />
         </Link>
         <span className="text-xs text-gray-500">
-          Standard .024&quot; gauge shown. Customize gauge, artwork &amp; more in the full builder.
+          Base price for the selected {product?.metadata.material.toLowerCase() || 'material'}. Confirm options, artwork and final pricing in the full quote.
         </span>
       </div>
     </section>

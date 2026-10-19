@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef } from 'react';
+
 import { useCart } from '@/context/CartContext';
 import { useDistributor } from '@/context/DistributorContext';
 import { formatPrice } from '@/lib/utils';
@@ -9,12 +9,12 @@ import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Link from 'next/link';
-import { ArrowLeft, CreditCard, Lock } from 'lucide-react';
+import { ArrowLeft, FileText } from 'lucide-react';
 import { useSpamProtection } from '@/hooks/useSpamProtection';
 
 export default function CheckoutPage() {
-  const router = useRouter();
-  const { items, subtotal, rushFee, setupFees, total, isDistributor: cartIsDistributor } = useCart();
+
+  const { items, rushFee, setupFees, total, isDistributor: cartIsDistributor } = useCart();
   const { isDistributor, distributorInfo, distributorDiscount } = useDistributor();
   const { getSpamFields } = useSpamProtection();
 
@@ -25,26 +25,36 @@ export default function CheckoutPage() {
     company: distributorInfo?.companyName || '',
     notes: '',
   });
+  const requestKey = useRef<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [pendingOrder, setPendingOrder] = useState<string | null>(null);
 
   function updateField(field: string, value: string) {
+    setPendingOrder(null);
     setForm((prev) => ({ ...prev, [field]: value }));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: { preventDefault: () => void }) {
     e.preventDefault();
     if (!form.name || !form.email) {
       setError('Name and email are required.');
       return;
     }
+
+    if (items.some(i => !i.proofAttachment || i.designId !== i.proofAttachment.designId)) { setError('Review and attach a saved design for every product before continuing.'); return; }
     setLoading(true);
     setError('');
 
     try {
-      const res = await fetch('/api/checkout', {
+      const fingerprint = JSON.stringify({ form, items: items.map(i => ({ id: i.product.id, quantity: i.quantity, backing: i.selectedBacking, tier: i.priceTier, rush: i.isRush, design: i.proofAttachment })) });
+      const bytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(fingerprint));
+      const storageKey = 'ctt-invoice-attempt:' + Array.from(new Uint8Array(bytes), n => n.toString(16).padStart(2, '0')).join('');
+      requestKey.current = sessionStorage.getItem(storageKey) || crypto.randomUUID();
+      sessionStorage.setItem(storageKey, requestKey.current);
+      const res = await fetch('/api/orders/invoice', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Idempotency-Key': requestKey.current },
         body: JSON.stringify({
           ...getSpamFields(),
           customerName: form.name,
@@ -56,6 +66,8 @@ export default function CheckoutPage() {
           distributorDiscount: distributorDiscount,
           items: items.map((i) => ({
             productId: i.product.id,
+            designId: i.designId,
+            proofAttachment: i.proofAttachment,
             quantity: i.quantity,
             backingId: i.selectedBacking,
             priceTier: i.priceTier || 'retail',
@@ -72,13 +84,12 @@ export default function CheckoutPage() {
         return;
       }
 
-      // Redirect to Stripe Checkout
-      if (data.url) {
-        window.location.href = data.url;
+      if (data.orderId && data.status === 'invoice-requested' && data.paid === false) {
+        setPendingOrder(data.orderId);
       } else {
-        setError('Failed to create checkout session.');
-        setLoading(false);
+        setError('Invoice request was not confirmed. Please retry with the same details.');
       }
+      setLoading(false);
     } catch {
       setError('Failed to connect. Please try again.');
       setLoading(false);
@@ -143,11 +154,20 @@ export default function CheckoutPage() {
                 </div>
               )}
               <div className="flex justify-between pt-3 mt-2 border-t border-gray-200 font-semibold text-gray-900 text-lg">
-                <span>Total</span>
+                <span>Estimated subtotal</span>
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
 
+            <section className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="font-semibold text-gray-900 mb-3">Attached design proofs</h2>
+              {items.map(item => <div key={item.product.id} className="border-t py-3 text-sm">
+                <p className="font-medium">{item.product.name}</p>
+                <p>{item.proofAttachment ? `${item.proofAttachment.reviewVersion} — ${item.proofAttachment.reviewStatus}; embossing: ${item.proofAttachment.emboss.preference}` : 'No saved proof attached yet.'}</p>
+                <Link className="inline-block py-3 text-amber-700 underline" href={item.proofAttachment?.workflow === 'upload' ? '/upload-proof?product=' + encodeURIComponent(item.product.id) + '&review=' + encodeURIComponent(item.proofAttachment.designId) : '/design/' + encodeURIComponent(item.product.id)}>Review / attach saved design</Link>
+              </div>)}
+              <p className="text-xs text-gray-500">The server checks the saved version again before creating an order. Payment does not approve the print or emboss proof.</p>
+            </section>
             {/* Contact Info */}
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="font-semibold text-gray-900 mb-4">Contact Information</h2>
@@ -204,15 +224,12 @@ export default function CheckoutPage() {
               <p className="text-sm text-red-600 bg-red-50 rounded-lg px-4 py-3">{error}</p>
             )}
 
+            {pendingOrder && <p role="status" className="text-sm text-green-700">Invoice request {pendingOrder} recorded for Interstate Graphics. Unpaid: no invoice sent, no card charged and no production approval granted.</p>}
             <Button type="submit" loading={loading} size="lg" className="w-full">
-              <CreditCard className="w-5 h-5 mr-2" />
-              Proceed to Payment
+              <FileText className="w-5 h-5 mr-2" />
+              Invoice me
             </Button>
-
-            <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
-              <Lock className="w-3.5 h-3.5" />
-              <span>Secure checkout powered by Stripe. Shipping address collected on the next page.</span>
-            </div>
+            <p className="text-xs text-gray-500">Interstate Graphics will review your request and prepare an invoice. Shipping and tax will be confirmed separately. Submitting this request does not take payment or approve production.</p>
           </div>
         </form>
       </Container>

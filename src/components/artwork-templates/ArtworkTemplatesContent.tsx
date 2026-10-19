@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useMemo } from 'react';
 import { toast } from 'sonner';
 import { products } from '@/data/products';
@@ -182,13 +183,16 @@ export default function ArtworkTemplatesContent() {
 
                   <div className="text-xs text-gray-500 mb-4 space-y-1">
                     <p>
-                      Trim: {product.dimensions.width}&quot; x {product.dimensions.height}&quot;
+                      {product.dimensions.width > 0 && product.dimensions.height > 0 ? <>Trim: {product.dimensions.width}&quot; x {product.dimensions.height}&quot;</> : 'Custom size: confirm dimensions and outline with your quote.'}
                     </p>
                     <p>Bleed: 0.125&quot; all sides</p>
                     <p>Safe area: 0.25&quot; inside trim</p>
+                    <p>{product.metadata.material}</p>
+                    <p>Layout guide only. Confirm cut shape and mounting holes in the production proof.</p>
                   </div>
 
-                  <div className="mt-auto flex gap-2">
+                  <Link href={`/design/${product.id}`} className="text-sm text-amber-300 underline min-h-11 flex items-center">Design this product online</Link>
+                  {product.dimensions.width > 0 && product.dimensions.height > 0 ? <><div className="mt-auto flex gap-2">
                     <button
                       onClick={() => handleDownload(product, 'svg')}
                       className="flex-1 inline-flex items-center justify-center gap-1.5 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-3 py-2 rounded-lg transition-colors"
@@ -206,7 +210,7 @@ export default function ArtworkTemplatesContent() {
                   </div>
                   <p className="mt-2 text-[10px] text-gray-600 leading-snug">
                     Both open in Illustrator, CorelDRAW, Affinity and Inkscape.
-                  </p>
+                  </p></> : <Link href={`/quote?product=${encodeURIComponent(product.name)}`} className="min-h-11 flex items-center text-sm text-amber-300 underline">Request a custom production guide</Link>}
                 </div>
               ))}
             </div>

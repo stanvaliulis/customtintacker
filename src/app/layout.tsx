@@ -7,23 +7,20 @@ import Footer from '@/components/layout/Footer';
 import JsonLd from '@/components/seo/JsonLd';
 import { getOrganizationSchema, getWebSiteSchema, getLocalBusinessSchema } from '@/lib/structured-data';
 
-const inter = Inter({
-  variable: '--font-inter',
-  subsets: ['latin'],
-});
+const inter = Inter({ variable: '--font-inter', subsets: ['latin'] });
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://customtintackers.com'),
   icons: {
-    icon: '/favicon.svg',
-    apple: '/favicon.svg',
+    icon: '/icon',
+    apple: '/apple-icon',
   },
   title: {
     default: 'Custom Tin Tackers | Embossed Aluminum Tin Tacker Signs | Bar & Brewery Signs Made in USA',
     template: '%s | Custom Tin Tackers',
   },
   description:
-    'Custom embossed aluminum tin tacker signs made in the USA by Interstate Graphics, Machesney Park, IL. Premium tin tackers for breweries, bars, restaurants, cannabis brands, and promotional campaigns. Factory-direct bulk pricing from $3.50/unit. Square, circle, bottle cap, can shape, arrow, license plate, and custom die-cut tin tackers available. Recycled aluminum, full-color printing, and fast nationwide shipping.',
+    'Custom embossed aluminum tin tacker signs made in the USA by Interstate Graphics, Machesney Park, IL. Premium tin tackers for breweries, bars, restaurants, cannabis brands, and promotional campaigns. Product-specific bulk pricing for aluminum and embossed vinyl. Square, circle, bottle cap, can shape, arrow, license plate, and custom die-cut tin tackers available. Recycled aluminum, full-color printing, and fast nationwide shipping.',
   keywords: [
     'tin tackers',
     'tin tacker',
@@ -93,21 +90,14 @@ export const metadata: Metadata = {
     siteName: 'Custom Tin Tackers',
     locale: 'en_US',
     type: 'website',
-    images: [
-      {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
-        alt: 'Custom Tin Tackers — Embossed Aluminum Signs Made in USA by Interstate Graphics',
-      },
-    ],
+    images: ['/opengraph-image'],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Custom Tin Tackers | Embossed Aluminum Tin Tacker Signs Made in USA',
     description:
       'Premium custom embossed aluminum tin tacker signs made in the USA by Interstate Graphics. Factory-direct bulk pricing for breweries, bars, and brands.',
-    images: ['/og-image.png'],
+    images: ['/twitter-image'],
   },
   alternates: {
     canonical: 'https://customtintackers.com',

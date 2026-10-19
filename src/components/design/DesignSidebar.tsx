@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import {
   LayoutTemplate,
   Type,
@@ -41,6 +41,8 @@ const TABS: TabDef[] = [
 
 interface DesignSidebarProps {
   shape: ProductShape;
+  width: number;
+  height: number;
   onAddText: (preset: 'heading' | 'subheading' | 'body', options?: { fontFamily?: string; fill?: string }) => void;
   onAddImage: (url: string) => void;
   onAddShape: (type: string, options?: { fill?: string; stroke?: string }) => void;
@@ -56,6 +58,8 @@ interface DesignSidebarProps {
 
 export default function DesignSidebar({
   shape,
+  width,
+  height,
   onAddText,
   onAddImage,
   onAddShape,
@@ -73,6 +77,11 @@ export default function DesignSidebar({
   );
 
   const closePanel = useCallback(() => setActiveTab(null), []);
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') closePanel(); };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, [closePanel]);
 
   /* ---- Panel renderer -------------------------------------------- */
   const renderPanel = () => {
@@ -81,6 +90,8 @@ export default function DesignSidebar({
         return (
           <TemplatePanel
             shape={shape}
+            width={width}
+            height={height}
             onApplyTemplate={onApplyTemplate}
             onDownloadTemplate={onDownloadTemplate}
           />
@@ -110,6 +121,7 @@ export default function DesignSidebar({
               key={tab.id}
               type="button"
               onClick={() => handleTabClick(tab.id)}
+              aria-expanded={activeTab === tab.id}
               className={cn(
                 'flex flex-col items-center gap-0.5 py-1 px-3 rounded-md transition-colors',
                 activeTab === tab.id
@@ -133,6 +145,7 @@ export default function DesignSidebar({
               <button
                 type="button"
                 onClick={closePanel}
+                aria-label="Close tools"
                 className="text-gray-500 hover:text-gray-300"
               >
                 <X className="w-5 h-5" />
@@ -160,6 +173,7 @@ export default function DesignSidebar({
             title={tab.label}
             aria-label={tab.label}
             onClick={() => handleTabClick(tab.id)}
+            aria-expanded={activeTab === tab.id}
             className={cn(
               'flex items-center justify-center w-10 h-10 rounded-lg transition-colors',
               activeTab === tab.id
@@ -188,6 +202,7 @@ export default function DesignSidebar({
               <button
                 type="button"
                 onClick={closePanel}
+                aria-label="Close tools"
                 className="text-gray-500 hover:text-gray-300"
               >
                 <X className="w-4 h-4" />

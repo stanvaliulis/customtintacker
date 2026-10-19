@@ -4,7 +4,7 @@ import type { ProductShape, ProductCategory } from './product';
 export type ActiveTool = 'select' | 'text' | 'shape' | 'pan';
 
 // ─── Export formats supported by the editor ────────────────────────
-export type DesignExportFormat = 'png' | 'pdf' | 'svg';
+export type DesignExportFormat = 'png' | 'pdf' | 'svg' | 'print-png';
 
 // ─── Design status for saved designs ───────────────────────────────
 export type DesignStatus = 'draft' | 'submitted' | 'approved' | 'rejected';

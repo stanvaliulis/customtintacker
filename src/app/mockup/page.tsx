@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { Suspense } from 'react';
 import Link from 'next/link';
 import Container from '@/components/ui/Container';
+import DesignRoutes from '@/components/design/DesignRoutes';
 import MockupGeneratorLoader from '@/components/mockup/MockupGeneratorLoader';
 
 export const metadata: Metadata = {
@@ -33,6 +34,7 @@ export const metadata: Metadata = {
 export default function MockupPage() {
   return (
     <div className="min-h-screen bg-gray-950">
+      <Container><DesignRoutes current="/mockup" /></Container>
       {/* ── Hero ──────────────────────────────────────────────────── */}
       <section className="relative bg-gray-950 overflow-hidden border-b border-gray-800/50">
         {/* Background effects */}

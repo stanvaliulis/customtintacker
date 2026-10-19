@@ -12,7 +12,7 @@ import {
   Textbox,
   FabricImage,
   ActiveSelection,
-  type FabricObject,
+  FabricObject,
   type TPointerEventInfo,
   type TPointerEvent,
   util,
@@ -20,6 +20,11 @@ import {
 } from 'fabric';
 import type { ProductShape } from '@/types/product';
 import { getShapeDefinition } from '@/lib/design/shapes';
+import { fitTemplate, validateCanvas } from '@/lib/design/document';
+import { restoringCanvases } from '@/lib/design/canvas-transaction';
+import { ensureProofIds, readProofIntent, PROOF_PROPERTIES } from '@/lib/design/proof-intent';
+FabricObject.customProperties = Array.from(new Set([...FabricObject.customProperties, ...PROOF_PROPERTIES]));
+import { BLEED_INCHES, SAFE_AREA_INCHES, PPI } from '@/lib/design/bleed';
 
 /* ------------------------------------------------------------------ */
 /*  Constants                                                          */
@@ -30,6 +35,15 @@ const MAX_ZOOM = 4;
 const ZOOM_SENSITIVITY = 0.001;
 const SNAP_THRESHOLD = 8; // px distance to trigger snapping
 const EDGE_SNAP_MARGIN = 10; // px from edges for safe area snap
+
+/** Canvas serialization resolves temporary selection transforms into document coordinates. */
+export function serializeCanvasSelection(canvas: Pick<Canvas, 'getActiveObjects' | 'getObjects' | 'toObject'>): string {
+  ensureProofIds(canvas.getObjects().filter(o => o.selectable && !o.excludeFromExport));
+  const selected = new Set(canvas.getActiveObjects());
+  const visible = canvas.getObjects().filter(o => !o.excludeFromExport);
+  const exported = canvas.toObject() as { objects: Record<string, unknown>[] };
+  return JSON.stringify(exported.objects.filter((_, index) => selected.has(visible[index])));
+}
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -42,6 +56,8 @@ export interface UseDesignCanvasOptions {
   height: number;
   shape: ProductShape;
   onModified?: () => void;
+  showBleed?: boolean;
+  showSafeArea?: boolean;
 }
 
 export interface PrintReadyExport {
@@ -87,6 +103,7 @@ export interface UseDesignCanvasReturn {
 
 export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanvasReturn {
   const { canvasRef, containerRef, width, height, shape, onModified } = options;
+  const exportingRef = useRef(false);
 
   const fabricRef = useRef<Canvas | null>(null);
   const [canvasReady, setCanvasReady] = useState<Canvas | null>(null);
@@ -220,8 +237,7 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
     fc.getObjects().forEach((obj) => obj.set(controlStyle));
 
     // Default control styles for new objects
-    (Canvas as unknown as { prototype: Record<string, unknown> }).prototype &&
-      (() => {
+      {
         const origAdd = fc.add.bind(fc);
         fc.add = (...objects: FabricObject[]) => {
           objects.forEach((obj) => {
@@ -231,7 +247,7 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
           });
           return origAdd(...objects);
         };
-      })();
+      }
 
     fabricRef.current = fc;
     setCanvasReady(fc);
@@ -262,7 +278,7 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
       newZoom = Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, newZoom));
 
       // Zoom to the mouse pointer position
-      const pointer = fc.getScenePoint(e);
+      const pointer = fc.getViewportPoint(e);
       fc.zoomToPoint(new Point(pointer.x, pointer.y), newZoom);
       fc.requestRenderAll();
       setZoom(newZoom);
@@ -432,12 +448,13 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
         // Recalculate fit zoom
         const newFit = Math.min((cw - 80) / width, (ch - 80) / height, 1);
         const clampedFit = Math.max(newFit, MIN_ZOOM);
+        const previousFit = fitZoomRef.current;
         fitZoomRef.current = clampedFit;
         setFitZoom(clampedFit);
 
         // Re-center if current zoom is at fit level
         const currentZoom = fc.getZoom();
-        if (Math.abs(currentZoom - fitZoomRef.current) < 0.05) {
+        if (Math.abs(currentZoom - previousFit) < 0.05) {
           applyFitZoom(fc, clampedFit);
         } else {
           // Just re-render at current zoom, recenter
@@ -510,6 +527,7 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
     try {
       const img = await FabricImage.fromURL(url, { crossOrigin: 'anonymous' });
 
+      if (fabricRef.current !== fc) { img.dispose(); return; }
       const imgW = img.width ?? 1;
       const imgH = img.height ?? 1;
 
@@ -528,8 +546,8 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
       fc.add(img);
       fc.setActiveObject(img);
       fc.requestRenderAll();
-    } catch (err) {
-      console.error('Failed to load image:', err);
+    } catch {
+      throw new Error('This image could not be opened. Try a PNG, JPEG, or WebP file.');
     }
   }, [width, height]);
 
@@ -670,38 +688,36 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
     if (!fc) return;
     const active = fc.getActiveObject();
     if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
-    clipboardRef.current = JSON.stringify(active.toJSON());
+    clipboardRef.current = serializeCanvasSelection(fc);
   }, []);
 
-  const pasteFromClipboard = useCallback(async () => {
+  const insertCopies = useCallback(async (serialized: string) => {
     const fc = fabricRef.current;
-    if (!fc || !clipboardRef.current) return;
+    if (!fc || restoringCanvases.has(fc)) return;
     try {
-      const parsed = JSON.parse(clipboardRef.current);
-      const [obj] = await util.enlivenObjects([parsed]) as FabricObject[];
-      if (!obj) return;
-      obj.set({ left: (obj.left ?? 0) + 20, top: (obj.top ?? 0) + 20 });
-      fc.add(obj);
-      fc.setActiveObject(obj);
+      const objects = await util.enlivenObjects(JSON.parse(serialized)) as FabricObject[];
+      if (fabricRef.current !== fc || restoringCanvases.has(fc)) { objects.forEach(o => o.dispose()); return; }
+      if (!objects.length) return;
+      ensureProofIds(objects, true); // Copies inherit requested intent but get independent identities.
+      fc.discardActiveObject();
+      for (const obj of objects) { obj.set({ left: (obj.left ?? 0) + 20, top: (obj.top ?? 0) + 20 }); obj.setCoords(); }
+      fc.add(...objects);
+      fc.setActiveObject(objects.length === 1 ? objects[0] : new ActiveSelection(objects, { canvas: fc }));
       fc.requestRenderAll();
     } catch { /* ignore */ }
   }, []);
+
+  const pasteFromClipboard = useCallback(async () => {
+    if (clipboardRef.current) await insertCopies(clipboardRef.current);
+  }, [insertCopies]);
 
   const duplicateSelected = useCallback(async () => {
     const fc = fabricRef.current;
     if (!fc) return;
     const active = fc.getActiveObject();
     if (!active || (active as FabricObject & { _isBgRect?: boolean })._isBgRect) return;
-    try {
-      const json = active.toJSON();
-      const [obj] = await util.enlivenObjects([json]) as FabricObject[];
-      if (!obj) return;
-      obj.set({ left: (obj.left ?? 0) + 20, top: (obj.top ?? 0) + 20 });
-      fc.add(obj);
-      fc.setActiveObject(obj);
-      fc.requestRenderAll();
-    } catch { /* ignore */ }
-  }, []);
+    await insertCopies(serializeCanvasSelection(fc));
+  }, [insertCopies]);
 
   /* ---------------------------------------------------------------- */
   /*  Layer ordering                                                   */
@@ -770,21 +786,21 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
     const fc = fabricRef.current;
     if (!fc) return;
     const next = Math.min(fc.getZoom() * 1.2, MAX_ZOOM);
-    const center = new Point(width / 2, height / 2);
+    const center = new Point(fc.width / 2, fc.height / 2);
     fc.zoomToPoint(center, next);
     fc.requestRenderAll();
     setZoom(next);
-  }, [width, height]);
+  }, []);
 
   const zoomOut = useCallback(() => {
     const fc = fabricRef.current;
     if (!fc) return;
     const next = Math.max(fc.getZoom() / 1.2, MIN_ZOOM);
-    const center = new Point(width / 2, height / 2);
+    const center = new Point(fc.width / 2, fc.height / 2);
     fc.zoomToPoint(center, next);
     fc.requestRenderAll();
     setZoom(next);
-  }, [width, height]);
+  }, []);
 
   const resetZoom = useCallback(() => {
     const fc = fabricRef.current;
@@ -806,224 +822,100 @@ export function useDesignCanvas(options: UseDesignCanvasOptions): UseDesignCanva
   /* ---------------------------------------------------------------- */
   const toJSON = useCallback((): Record<string, unknown> => {
     const fc = fabricRef.current;
-    if (!fc) return {};
-
-    // Temporarily remove snap guides and bg rect markers for clean export
-    const json = fc.toJSON() as Record<string, unknown>;
-    const objects = json.objects as Record<string, unknown>[] | undefined;
-    if (objects) {
-      json.objects = objects.filter(
-        (obj) => !(obj as Record<string, unknown>)._isSnapGuide
-      );
-    }
-    return json;
-  }, []);
+    if (!fc) return { objects: [], width, height };
+    // Exclude canvas furniture explicitly: Fabric does not serialize private markers.
+    const bg = fc.getObjects().find(o => (o as FabricObject & { _isBgRect?: boolean })._isBgRect);
+    ensureProofIds(fc.getObjects().filter(o => o.selectable && !o.excludeFromExport));
+    const exported = fc.toObject() as { objects: Record<string, unknown>[] };
+    const visibleObjects = fc.getObjects().filter(o => !o.excludeFromExport);
+    return { version: '6.0.0', width, height, proofIntent: readProofIntent(fc), background: bg?.fill || '#ffffff',
+      objects: exported.objects.filter((_, index) => visibleObjects[index] !== bg) };
+  }, [width, height]);
 
   const loadFromJSON = useCallback(async (json: Record<string, unknown> | string) => {
     const fc = fabricRef.current;
-    if (!fc) return;
-
-    const data = typeof json === 'string' ? JSON.parse(json) as Record<string, unknown> : json;
-    const objects = data.objects as Record<string, unknown>[] | undefined;
-    if (!objects || objects.length === 0) return;
-
-    // Remove all objects except background rect
-    const toRemove = fc.getObjects().filter(
-      (obj) => !(obj as FabricObject & { _isBgRect?: boolean })._isBgRect
-    );
-    toRemove.forEach((obj) => fc.remove(obj));
-
-    // Calculate scale factor if template was designed for different dimensions
-    const tplWidth = (data.width as number) || width;
-    const tplHeight = (data.height as number) || height;
-    const scaleX = width / tplWidth;
-    const scaleY = height / tplHeight;
-    const scale = Math.min(scaleX, scaleY);
-
-    // Update bg rect color if template has one
-    const bgRect = fc.getObjects().find(
-      (obj) => (obj as FabricObject & { _isBgRect?: boolean })._isBgRect
-    );
-    if (bgRect && data.background && typeof data.background === 'string') {
-      bgRect.set('fill', data.background);
-    }
-
+    if (!fc || restoringCanvases.has(fc)) throw new Error('Please wait for the current design to finish loading.');
+    const data = typeof json === 'string' ? JSON.parse(json) : json;
+    validateCanvas(data);
+    const first = (data.objects as Record<string, unknown>[])[0];
+    const legacyBackground = first && String(first.type).toLowerCase() === 'rect' && first.selectable === false && first.evented === false ? first.fill : undefined;
+    const fit = fitTemplate(Number(data.width) || width, Number(data.height) || height, width, height);
+    // Legacy documents included the noninteractive white background in their objects.
+    const objects = (data.objects as Record<string, unknown>[]).filter((o, i) =>
+      !(o._isBgRect || o.excludeFromExport || (i === 0 && String(o.type).toLowerCase() === 'rect' && o.selectable === false && o.evented === false)));
+    restoringCanvases.add(fc);
     try {
       const enlivened = await util.enlivenObjects(objects) as FabricObject[];
+      if (fabricRef.current !== fc) { enlivened.forEach(o => o.dispose()); return; }
+      ensureProofIds(enlivened);
+      Object.assign(fc, { proofIntent: readProofIntent(data) });
+      // Only replace after every object has loaded successfully.
+      fc.discardActiveObject();
+      fc.remove(...fc.getObjects());
+      const bg = new Rect({ left: 0, top: 0, width, height, fill: typeof legacyBackground === 'string' ? legacyBackground : typeof data.background === 'string' ? data.background : '#ffffff', selectable: false, evented: false });
+      (bg as FabricObject & { _isBgRect?: boolean })._isBgRect = true;
+      fc.add(bg);
       for (const obj of enlivened) {
-        if (!obj || typeof obj.set !== 'function') continue;
-        // Skip _isBgRect objects from templates
-        if ((obj as FabricObject & { _isBgRect?: boolean })._isBgRect) continue;
-        if (scale !== 1) {
-          obj.set({
-            left: (obj.left ?? 0) * scale,
-            top: (obj.top ?? 0) * scale,
-            scaleX: (obj.scaleX ?? 1) * scale,
-            scaleY: (obj.scaleY ?? 1) * scale,
-          });
-        }
+        obj.set({ left: (obj.left ?? 0) * fit.scale + fit.left, top: (obj.top ?? 0) * fit.scale + fit.top,
+          scaleX: (obj.scaleX ?? 1) * fit.scale, scaleY: (obj.scaleY ?? 1) * fit.scale });
+        obj.setCoords();
         fc.add(obj);
       }
-    } catch (err) {
-      console.error('Failed to enliven template objects:', err);
-    }
-
-    fc.requestRenderAll();
+      fc.requestRenderAll();
+    } finally { restoringCanvases.delete(fc); }
   }, [width, height]);
 
-  /* ---------------------------------------------------------------- */
-  /*  Export                                                            */
-  /* ---------------------------------------------------------------- */
-  const exportPNG = useCallback((): string => {
-    const fc = fabricRef.current;
-    if (!fc) return '';
-
-    // Save current viewport state
-    const currentVPT = [...fc.viewportTransform] as [number, number, number, number, number, number];
-    const currentZoom = fc.getZoom();
-    const currentWidth = fc.width;
-    const currentHeight = fc.height;
-
-    // Remove snap guides
-    const guides = fc.getObjects().filter(
-      (obj) => (obj as FabricObject & { _isSnapGuide?: boolean })._isSnapGuide
-    );
-    guides.forEach((g) => fc.remove(g));
-
-    // Reset to 1:1 for export
-    fc.setDimensions({ width, height });
-    fc.setZoom(1);
-    fc.viewportTransform = [1, 0, 0, 1, 0, 0];
-    fc.requestRenderAll();
-
-    const dataUrl = fc.toDataURL({ format: 'png', multiplier: 2 });
-
-    // Restore viewport
-    fc.setDimensions({ width: currentWidth!, height: currentHeight! });
-    fc.setZoom(currentZoom);
-    fc.viewportTransform = currentVPT;
-
-    // Re-add guides
-    guides.forEach((g) => fc.add(g));
-    fc.requestRenderAll();
-
-    return dataUrl;
-  }, [width, height]);
-
-  const exportSVG = useCallback((): string => {
-    const fc = fabricRef.current;
-    if (!fc) return '';
-
-    // Save and reset viewport for export
-    const currentVPT = [...fc.viewportTransform] as [number, number, number, number, number, number];
-    const currentZoom = fc.getZoom();
-    const currentWidth = fc.width;
-    const currentHeight = fc.height;
-
-    // Remove snap guides
-    const guides = fc.getObjects().filter(
-      (obj) => (obj as FabricObject & { _isSnapGuide?: boolean })._isSnapGuide
-    );
-    guides.forEach((g) => fc.remove(g));
-
-    fc.setDimensions({ width, height });
-    fc.setZoom(1);
-    fc.viewportTransform = [1, 0, 0, 1, 0, 0];
-    fc.requestRenderAll();
-
-    const svg = fc.toSVG();
-
-    // Restore
-    fc.setDimensions({ width: currentWidth!, height: currentHeight! });
-    fc.setZoom(currentZoom);
-    fc.viewportTransform = currentVPT;
-    guides.forEach((g) => fc.add(g));
-    fc.requestRenderAll();
-
-    return svg;
-  }, [width, height]);
-
-  /* ---------------------------------------------------------------- */
-  /*  Print-ready export (300 DPI with bleed and trim marks)           */
-  /* ---------------------------------------------------------------- */
-  const exportPrintReady = useCallback((options?: {
-    dpi?: number;
-    includeBleed?: boolean;
-    format?: 'png' | 'svg';
-  }): PrintReadyExport => {
-    const fc = fabricRef.current;
-    if (!fc) return { dataUrl: '', widthPx: 0, heightPx: 0, dpi: 300, includesBleed: false, filename: 'design.png' };
-
-    const dpi = options?.dpi ?? 300;
-    const includeBleed = options?.includeBleed ?? true;
-    const format = options?.format ?? 'png';
-
-    // Calculate print multiplier: 300 DPI / 72 DPI (our canvas PPI) ≈ 4.17x
-    const multiplier = dpi / 72;
-
-    // Calculate canvas dimensions with optional bleed
-    const bleedInches = includeBleed ? 0.125 : 0;
-    const bleedPx = Math.round(bleedInches * 72); // bleed in canvas pixels
-    const exportWidth = width + (bleedPx * 2);
-    const exportHeight = height + (bleedPx * 2);
-
-    // Save current state
-    const currentVPT = [...fc.viewportTransform] as [number, number, number, number, number, number];
-    const currentZoom = fc.getZoom();
-    const currentWidth = fc.width;
-    const currentHeight = fc.height;
-
-    // Remove snap guides
-    const guides = fc.getObjects().filter(
-      (obj) => (obj as FabricObject & { _isSnapGuide?: boolean })._isSnapGuide
-    );
-    guides.forEach((g) => fc.remove(g));
-
-    // Set canvas to export dimensions (including bleed area)
-    fc.setDimensions({ width: exportWidth, height: exportHeight });
-    fc.setZoom(1);
-
-    // Offset viewport to show bleed area (shift content so bleed is visible)
-    if (includeBleed) {
-      fc.viewportTransform = [1, 0, 0, 1, bleedPx, bleedPx];
-    } else {
-      fc.viewportTransform = [1, 0, 0, 1, 0, 0];
-    }
-    fc.requestRenderAll();
-
-    let dataUrl: string;
-    let filename: string;
-
-    if (format === 'svg') {
-      const svgContent = fc.toSVG();
-      dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgContent);
-      filename = `design-print-ready-${dpi}dpi.svg`;
-    } else {
-      // PNG at print resolution
-      dataUrl = fc.toDataURL({
-        format: 'png',
-        multiplier,
-        quality: 1,
-      });
-      filename = `design-print-ready-${dpi}dpi${includeBleed ? '-with-bleed' : ''}.png`;
-    }
-
-    // Restore viewport
-    fc.setDimensions({ width: currentWidth!, height: currentHeight! });
-    fc.setZoom(currentZoom);
-    fc.viewportTransform = currentVPT;
-    guides.forEach((g) => fc.add(g));
-    fc.requestRenderAll();
-
-    return {
-      dataUrl,
-      widthPx: Math.round(exportWidth * multiplier),
-      heightPx: Math.round(exportHeight * multiplier),
-      dpi,
-      includesBleed: includeBleed,
-      filename,
+  // Guides are a display overlay only; never serialized, selected, or exported.
+  useEffect(() => {
+    const fc = canvasReady;
+    if (!fc) return;
+    const renderGuides = () => {
+      if (exportingRef.current) return;
+      const ctx = fc.getContext();
+      ctx.save();
+      ctx.transform(...fc.viewportTransform);
+      const draw = (inset: number, color: string) => {
+        ctx.save(); ctx.translate(inset, inset);
+        ctx.strokeStyle = color; ctx.lineWidth = 1 / fc.getZoom(); ctx.setLineDash([5 / fc.getZoom(), 4 / fc.getZoom()]);
+        ctx.stroke(new Path2D(getShapeDefinition(shape).getPath(width - inset * 2, height - inset * 2)));
+        ctx.restore();
+      };
+      if (options.showBleed) draw(-BLEED_INCHES * PPI, '#f87171');
+      if (options.showSafeArea) draw(SAFE_AREA_INCHES * PPI, '#4ade80');
+      ctx.restore();
     };
+    fc.on('after:render', renderGuides); fc.requestRenderAll();
+    return () => { fc.off('after:render', renderGuides); };
+  }, [canvasReady, shape, width, height, options.showBleed, options.showSafeArea]);
+
+  const renderExport = useCallback((format: 'png' | 'svg', multiplier: number): string => {
+    const fc = fabricRef.current;
+    if (!fc) return '';
+    if (width * height * multiplier * multiplier > 64000000) throw new Error('This raster export is too large for the browser. Download SVG or an editable design instead.');
+    const viewport = [...fc.viewportTransform] as [number, number, number, number, number, number];
+    const dimensions = { width: fc.width, height: fc.height };
+    const guides = fc.getObjects().filter(o => o.excludeFromExport);
+    exportingRef.current = true;
+    try {
+      guides.forEach(o => { o.visible = false; });
+      fc.setDimensions({ width, height });
+      fc.setViewportTransform([1, 0, 0, 1, 0, 0]);
+      fc.renderAll();
+      return format === 'svg' ? fc.toSVG() : fc.toDataURL({ format: 'png', multiplier, enableRetinaScaling: false });
+    } finally {
+      fc.setDimensions(dimensions); fc.setViewportTransform(viewport);
+      guides.forEach(o => { o.visible = true; });
+      exportingRef.current = false; fc.requestRenderAll();
+    }
   }, [width, height]);
+  const exportPNG = useCallback(() => renderExport('png', 1), [renderExport]);
+  const exportSVG = useCallback(() => renderExport('svg', 1), [renderExport]);
+  const exportPrintReady = useCallback((options?: { dpi?: number; includeBleed?: boolean; format?: 'png' | 'svg' }): PrintReadyExport => {
+    const dpi = options?.dpi ?? 300;
+    const format = options?.format ?? 'png';
+    return { dataUrl: renderExport(format, dpi / PPI), widthPx: Math.round(width * dpi / PPI), heightPx: Math.round(height * dpi / PPI),
+      dpi, includesBleed: false, filename: 'design-review.' + format };
+  }, [width, height, renderExport]);
 
   return {
     canvas: canvasReady,

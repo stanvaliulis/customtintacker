@@ -1,12 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Select from '@/components/ui/Select';
 import { useSpamProtection } from '@/hooks/useSpamProtection';
+import { matchQuoteSize } from '@/lib/design/quote-size';
+import { recoverSavedProof } from '@/lib/design/saved-proof';
 
 const sizeOptions = [
   { value: '', label: 'Select a size' },
@@ -36,22 +38,6 @@ const embossingOpts = [
   { value: 'unsure', label: 'Not sure yet' },
 ];
 
-/** Try to match a product's displaySize + shape to one of the size select options */
-function matchSize(displaySize: string, shape: string): string {
-  const s = displaySize.toLowerCase();
-  const sh = shape.toLowerCase();
-  if (sh.includes('bottle') || sh.includes('cap')) return 'bottle-cap';
-  if (sh.includes('can')) return 'can-shape';
-  if (sh.includes('circle') && s.includes('18')) return 'circle-18';
-  if (sh.includes('circle') && s.includes('12')) return 'circle-12';
-  if (s.includes('8') && s.includes('x') && s.includes('8')) return '8x8';
-  if (s.includes('12') && s.includes('x') && s.includes('12')) return '12x12';
-  if (s.includes('16') && s.includes('x') && s.includes('16')) return '16x16';
-  if (s.includes('18') && s.includes('x') && s.includes('18')) return '18x18';
-  if (s.includes('24') && s.includes('x') && s.includes('24')) return '24x24';
-  return 'custom';
-}
-
 export default function QuoteForm() {
   const searchParams = useSearchParams();
   const productParam = searchParams.get('product') ?? '';
@@ -59,6 +45,31 @@ export default function QuoteForm() {
   const shapeParam = searchParams.get('shape') ?? '';
   const designIdParam = searchParams.get('designId') ?? '';
 
+  const teamProof = searchParams.get('proof') === 'team';
+  const [proofNotes, setProofNotes] = useState('');
+  const [embossing, setEmbossing] = useState('');
+  const [intentMissing, setIntentMissing] = useState(false);
+  const [intentLoading, setIntentLoading] = useState(teamProof);
+  const [intentAttempt, setIntentAttempt] = useState(0);
+  useEffect(() => {
+    if (!teamProof) { setIntentLoading(false); setIntentMissing(false); return; }
+    let cancelled = false;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+    setIntentLoading(true); setIntentMissing(false); setProofNotes(''); setEmbossing('');
+    void (async () => {
+      try {
+        if (!/^[A-Za-z0-9_-]{1,100}$/.test(designIdParam)) throw new Error('Invalid saved design ID.');
+        const response = await fetch('/api/design/load/' + encodeURIComponent(designIdParam), { signal: controller.signal, cache: 'no-store' });
+        if (!response.ok) throw new Error('Saved design unavailable.');
+        const intent = recoverSavedProof(await response.json(), designIdParam);
+        if (!cancelled) { setProofNotes(intent.notes); setEmbossing(intent.preference); }
+      } catch { if (!cancelled) setIntentMissing(true); }
+      finally { clearTimeout(timeout); if (!cancelled) setIntentLoading(false); }
+    })();
+    return () => { cancelled = true; clearTimeout(timeout); controller.abort(); };
+  }, [teamProof, designIdParam, intentAttempt]);
+  const [qaOnly, setQaOnly] = useState(false);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -113,8 +124,9 @@ export default function QuoteForm() {
       }
 
       setLoading(false);
+      setQaOnly(data.qaOnly === true);
       setSubmitted(true);
-      toast.success('Quote request submitted!');
+      toast.success(data.qaOnly ? 'Local review fixture saved. Nothing was sent.' : 'Quote request submitted!');
     } catch {
       setServerError('Unable to reach the server. Please check your connection and try again.');
       setLoading(false);
@@ -124,9 +136,9 @@ export default function QuoteForm() {
   if (submitted) {
     return (
       <div className="text-center py-12">
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Quote Request Submitted!</h3>
-        <p className="text-gray-600 mb-1">Thank you for your interest. Our team will review your request.</p>
-        <p className="text-gray-500 text-sm">You&apos;ll hear from us within 1 business day.</p>
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">{qaOnly ? 'Local review saved' : 'Quote Request Submitted!'}</h3>
+        <p className="text-gray-600 mb-1">{qaOnly ? 'This isolated preview did not send a request or email.' : 'Thank you for your interest. Our team will review your request.'}</p>
+        <p className="text-gray-500 text-sm">{!qaOnly && <>You&apos;ll hear from us within 1 business day.</>}</p>
         <button onClick={() => setSubmitted(false)} className="text-amber-600 hover:text-amber-700 text-sm mt-6">
           Submit another request
         </button>
@@ -136,6 +148,7 @@ export default function QuoteForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {teamProof && <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"><strong>Let us prepare your proof</strong><p>Your saved artwork and the preferences you enter below will accompany this request. The automatic preview is not approved production artwork.</p>{intentLoading && <p role="status">Loading proof preferences from your saved design…</p>}{intentMissing && <div role="alert"><p>Saved proof preferences could not be recovered. Reopen and save an older design in the editor, or enter your embossing preference and notes below. No request has been sent.</p><button type="button" className="min-h-11 underline" onClick={() => setIntentAttempt(n => n + 1)}>Retry loading saved preferences</button></div>}</div>}
       {designIdParam && (
         <div className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
           <div className="w-8 h-8 rounded bg-amber-100 flex items-center justify-center shrink-0">
@@ -170,10 +183,10 @@ export default function QuoteForm() {
               error={errors.product}
             />
           </div>
-          <Select label="Size / Shape" id="q-size" required options={sizeOptions} defaultValue={sizeParam ? matchSize(sizeParam, shapeParam) : ''} error={errors.size} />
+          <Select label="Size / Shape" id="q-size" required options={sizeOptions} defaultValue={sizeParam ? matchQuoteSize(sizeParam, shapeParam) : ''} error={errors.size} />
           <Input label="Quantity" id="q-quantity" type="number" required min={1} placeholder="e.g., 500" error={errors.quantity} />
           <Select label="Backing" id="q-backing" options={backingOpts} />
-          <Select label="Embossing" id="q-embossing" required options={embossingOpts} error={errors.embossing} />
+          <Select label="Embossing" id="q-embossing" required disabled={intentLoading} options={embossingOpts} value={embossing} onChange={e => setEmbossing(e.target.value)} error={errors.embossing} />
           <Input label="Colors" id="q-colors" placeholder="e.g., Full color, 2 spot colors" />
         </div>
       </div>
@@ -183,7 +196,7 @@ export default function QuoteForm() {
           Additional Notes
         </label>
         <textarea
-          id="q-notes"
+          id="q-notes" disabled={intentLoading} value={proofNotes} onChange={e => setProofNotes(e.target.value)}
           rows={4}
           placeholder="Tell us about your project — custom shapes, special finishes, delivery timeline, etc."
           className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-gray-900 placeholder-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none transition-colors"
@@ -202,7 +215,7 @@ export default function QuoteForm() {
         <input type="text" id="fax_number" name="fax_number" tabIndex={-1} autoComplete="off" />
       </div>
 
-      <Button type="submit" loading={loading} size="lg">Submit Quote Request</Button>
+      <Button type="submit" disabled={intentLoading} loading={loading} size="lg">Submit Quote Request</Button>
     </form>
   );
 }

@@ -10,7 +10,7 @@ export async function GET(
   try {
     const { id } = await params;
 
-    if (!id) {
+    if (!id || !/^[A-Za-z0-9_-]+$/.test(id)) {
       return NextResponse.json({ error: 'Design ID is required' }, { status: 400 });
     }
 

@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isDatabaseConfigured, isBlobConfigured } from '@/lib/env';
 import { writeFile, mkdir } from 'fs/promises';
 import path from 'path';
+import {sourceFromRecord} from '@/lib/design/proof-attachment';
+import {MAX_DESIGN_BYTES} from '@/lib/design/document';
+import {allProducts} from '@/data/products';
 
 interface SaveDesignBody {
   sessionId: string;
@@ -18,6 +21,16 @@ interface SaveDesignBody {
 export async function POST(req: NextRequest) {
   try {
     const body: SaveDesignBody = await req.json();
+    if(typeof body.canvasJson!=='string'||body.canvasJson.length>MAX_DESIGN_BYTES)return NextResponse.json({error:'Saved designs are limited to 8 MiB. Keep your recovery packet.'},{status:400});
+    try{
+      const canvas=JSON.parse(body.canvasJson);
+      if(canvas.guidedUpload){
+        sourceFromRecord(body);
+        const product=allProducts.find(p=>p.id===body.productId);
+        if(!product||product.shape!==body.shape||product.dimensions.width!==body.width||product.dimensions.height!==body.height)throw Error('Product has changed.');
+      }
+    }catch{return NextResponse.json({error:'Invalid saved review or product.'},{status:400});}
+    if (!/^[A-Za-z0-9_-]{1,100}$/.test(body.sessionId || '')) return NextResponse.json({ error: 'Invalid design session.' }, { status: 400 });
 
     if (!body.sessionId || !body.productId || !body.canvasJson) {
       return NextResponse.json(

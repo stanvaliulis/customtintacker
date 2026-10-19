@@ -8,6 +8,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const builtIn = getTemplateById(id);
+    if (builtIn) return NextResponse.json(builtIn);
 
     if (!id) {
       return NextResponse.json({ error: 'Template ID is required' }, { status: 400 });
@@ -21,7 +23,7 @@ export async function GET(
           where: { id },
         });
 
-        if (template) {
+        if (template?.isActive) {
           return NextResponse.json(template);
         }
       } catch (err) {

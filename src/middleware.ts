@@ -1,12 +1,13 @@
+import {verifyAdminToken} from './lib/admin-session';
 import { NextResponse, type NextRequest } from 'next/server';
 
-export function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Protect admin routes (except login and API)
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const adminSession = req.cookies.get('admin-session');
-    if (adminSession?.value !== 'authenticated') {
+    if (!(await verifyAdminToken(adminSession?.value, process.env.AUTH_SECRET || ''))) {
       return NextResponse.redirect(new URL('/admin/login', req.url));
     }
   }

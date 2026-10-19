@@ -1,3 +1,4 @@
+import type { ProofAttachment } from '@/lib/design/proof-attachment';
 export type ProductShape = 'square' | 'rectangle' | 'circle' | 'can' | 'bottle-cap' | 'die-cut' | 'shield' | 'arrow' | 'street-sign' | 'license-plate';
 
 export type BackingOption = 'standard-024' | 'heavy-032' | 'premium-040';
@@ -70,5 +71,7 @@ export interface CartItem {
   unitPrice: number;
   priceTier: PriceTier;
   artworkNotes?: string;
+  designId?: string;
+  proofAttachment?: ProofAttachment;
   isRush?: boolean;
 }

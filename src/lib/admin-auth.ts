@@ -1,8 +1,8 @@
+import {createAdminToken,verifyAdminToken} from './admin-session';
 import { cookies } from 'next/headers';
 import bcrypt from 'bcryptjs';
 
 const ADMIN_COOKIE = 'admin-session';
-const SESSION_TOKEN = 'authenticated';
 
 export async function verifyAdminPassword(password: string): Promise<boolean> {
   const adminPassword = process.env.ADMIN_PASSWORD;
@@ -16,7 +16,7 @@ export async function verifyAdminPassword(password: string): Promise<boolean> {
 
 export async function setAdminSession() {
   const cookieStore = await cookies();
-  cookieStore.set(ADMIN_COOKIE, SESSION_TOKEN, {
+  cookieStore.set(ADMIN_COOKIE, await createAdminToken(process.env.AUTH_SECRET || ''), {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -33,5 +33,5 @@ export async function clearAdminSession() {
 export async function isAdminAuthenticated(): Promise<boolean> {
   const cookieStore = await cookies();
   const session = cookieStore.get(ADMIN_COOKIE);
-  return session?.value === SESSION_TOKEN;
+  return verifyAdminToken(session?.value, process.env.AUTH_SECRET || '');
 }

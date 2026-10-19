@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { products } from '@/data/products';
+import { getProductById } from '@/lib/products';
 import { generateTemplateSVG } from '@/lib/design/generate-template';
 import { generateTemplatePDF } from '@/lib/design/generate-template-pdf';
 
@@ -9,13 +9,17 @@ export async function GET(
 ) {
   const { productId } = await params;
 
-  const product = products.find((p) => p.id === productId);
+  const product = await getProductById(productId);
 
   if (!product) {
     return NextResponse.json(
       { error: 'Product not found' },
       { status: 404 }
     );
+  }
+
+  if (![product.dimensions.width, product.dimensions.height].every(n => Number.isFinite(n) && n > 0)) {
+    return NextResponse.json({ error: 'This custom product needs confirmed dimensions and an approved outline. Request a production guide with your quote.' }, { status: 422 });
   }
 
   const options = {

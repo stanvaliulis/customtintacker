@@ -1,0 +1,3 @@
+import {productionContext} from '@/lib/persistence/server';
+import {failure} from '@/lib/commerce/runtime';
+export async function GET(req:Request){try{const id=new URL(req.url).searchParams.get('order_id');if(!id||!/^[0-9a-f-]{36}$/.test(id))return Response.json({error:'Invoice request ID required.'},{status:400});const d=await productionContext(),order=await d.invoiceById(id);if(!order)return Response.json({error:'Invoice request unavailable.'},{status:404});if(order.paid!==false||order.status!=='invoice-requested'||order.productionReleased!==false)throw Error('Unexpected invoice state');return Response.json({orderId:order.id,status:'invoice-requested',paid:false,productionReleased:false},{headers:{'Cache-Control':'private, no-store'}});}catch(e){return failure(e);}}

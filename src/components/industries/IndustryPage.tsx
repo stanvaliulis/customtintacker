@@ -98,7 +98,7 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
             <div className="mt-6 flex items-center gap-4 text-sm text-gray-400">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-amber-500/60" />
-                25 minimum order
+                Product-specific minimums
               </span>
               <span className="w-1 h-1 rounded-full bg-gray-700" />
               <span>~15 business day lead time</span>
@@ -252,9 +252,7 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
               Factory-Direct <span className="text-amber-400">Pricing</span>
             </h2>
             <p className="text-gray-400 text-lg mb-6">
-              Tin tackers start at{' '}
-              <span className="text-amber-400 font-bold text-2xl">{industry.pricingStart}</span>{' '}
-              per sign at volume. Price depends on shape, size, and quantity. Minimum order is 25 units on most shapes.
+              See current product pricing by material, shape, size and quantity. Each product page states its minimum order and volume tiers. Custom shapes require a quote.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-500 mb-8">
               <span className="flex items-center gap-1.5">

@@ -10,6 +10,7 @@ import Link from 'next/link';
 import JsonLd from '@/components/seo/JsonLd';
 import { getProductSchema, getBreadcrumbSchema } from '@/lib/structured-data';
 import { siteConfig } from '@/data/siteConfig';
+import {uploadProductHref} from '@/lib/design/upload-content';
 import {
   ChevronRight,
   CheckCircle,
@@ -41,39 +42,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const shapeLabel = product.shape.replace(/-/g, ' ');
   const shapeTitleCase = shapeLabel.charAt(0).toUpperCase() + shapeLabel.slice(1);
-  const sizeLabel = product.dimensions.displaySize;
-  const title = `${product.name} — ${sizeLabel} ${shapeTitleCase} Tin Tacker | Embossed Aluminum Sign`;
-  const description = `${product.shortDescription} Order this custom ${sizeLabel} ${shapeLabel} tin tacker sign made in the USA from recycled embossed aluminum by Interstate Graphics. Bulk tin tacker pricing from ${product.minimumOrder} units. Ideal for breweries, bars, taprooms, restaurants, and brand promotions.`;
+  const title = product.name + ' | ' + product.metadata.material;
+  const description = product.shortDescription + ' ' + product.metadata.material + '. Minimum order: ' + product.minimumOrder + ' units. Production lead time: ' + product.leadTimeDays + ' business days. See quantity pricing and artwork options.';
 
   return {
     title,
     description,
-    keywords: [
-      product.name,
-      'tin tacker',
-      'tin tackers',
-      'tin tacker sign',
-      `${sizeLabel} tin tacker`,
-      `${shapeLabel} tin tacker`,
-      `${sizeLabel} embossed aluminum sign`,
-      `custom ${shapeLabel} tin tacker`,
-      `custom ${shapeLabel} sign`,
-      'embossed aluminum sign',
-      'custom bar sign',
-      'brewery sign',
-      'beer sign',
-      'promotional tin tacker',
-      'made in USA tin tacker',
-      'recycled aluminum sign',
-      'bulk tin tackers',
-      'tin tacker pricing',
-      'order tin tackers',
-    ],
+    keywords: [product.name, product.metadata.material, 'custom tin tacker', shapeLabel + ' sign'],
     openGraph: {
       title,
       description,
       url: `https://customtintackers.com/products/${slug}`,
-      type: 'article',
+      type: 'website',
       images: product.images.length > 0
         ? [{ url: product.images[0].startsWith('http') ? product.images[0] : `https://customtintackers.com${product.images[0]}`, width: 800, height: 800, alt: `${product.name} — Custom ${shapeTitleCase} Tin Tacker Sign` }]
         : undefined,
@@ -121,6 +101,17 @@ export default async function ProductDetailPage({ params }: Props) {
         </Container>
       </div>
 
+      <Container><section aria-label="Product quick answers" className="my-6 rounded-xl border border-gray-700 bg-gray-900 p-5">
+        <h2 className="text-lg text-white font-semibold mb-3">Product at a glance</h2>
+        <dl className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+          <div><dt className="text-gray-400">Material</dt><dd className="text-white">{product.metadata.material}</dd></div>
+          <div><dt className="text-gray-400">Finished size</dt><dd className="text-white">{product.dimensions.displaySize}</dd></div>
+          <div><dt className="text-gray-400">Minimum order</dt><dd className="text-white">{product.minimumOrder} units</dd></div>
+          <div><dt className="text-gray-400">Production lead time</dt><dd className="text-white">{product.leadTimeDays} business days</dd></div>
+        </dl>
+        <p className="text-sm text-gray-300 mt-4">Price depends on quantity and selected options. Check the volume table below or request a quote for custom requirements.</p>
+        <div className="flex flex-wrap gap-5 mt-4 text-amber-300 text-sm underline"><Link href={'/design/' + product.id}>Design your own</Link><Link href={uploadProductHref(product.id)}>Upload &amp; emboss this product</Link><Link href="/artwork-templates">Artwork guides and file requirements</Link></div>
+      </section></Container>
       {/* Main Product Section */}
       <section className="py-10 sm:py-14">
         <Container>

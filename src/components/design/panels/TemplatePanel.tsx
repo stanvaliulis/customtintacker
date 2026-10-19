@@ -1,162 +1,50 @@
 'use client';
-
-import { useState, useEffect } from 'react';
-import { FileDown, FileText, FileCode, Image as ImageIcon, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { getTemplatesByShape, type DesignTemplateData } from '@/data/design-templates';
+import { buildTemplateCanvas } from '@/lib/design/template-layout';
 import type { ProductShape } from '@/types/product';
 import type { DesignExportFormat } from '@/types/design';
+import TemplatePreview from '../TemplatePreview';
 
-interface TemplatePanelProps {
-  shape: ProductShape;
-  onApplyTemplate: (templateId: string) => void;
-  onDownloadTemplate: (format: DesignExportFormat) => void;
-}
-
-type TemplateCategory = 'all' | 'brewery' | 'bar' | 'restaurant' | 'cannabis' | 'general';
-
-const CATEGORIES: { id: TemplateCategory; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'brewery', label: 'Brewery' },
-  { id: 'bar', label: 'Bar' },
-  { id: 'restaurant', label: 'Restaurant' },
-  { id: 'cannabis', label: 'Cannabis' },
-  { id: 'general', label: 'General' },
-];
-
-interface TemplateItem {
-  id: string;
-  name: string;
-  category: string;
-  tags: string;
-  previewBg?: string;
-  previewTexts?: string[];
-}
-
-export default function TemplatePanel({
-  shape,
-  onApplyTemplate,
-  onDownloadTemplate,
-}: TemplatePanelProps) {
-  const [activeCategory, setActiveCategory] = useState<TemplateCategory>('all');
-  const [templates, setTemplates] = useState<TemplateItem[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  // Fetch templates for this shape from the API
+export default function TemplatePanel({ shape, width, height, onApplyTemplate, onDownloadTemplate }: {
+  shape: ProductShape; width: number; height: number;
+  onApplyTemplate: (id: string) => void; onDownloadTemplate: (format: DesignExportFormat) => void;
+}) {
+  const [templates, setTemplates] = useState<DesignTemplateData[]>(() => getTemplatesByShape(shape));
+  const [query, setQuery] = useState('');
+  const [fallback, setFallback] = useState(false);
+  const [retry, setRetry] = useState(0);
   useEffect(() => {
-    setLoading(true);
-    fetch(`/api/design/templates?shape=${shape}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (Array.isArray(data)) {
-          setTemplates(data);
-        }
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, [shape]);
-
-  const filtered =
-    activeCategory === 'all'
-      ? templates
-      : templates.filter(
-          (t) => t.category === activeCategory || t.category === 'general'
-        );
-
-  return (
-    <div className="space-y-5">
-      {/* Category tabs */}
-      <div className="flex flex-wrap gap-1">
-        {CATEGORIES.map((cat) => (
-          <button
-            key={cat.id}
-            type="button"
-            onClick={() => setActiveCategory(cat.id)}
-            className={cn(
-              'px-2.5 py-1 rounded-md text-xs font-medium transition-colors',
-              activeCategory === cat.id
-                ? 'bg-amber-600 text-white'
-                : 'bg-gray-800 text-gray-400 hover:text-gray-200 hover:bg-gray-700'
-            )}
-          >
-            {cat.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Template grid */}
-      {loading ? (
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-5 h-5 text-gray-500 animate-spin" />
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="text-center py-6">
-          <p className="text-xs text-gray-500">No templates for this shape yet</p>
-          <p className="text-[10px] text-gray-600 mt-1">Start with a blank canvas or upload your artwork</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-2">
-          {filtered.map((tpl) => (
-            <button
-              key={tpl.id}
-              type="button"
-              onClick={() => onApplyTemplate(tpl.id)}
-              className="group flex flex-col items-center gap-1.5 p-2 rounded-lg border border-gray-700 bg-gray-800/50 hover:border-amber-600/50 hover:bg-gray-800 transition-colors"
-            >
-              <div
-                className="w-full aspect-square rounded flex flex-col items-center justify-center overflow-hidden px-1.5 py-2"
-                style={{ backgroundColor: tpl.previewBg || '#1f2937' }}
-              >
-                {tpl.previewTexts && tpl.previewTexts.length > 0 ? (
-                  tpl.previewTexts.map((text, i) => (
-                    <span
-                      key={i}
-                      className="block truncate w-full text-center leading-tight"
-                      style={{
-                        fontSize: i === 0 ? '9px' : '7px',
-                        fontWeight: i === 0 ? 700 : 400,
-                        color: i === 0 ? '#fbbf24' : '#9ca3af',
-                      }}
-                    >
-                      {text.replace(/\n/g, ' ')}
-                    </span>
-                  ))
-                ) : (
-                  <ImageIcon className="w-5 h-5 text-gray-500 group-hover:text-amber-500 transition-colors" />
-                )}
-                <span className="text-[7px] text-gray-500 capitalize mt-auto">{tpl.category}</span>
-              </div>
-              <span className="text-[11px] text-gray-400 group-hover:text-gray-200 text-center leading-tight w-full">
-                {tpl.name}
-              </span>
-            </button>
-          ))}
-        </div>
-      )}
-
-      {/* Download artwork template */}
-      <div className="pt-3 border-t border-gray-800">
-        <h4 className="flex items-center gap-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">
-          <FileDown className="w-3.5 h-3.5" />
-          Download Artwork Template
-        </h4>
-        <div className="space-y-1.5">
-          {[
-            { format: 'png' as DesignExportFormat, label: 'PNG Template', icon: <ImageIcon className="w-4 h-4" /> },
-            { format: 'svg' as DesignExportFormat, label: 'SVG Template', icon: <FileCode className="w-4 h-4" /> },
-            { format: 'pdf' as DesignExportFormat, label: 'PDF Template', icon: <FileText className="w-4 h-4" /> },
-          ].map(({ format, label, icon }) => (
-            <button
-              key={format}
-              type="button"
-              onClick={() => onDownloadTemplate(format)}
-              className="flex items-center gap-2 w-full px-3 py-2 rounded-md text-sm text-gray-400 bg-gray-800 hover:bg-gray-700 hover:text-gray-200 transition-colors"
-            >
-              {icon}
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+    const controller = new AbortController();
+    setTemplates(getTemplatesByShape(shape));
+    fetch(`/api/design/templates?shape=${encodeURIComponent(shape)}`, { signal: controller.signal })
+      .then(async response => { if (!response.ok) throw new Error(); return response.json(); })
+      .then(data => { if (!Array.isArray(data)) throw new Error(); setTemplates(data); setFallback(false); })
+      .catch(() => { if (!controller.signal.aborted) setFallback(true); });
+    return () => controller.abort();
+  }, [shape, retry]);
+  const filtered = templates.filter(t => `${t.name} ${t.category} ${t.tags}`.toLowerCase().includes(query.toLowerCase()));
+  return <div className="space-y-4">
+    <p className="text-xs text-gray-300">Editable layouts fitted to your {width} × {height} inch sign. Replace the sample wording with your own.</p>
+    <label className="block text-xs text-gray-300">Find a layout
+      <input type="search" value={query} onChange={e => setQuery(e.target.value)} className="mt-1 w-full min-h-11 rounded-md border border-gray-600 bg-gray-800 px-3 text-sm text-white" placeholder="Name or industry" />
+    </label>
+    {fallback && <p role="status" className="text-xs text-amber-300">Showing built-in templates. <button className="underline min-h-11" onClick={() => setRetry(n => n + 1)}>Retry custom templates</button></p>}
+    <div className="grid gap-3">
+      {filtered.map(template => {
+        const preview = template.style ? buildTemplateCanvas(shape, width, height, template.style) : null;
+        return <button key={template.id} onClick={() => onApplyTemplate(template.id)} className="rounded-xl border border-gray-700 bg-gray-800 p-3 text-left hover:border-amber-400 focus-visible:outline-2 focus-visible:outline-amber-400">
+          <div className="h-36 p-2 rounded-lg bg-gray-950/50">{preview ? <TemplatePreview canvas={preview} shape={shape} label={`${template.name} layout preview`} /> : <div className="h-full flex flex-col justify-center items-center text-gray-300 text-sm"><span>Custom layout</span><span className="mt-2 text-xs">Open in the editor to preview all artwork</span></div>}</div>
+          <span className="block mt-2 text-sm text-white font-semibold">{template.name}</span>
+          <span className="text-xs text-gray-300">Use layout · editable text and colors</span>
+        </button>;
+      })}
     </div>
-  );
+    {!filtered.length && <p className="text-sm text-gray-300">{templates.length ? 'No layouts match. Try another search.' : 'Start with your artwork or add text. Use the product guide below to plan your layout.'}</p>}
+    <div className="border-t border-gray-700 pt-4">
+      <h3 className="text-sm text-white font-semibold">Artwork guides</h3>
+      <p className="text-xs text-gray-300 my-2">Guides include ⅛ inch bleed and ¼ inch inset. Confirm the final outline and mounting holes in your production proof.</p>
+      <div className="flex gap-2">{(['svg', 'pdf', 'png'] as const).map(format => <button key={format} onClick={() => onDownloadTemplate(format)} className="min-h-11 flex-1 rounded border border-gray-600 text-white text-xs uppercase hover:bg-gray-700">{format}</button>)}</div>
+    </div>
+  </div>;
 }

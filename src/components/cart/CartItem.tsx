@@ -5,6 +5,7 @@ import { backingOptions } from '@/data/products';
 import { formatPrice } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import QuantitySelector from './QuantitySelector';
+import Link from 'next/link';
 import { Trash2, Clock } from 'lucide-react';
 
 interface CartItemProps {
@@ -32,6 +33,7 @@ export default function CartItemRow({ item }: CartItemProps) {
             </span>
           )}
         </div>
+        {item.proofAttachment?.workflow==='upload'&&<div className="text-sm my-2"><p>Guided review attached · Production approval pending</p><p>{item.proofAttachment.reviewVersion}</p><Link className="underline" href={'/upload-proof?product='+encodeURIComponent(item.product.id)+'&review='+encodeURIComponent(item.proofAttachment.designId)}>Reopen saved upload review</Link></div>}
         <p className="text-sm text-gray-500">{backingConfig?.label}</p>
         <p className="text-sm text-gray-500">{formatPrice(item.unitPrice)}/unit</p>
         <div className="flex items-center gap-3 mt-2">

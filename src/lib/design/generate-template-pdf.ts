@@ -104,6 +104,7 @@ export async function generateTemplatePDF(options: TemplateOptions): Promise<Uin
     page.drawText(text, { x: (m.canvasW - w) / 2, y: top - m.canvasH / 2 - dy, size, font: f, color });
   };
 
+  centre('LAYOUT GUIDE - confirm final cut and mounting holes in your proof', -28, 8, font, AMBER);
   centre('YOUR ARTWORK HERE', -6, 18, bold, rgb(0.53, 0.53, 0.53));
   centre(`${displaySize} ${shapeLabel} Tin Tacker`, 12, 11);
   centre('customtintackers.com', 28, 9, font, rgb(0.73, 0.73, 0.73));

@@ -1,296 +1,36 @@
 'use client';
-
-import { useState, useRef, useEffect } from 'react';
-import {
-  Undo2,
-  Redo2,
-  ZoomIn,
-  ZoomOut,
-  Eye,
-  Ruler,
-  Scan,
-  Save,
-  Download,
-  ShoppingCart,
-  ChevronDown,
-  Image as ImageIcon,
-  FileText,
-  FileCode,
-} from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Undo2, Redo2, Save, MoreHorizontal } from 'lucide-react';
 import type { DesignExportFormat } from '@/types/design';
-
-/* ------------------------------------------------------------------ */
-/*  Props                                                              */
-/* ------------------------------------------------------------------ */
-
-interface DesignToolbarProps {
-  productName: string;
-  zoom: number;
-  canUndo: boolean;
-  canRedo: boolean;
-  showBleed: boolean;
-  showSafeArea: boolean;
-  saveStatus: 'idle' | 'unsaved' | 'saving' | 'saved';
-  quoteUrl: string;
-  onUndo: () => void;
-  onRedo: () => void;
-  onZoomIn: () => void;
-  onZoomOut: () => void;
-  onFitToScreen: () => void;
-  onToggleBleed: () => void;
-  onToggleSafeArea: () => void;
-  onPreview: () => void;
-  onSave: () => void;
-  onExport: (format: DesignExportFormat) => void;
-  onAddToCart: () => void;
+import type { SaveStatus } from '@/hooks/useDesignDraft';
+import Link from 'next/link';
+interface Props {
+  productName: string; canUndo: boolean; canRedo: boolean; busy: boolean;
+  saveStatus: SaveStatus; saveMessage: string;
+  onUndo: () => void; onRedo: () => void; onSave: () => void;
+  onExport: (format: DesignExportFormat) => void; onPreview: () => void;
+  onBackup: () => void; onOpen: () => void; onRequestQuote: () => void;
 }
-
-/* ------------------------------------------------------------------ */
-/*  Reusable icon button                                               */
-/* ------------------------------------------------------------------ */
-
-function ToolbarButton({
-  children,
-  label,
-  active,
-  disabled,
-  onClick,
-  className,
-}: {
-  children: React.ReactNode;
-  label: string;
-  active?: boolean;
-  disabled?: boolean;
-  onClick?: () => void;
-  className?: string;
-}) {
-  return (
-    <button
-      type="button"
-      title={label}
-      aria-label={label}
-      disabled={disabled}
-      onClick={onClick}
-      className={cn(
-        'flex items-center justify-center w-8 h-8 rounded-md transition-colors',
-        'text-gray-400 hover:text-white hover:bg-gray-700',
-        'disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-400',
-        active && 'text-amber-400 bg-gray-700',
-        className,
-      )}
-    >
-      {children}
-    </button>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Separator                                                          */
-/* ------------------------------------------------------------------ */
-
-function ToolbarSeparator() {
-  return <div className="w-px h-6 bg-gray-700 mx-1" />;
-}
-
-/* ------------------------------------------------------------------ */
-/*  Export dropdown                                                     */
-/* ------------------------------------------------------------------ */
-
-function ExportDropdown({
-  onExport,
-}: {
-  onExport: (format: DesignExportFormat) => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  return (
-    <div ref={dropdownRef} className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((prev) => !prev)}
-        className={cn(
-          'flex items-center gap-1 h-8 px-2 rounded-md text-sm transition-colors',
-          'text-gray-400 hover:text-white hover:bg-gray-700',
-        )}
-      >
-        <Download className="w-4 h-4" />
-        <ChevronDown className="w-3 h-3" />
-      </button>
-
-      {open && (
-        <div className="absolute right-0 top-full mt-1 w-56 bg-gray-800 border border-gray-700 rounded-lg shadow-xl z-50 py-1">
-          <div className="px-3 py-1.5 text-[10px] font-semibold text-gray-500 uppercase tracking-wider">
-            Preview
-          </div>
-          <button
-            type="button"
-            onClick={() => { onExport('png'); setOpen(false); }}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-          >
-            <ImageIcon className="w-4 h-4" />
-            <div>
-              <div>PNG Preview</div>
-              <div className="text-[10px] text-gray-500">Screen quality (144 DPI)</div>
-            </div>
-          </button>
-          <button
-            type="button"
-            onClick={() => { onExport('svg'); setOpen(false); }}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-          >
-            <FileCode className="w-4 h-4" />
-            <div>
-              <div>SVG Vector</div>
-              <div className="text-[10px] text-gray-500">Scalable, no quality loss</div>
-            </div>
-          </button>
-
-          <div className="border-t border-gray-700 my-1" />
-
-          <div className="px-3 py-1.5 text-[10px] font-semibold text-amber-500 uppercase tracking-wider">
-            Print-Ready
-          </div>
-          <button
-            type="button"
-            onClick={() => { onExport('pdf'); setOpen(false); }}
-            className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
-          >
-            <FileText className="w-4 h-4 text-amber-500" />
-            <div>
-              <div className="text-amber-400">Print-Ready PNG</div>
-              <div className="text-[10px] text-gray-500">300 DPI with 1/8&quot; bleed</div>
-            </div>
-          </button>
+export default function DesignToolbar(p: Props) {
+  const button = 'min-h-11 min-w-11 px-3 rounded-lg text-gray-100 text-sm inline-flex items-center justify-center gap-2 hover:bg-gray-800 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-amber-400';
+  return <header className="shrink-0 border-b border-gray-800 bg-gray-950 px-3 py-2">
+    <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+      <div className="min-w-0 flex-1 basis-full sm:basis-0 mb-1 sm:mb-0"><h1 className="truncate text-sm text-white font-semibold">{p.productName}</h1><p role="status" aria-live="polite" className={`text-xs ${p.saveStatus === 'error' ? 'text-amber-300' : 'text-gray-400'}`}>{p.saveMessage}</p></div>
+      <div className="flex border border-gray-800 rounded-lg"><button className={button} disabled={!p.canUndo || p.busy} onClick={p.onUndo} title="Undo (Ctrl+Z)" aria-label="Undo"><Undo2 size={17} /></button><button className={button} disabled={!p.canRedo || p.busy} onClick={p.onRedo} title="Redo (Ctrl+Shift+Z)" aria-label="Redo"><Redo2 size={17} /></button></div>
+      <button className={button} disabled={p.busy || p.saveStatus === 'saving'} onClick={p.onSave}><Save size={16} /><span>Save</span></button>
+      <details className="relative">
+        <summary aria-label="File and export options" className={`${button} cursor-pointer list-none`}><MoreHorizontal size={20} /></summary>
+        <div className="absolute right-0 z-50 mt-2 p-2 w-64 rounded-xl border border-gray-700 bg-gray-900 shadow-xl">
+          <Link href="/design" className={`${button} w-full`}>Change product</Link>
+          <button disabled={p.busy} className={`${button} w-full`} onClick={p.onOpen}>Reopen editable file</button>
+          <button disabled={p.busy} className={`${button} w-full`} onClick={p.onBackup}>Editable backup (.json)</button>
+          <button disabled={p.busy} className={`${button} w-full`} onClick={() => p.onExport('png')}>PNG preview</button>
+          <button disabled={p.busy} className={`${button} w-full`} onClick={() => p.onExport('svg')}>SVG artwork</button>
+          <button disabled={p.busy} className={`${button} w-full`} onClick={() => p.onExport('print-png')}>300 DPI review PNG</button>
+          <button disabled={p.busy} className={`${button} w-full`} onClick={p.onRequestQuote}>Save & request pricing</button>
+          <p className="text-xs text-gray-400 p-2">Exports need production proof approval. Drafts and backups contain your artwork. Save sends the design online.</p>
         </div>
-      )}
+      </details>
+      <button className={`${button} ml-auto bg-amber-500 hover:bg-amber-400 !text-gray-950 font-semibold`} disabled={p.busy} onClick={p.onPreview}>Review proof</button>
     </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  Main toolbar component                                             */
-/* ------------------------------------------------------------------ */
-
-export default function DesignToolbar({
-  productName,
-  zoom,
-  canUndo,
-  canRedo,
-  showBleed,
-  showSafeArea,
-  saveStatus,
-  quoteUrl,
-  onUndo,
-  onRedo,
-  onZoomIn,
-  onZoomOut,
-  onFitToScreen,
-  onToggleBleed,
-  onToggleSafeArea,
-  onPreview,
-  onSave,
-  onExport,
-  onAddToCart,
-}: DesignToolbarProps) {
-  return (
-    <div className="flex items-center justify-between h-12 px-3 bg-gray-900 border-b border-gray-800 shrink-0">
-      {/* ---- Left group ---- */}
-      <div className="flex items-center gap-1">
-        <ToolbarButton label="Undo" disabled={!canUndo} onClick={onUndo}>
-          <Undo2 className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton label="Redo" disabled={!canRedo} onClick={onRedo}>
-          <Redo2 className="w-4 h-4" />
-        </ToolbarButton>
-
-        <ToolbarSeparator />
-
-        <ToolbarButton label="Zoom Out" onClick={onZoomOut}>
-          <ZoomOut className="w-4 h-4" />
-        </ToolbarButton>
-        <span className="text-xs text-gray-500 font-mono w-12 text-center select-none">
-          {Math.round(zoom * 100)}%
-        </span>
-        <ToolbarButton label="Zoom In" onClick={onZoomIn}>
-          <ZoomIn className="w-4 h-4" />
-        </ToolbarButton>
-        <button
-          type="button"
-          title="Fit to screen (Ctrl+0)"
-          aria-label="Fit to screen"
-          onClick={onFitToScreen}
-          className="flex items-center justify-center h-7 px-2 rounded-md text-[11px] font-medium text-gray-400 hover:text-white hover:bg-gray-700 transition-colors"
-        >
-          Fit
-        </button>
-      </div>
-
-      {/* ---- Center ---- */}
-      <div className="hidden sm:block text-sm font-medium text-gray-300 truncate max-w-[240px]">
-        {productName}
-      </div>
-
-      {/* ---- Right group ---- */}
-      <div className="flex items-center gap-1">
-        <ToolbarButton
-          label="Toggle Bleed Guide"
-          active={showBleed}
-          onClick={onToggleBleed}
-        >
-          <Scan className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton
-          label="Toggle Safe Area"
-          active={showSafeArea}
-          onClick={onToggleSafeArea}
-        >
-          <Ruler className="w-4 h-4" />
-        </ToolbarButton>
-
-        <ToolbarSeparator />
-
-        <ToolbarButton label="Preview" onClick={onPreview}>
-          <Eye className="w-4 h-4" />
-        </ToolbarButton>
-        <ToolbarButton label="Save" onClick={onSave}>
-          <Save className="w-4 h-4" />
-        </ToolbarButton>
-        {saveStatus !== 'idle' && (
-          <span className={`text-[10px] font-medium select-none ${
-            saveStatus === 'saving' ? 'text-amber-400' :
-            saveStatus === 'saved' ? 'text-green-400' :
-            'text-gray-500'
-          }`}>
-            {saveStatus === 'saving' ? 'Saving...' :
-             saveStatus === 'saved' ? 'Saved' :
-             'Unsaved'}
-          </span>
-        )}
-
-        <ExportDropdown onExport={onExport} />
-
-        <ToolbarSeparator />
-
-        <a
-          href={quoteUrl}
-          className="flex items-center gap-1.5 h-8 px-3 rounded-md text-sm font-semibold bg-amber-600 text-white hover:bg-amber-700 transition-colors"
-        >
-          <ShoppingCart className="w-4 h-4" />
-          <span className="hidden md:inline">Request Pricing</span>
-        </a>
-      </div>
-    </div>
-  );
+  </header>;
 }

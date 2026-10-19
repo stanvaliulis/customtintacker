@@ -5,6 +5,7 @@ import { formatPrice, getResellerUnitPrice } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { TrendingDown, Star, Info, Tag } from 'lucide-react';
 import { useDistributor } from '@/context/DistributorContext';
+import { publicTiers } from '@/lib/catalog-pricing';
 
 interface PricingTableProps {
   tiers: PricingTier[];
@@ -12,15 +13,13 @@ interface PricingTableProps {
   backingMultiplier?: number;
 }
 
-const MAX_PUBLIC_QUANTITY = 1000;
-
 export default function PricingTable({ tiers, selectedQuantity, backingMultiplier = 1 }: PricingTableProps) {
   const { isDistributor, distributorDiscount } = useDistributor();
 
   // Non-distributors only see tiers up to 1,000
   const visibleTiers = isDistributor
     ? tiers
-    : tiers.filter((t) => t.minQuantity <= MAX_PUBLIC_QUANTITY);
+    : publicTiers(tiers);
 
   const bestValueIndex = visibleTiers.length - 1;
   const firstTierPrice = visibleTiers[0]?.pricePerUnit ?? 0;
@@ -43,7 +42,7 @@ export default function PricingTable({ tiers, selectedQuantity, backingMultiplie
         ) : (
           firstTierPrice > 0 && (
             <span className="text-xs text-emerald-400 font-medium">
-              Save up to {Math.round(((firstTierPrice - tiers[bestValueIndex].pricePerUnit) / firstTierPrice) * 100)}% at volume
+              Save up to {Math.round(((firstTierPrice - visibleTiers[bestValueIndex].pricePerUnit) / firstTierPrice) * 100)}% at volume
             </span>
           )
         )}

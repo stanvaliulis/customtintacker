@@ -95,7 +95,7 @@ export const industries: IndustryData[] = [
     ctaText: 'Ready to make your brewery signs?',
     metaTitle: 'Custom Tin Tacker Signs for Breweries | Embossed Aluminum Brewery Signs',
     metaDescription:
-      'Order custom embossed aluminum tin tacker signs for your brewery. Bottle cap, can shape, and circle tin tackers perfect for taprooms, beer festivals, and distributor swag. Made in USA. 25 minimum order.',
+      'Order custom embossed aluminum tin tacker signs for your brewery. Bottle cap, can shape, and circle tin tackers perfect for taprooms, beer festivals, and distributor swag. Made in USA. See product-specific minimum quantities and volume pricing.',
     keywords: [
       'brewery signs',
       'custom brewery signs',

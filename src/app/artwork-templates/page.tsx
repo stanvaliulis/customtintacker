@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import Container from '@/components/ui/Container';
+import DesignRoutes from '@/components/design/DesignRoutes';
 import ArtworkTemplatesContent from '@/components/artwork-templates/ArtworkTemplatesContent';
 import JsonLd from '@/components/seo/JsonLd';
 import { getBreadcrumbSchema } from '@/lib/structured-data';
@@ -21,7 +22,7 @@ import {
 export const metadata: Metadata = {
   title: 'Artwork Templates | Download Tin Tacker Design Templates',
   description:
-    'Download free print-ready artwork templates for custom tin tacker signs. Every shape and size with bleed and safe areas marked. AI, PDF, and SVG templates for designers. Made for breweries, bars, and brand promotions.',
+    'Download free artwork layout guides for custom tin tacker signs. Every shape and size with bleed and safe areas marked. PDF, PNG and SVG guides for designers. Made for breweries, bars, and brand promotions.',
   keywords: [
     'tin tacker artwork template',
     'tin tacker design template',
@@ -35,7 +36,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Artwork Templates | Download Tin Tacker Design Templates',
     description:
-      'Download free print-ready artwork templates for every tin tacker shape and size. Bleed and safe areas marked for your designer.',
+      'Download artwork layout guides with bleed and safe areas marked. Confirm product geometry and final artwork in your production proof.',
     url: 'https://customtintackers.com/artwork-templates',
   },
   alternates: {
@@ -57,7 +58,7 @@ const steps = [
   {
     icon: Send,
     title: 'Send It Back to Us',
-    description: 'Upload your finished artwork through our design tool or contact form. We handle the rest.',
+    description: 'Send your artwork with a quote request for production review.',
   },
 ];
 
@@ -97,6 +98,7 @@ const specs = [
 export default function ArtworkTemplatesPage() {
   return (
     <div className="min-h-screen bg-gray-950">
+      <Container><DesignRoutes current="/artwork-templates" /></Container>
       <JsonLd
         data={getBreadcrumbSchema([
           { name: 'Home', url: siteConfig.url },

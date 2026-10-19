@@ -1,109 +1,35 @@
 'use client';
-
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import type { Canvas } from 'fabric';
+import { DesignHistory } from '@/lib/design/history';
 
-// ─── Configuration ─────────────────────────────────────────────────
-const MAX_HISTORY_STATES = 30;
-
-/**
- * Undo/redo history for a Fabric.js canvas.
- *
- * Usage:
- *   const { undo, redo, canUndo, canRedo, saveState } = useDesignHistory(canvas);
- *   // Call saveState() after every meaningful canvas mutation.
- */
-export function useDesignHistory(canvas: Canvas | null) {
-  // Using refs for the stacks to avoid re-rendering on every push.
-  // We track a counter in state purely to force re-renders when
-  // canUndo / canRedo change.
-  const undoStack = useRef<string[]>([]);
-  const redoStack = useRef<string[]>([]);
-  const [revision, setRevision] = useState(0);
-
-  // Guard against recursive calls while we are restoring state.
+export function useDesignHistory(canvas: Canvas | null, serialize: () => Record<string, unknown>, restore: (data: string) => Promise<void>) {
+  const history = useRef(new DesignHistory());
   const restoringRef = useRef(false);
-
-  /**
-   * Capture the current canvas state and push it onto the undo stack.
-   * This should be called after every user-initiated modification.
-   */
+  const [, update] = useState(0);
+  const [busy, setBusy] = useState(false);
   const saveState = useCallback(() => {
     if (!canvas || restoringRef.current) return;
-
-    const json = JSON.stringify(canvas.toJSON());
-
-    // Only push if the state actually changed
-    const lastState = undoStack.current[undoStack.current.length - 1];
-    if (json === lastState) return;
-
-    undoStack.current.push(json);
-
-    // Trim to max size
-    if (undoStack.current.length > MAX_HISTORY_STATES) {
-      undoStack.current.shift();
-    }
-
-    // New action clears the redo stack
-    redoStack.current = [];
-
-    setRevision((r) => r + 1);
-  }, [canvas]);
-
-  /**
-   * Undo the last canvas change.
-   */
-  const undo = useCallback(async () => {
-    if (!canvas || undoStack.current.length === 0) return;
-
+    if (history.current.push(JSON.stringify(serialize()))) update(n => n + 1);
+  }, [canvas, serialize]);
+  const resetHistory = useCallback(() => {
+    history.current.reset(JSON.stringify(serialize()));
+    update(n => n + 1);
+  }, [serialize]);
+  useEffect(() => { if (canvas) resetHistory(); }, [canvas, resetHistory]);
+  const travel = useCallback(async (direction: -1 | 1) => {
+    if (!canvas || restoringRef.current) return;
+    const target = history.current.peek(direction);
+    if (target === undefined) return;
     restoringRef.current = true;
-
+    setBusy(true);
     try {
-      // Save current state to redo stack before restoring
-      const currentJson = JSON.stringify(canvas.toJSON());
-      redoStack.current.push(currentJson);
-
-      const previousJson = undoStack.current.pop()!;
-      const parsed = JSON.parse(previousJson) as Record<string, unknown>;
-      await canvas.loadFromJSON(parsed);
-      canvas.requestRenderAll();
-      setRevision((r) => r + 1);
-    } finally {
-      restoringRef.current = false;
-    }
-  }, [canvas]);
-
-  /**
-   * Redo the last undone canvas change.
-   */
-  const redo = useCallback(async () => {
-    if (!canvas || redoStack.current.length === 0) return;
-
-    restoringRef.current = true;
-
-    try {
-      // Save current state to undo stack before restoring
-      const currentJson = JSON.stringify(canvas.toJSON());
-      undoStack.current.push(currentJson);
-
-      const nextJson = redoStack.current.pop()!;
-      const parsed = JSON.parse(nextJson) as Record<string, unknown>;
-      await canvas.loadFromJSON(parsed);
-      canvas.requestRenderAll();
-      setRevision((r) => r + 1);
-    } finally {
-      restoringRef.current = false;
-    }
-  }, [canvas]);
-
-  // Derive boolean flags from the ref lengths.
-  // The `revision` state ensures these re-evaluate on every push/pop.
-  const canUndo = undoStack.current.length > 0;
-  const canRedo = redoStack.current.length > 0;
-
-  // Suppress the "unused variable" lint for the revision counter
-  // (it exists solely to trigger re-renders).
-  void revision;
-
-  return { undo, redo, canUndo, canRedo, saveState };
+      await restore(target);
+      history.current.move(direction);
+      update(n => n + 1);
+    } finally { restoringRef.current = false; setBusy(false); }
+  }, [canvas, restore]);
+  const undo = useCallback(() => travel(-1), [travel]);
+  const redo = useCallback(() => travel(1), [travel]);
+  return { undo, redo, canUndo: !busy && history.current.canUndo, canRedo: !busy && history.current.canRedo, saveState, resetHistory, busy, restoringRef };
 }

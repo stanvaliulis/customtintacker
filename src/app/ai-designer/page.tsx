@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import Container from '@/components/ui/Container';
+import DesignRoutes from '@/components/design/DesignRoutes';
 import { products } from '@/data/products';
 import {
   Upload,
@@ -155,6 +156,7 @@ export default function AIDesignerPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-white">
       <Container className="py-12 sm:py-16">
+        <DesignRoutes current="/ai-designer" />
         {/* Header */}
         <div className="mb-12 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-sm font-semibold mb-6">

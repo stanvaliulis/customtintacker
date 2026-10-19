@@ -62,6 +62,7 @@ export async function POST(request: Request) {
             message: [
               result.data.embossing ? `Embossing: ${result.data.embossing}` : '',
               result.data.notes,
+              result.data.designId ? `Design ID: ${result.data.designId}` : '',
             ].filter(Boolean).join('\n'),
             status: 'new',
           },
@@ -107,7 +108,7 @@ export async function POST(request: Request) {
     };
     await sendNotificationEmail(quoteRequestEmail(emailData));
 
-    return NextResponse.json({ message: 'Quote request submitted successfully.', id: quoteId }, { status: 201 });
+    return NextResponse.json({ message: 'Local review fixture saved. Nothing sent.', id: quoteId, qaOnly: true }, { status: 201 });
   } catch (err) {
     console.error('Quote request error:', err);
     return NextResponse.json({ error: 'An unexpected error occurred. Please try again later.' }, { status: 500 });

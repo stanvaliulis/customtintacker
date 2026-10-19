@@ -33,8 +33,10 @@ export interface ObjectProperties {
   width: number;
   height: number;
   rotation: number;
+  /** UI percentage (0–100). Fabric documents keep opacity as a 0–1 fraction. */
   opacity: number;
   // Text-specific
+  text?: string;
   fontFamily?: string;
   fontSize?: number;
   fontColor?: string;
@@ -113,12 +115,13 @@ function PropertyInput({
 }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[11px] font-medium text-gray-500 uppercase tracking-wider">
+      <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
         {label}
       </label>
       <div className="flex items-center bg-gray-800 rounded-md border border-gray-700 overflow-hidden">
         <input
           type="number"
+          aria-label={label}
           value={Math.round(value * 100) / 100}
           min={min}
           max={max}
@@ -177,122 +180,23 @@ export default function DesignProperties({
   const isShape = selectedObject.type === 'shape';
 
   return (
-    <div className="hidden md:flex flex-col w-[260px] shrink-0 bg-gray-900 border-l border-gray-800 overflow-y-auto">
+    <div className="flex flex-col w-full shrink-0 bg-gray-900 border-l border-gray-800 overflow-y-auto">
       {/* ---- Header ---- */}
-      <div className="px-4 py-3 border-b border-gray-800">
-        <h3 className="text-sm font-semibold text-gray-200 capitalize">
-          {selectedObject.type} Properties
-        </h3>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-4 space-y-5">
-        {/* ---- Position ---- */}
-        <section>
-          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Position
-          </h4>
-          <div className="grid grid-cols-2 gap-2">
-            <PropertyInput
-              label="X"
-              value={selectedObject.x}
-              suffix="px"
-              onChange={(v) => onUpdateProperty('x', v)}
-            />
-            <PropertyInput
-              label="Y"
-              value={selectedObject.y}
-              suffix="px"
-              onChange={(v) => onUpdateProperty('y', v)}
-            />
-          </div>
-        </section>
-
-        {/* ---- Size ---- */}
-        <section>
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
-              Size
-            </h4>
-            <button
-              type="button"
-              onClick={() => setLockAspectRatio((prev) => !prev)}
-              title={lockAspectRatio ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
-              className={cn(
-                'p-1 rounded transition-colors',
-                lockAspectRatio
-                  ? 'text-amber-400 bg-gray-800'
-                  : 'text-gray-600 hover:text-gray-400',
-              )}
-            >
-              {lockAspectRatio ? (
-                <Lock className="w-3.5 h-3.5" />
-              ) : (
-                <Unlock className="w-3.5 h-3.5" />
-              )}
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <PropertyInput
-              label="W"
-              value={selectedObject.width}
-              suffix="px"
-              min={1}
-              onChange={(v) => handleSizeChange('width', v)}
-            />
-            <PropertyInput
-              label="H"
-              value={selectedObject.height}
-              suffix="px"
-              min={1}
-              onChange={(v) => handleSizeChange('height', v)}
-            />
-          </div>
-        </section>
-
-        {/* ---- Rotation ---- */}
-        <section>
-          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Rotation
-          </h4>
-          <PropertyInput
-            label="Angle"
-            value={selectedObject.rotation}
-            suffix="deg"
-            min={-360}
-            max={360}
-            onChange={(v) => onUpdateProperty('rotation', v)}
-          />
-        </section>
-
-        {/* ---- Opacity ---- */}
-        <section>
-          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
-            Opacity
-          </h4>
-          <div className="flex items-center gap-3">
-            <input
-              type="range"
-              min={0}
-              max={100}
-              value={Math.round(selectedObject.opacity * 100)}
-              onChange={(e) => onUpdateProperty('opacity', Number(e.target.value) / 100)}
-              className="flex-1 h-1.5 rounded-full appearance-none bg-gray-700 accent-amber-500 cursor-pointer"
-            />
-            <span className="text-xs text-gray-400 font-mono w-9 text-right">
-              {Math.round(selectedObject.opacity * 100)}%
-            </span>
-          </div>
-        </section>
-
+      {isText && <label className="block p-3 text-sm text-gray-200">Text content
+        <textarea value={selectedObject.text || ''} onChange={e => onUpdateProperty('text', e.target.value)} rows={2} className="block mt-2 w-full rounded border border-gray-600 bg-gray-800 p-2 text-white" />
+      </label>}
+      <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {/* ---- Text-specific properties ---- */}
         {isText && (
           <>
+            <div className="grid grid-cols-[1fr_76px] gap-2 items-end">
             {/* Font family */}
             <section>
               <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Font
               </h4>
               <select
+                aria-label="Font family"
                 value={selectedObject.fontFamily ?? 'Arial'}
                 onChange={(e) => onUpdateProperty('fontFamily', e.target.value)}
                 className="w-full bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500"
@@ -317,12 +221,13 @@ export default function DesignProperties({
               />
             </section>
 
+            </div>
             {/* Color */}
             <section>
               <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Color
               </h4>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <details><summary className="text-xs text-gray-400 cursor-pointer min-h-8">Color presets</summary><div className="flex flex-wrap gap-1.5 mb-2">
                 {COLOR_SWATCHES.map((color) => (
                   <button
                     key={color}
@@ -338,7 +243,7 @@ export default function DesignProperties({
                     style={{ backgroundColor: color }}
                   />
                 ))}
-              </div>
+              </div></details>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -351,7 +256,7 @@ export default function DesignProperties({
                   value={selectedObject.fontColor ?? '#000000'}
                   onChange={(e) => onUpdateProperty('fontColor', e.target.value)}
                   placeholder="#000000"
-                  className="flex-1 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+                  className="min-w-0 flex-1 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
                 />
               </div>
             </section>
@@ -448,6 +353,107 @@ export default function DesignProperties({
           </>
         )}
 
+<details className="border-t border-gray-800 pt-2"><summary className="min-h-11 flex items-center cursor-pointer text-xs text-gray-300">Transform & opacity</summary><div className="grid gap-3">        {/* ---- Position ---- */}
+        <section>
+          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            Position
+          </h4>
+          <div className="grid grid-cols-2 gap-2">
+            <PropertyInput
+              label="X"
+              value={selectedObject.x}
+              suffix="px"
+              onChange={(v) => onUpdateProperty('x', v)}
+            />
+            <PropertyInput
+              label="Y"
+              value={selectedObject.y}
+              suffix="px"
+              onChange={(v) => onUpdateProperty('y', v)}
+            />
+          </div>
+        </section>
+
+        {/* ---- Size ---- */}
+        <section>
+          <div className="flex items-center justify-between mb-2">
+            <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              Size
+            </h4>
+            <button
+              type="button"
+              onClick={() => setLockAspectRatio((prev) => !prev)}
+              title={lockAspectRatio ? 'Unlock aspect ratio' : 'Lock aspect ratio'}
+              className={cn(
+                'p-1 rounded transition-colors',
+                lockAspectRatio
+                  ? 'text-amber-400 bg-gray-800'
+                  : 'text-gray-600 hover:text-gray-400',
+              )}
+            >
+              {lockAspectRatio ? (
+                <Lock className="w-3.5 h-3.5" />
+              ) : (
+                <Unlock className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <PropertyInput
+              label="W"
+              value={selectedObject.width}
+              suffix="px"
+              min={1}
+              onChange={(v) => handleSizeChange('width', v)}
+            />
+            <PropertyInput
+              label="H"
+              value={selectedObject.height}
+              suffix="px"
+              min={1}
+              onChange={(v) => handleSizeChange('height', v)}
+            />
+          </div>
+        </section>
+
+        {/* ---- Rotation ---- */}
+        <section>
+          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            Rotation
+          </h4>
+          <PropertyInput
+            label="Angle"
+            value={selectedObject.rotation}
+            suffix="deg"
+            min={-360}
+            max={360}
+            onChange={(v) => onUpdateProperty('rotation', v)}
+          />
+        </section>
+
+        {/* ---- Opacity ---- */}
+        <section>
+          <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
+            Opacity
+          </h4>
+          <div className="flex items-center gap-3">
+            <input
+              type="range"
+              aria-label="Opacity"
+              aria-valuetext={`${Math.round(selectedObject.opacity)}%`}
+              min={0}
+              max={100}
+              value={Math.round(selectedObject.opacity)}
+              onChange={(e) => onUpdateProperty('opacity', Number(e.target.value))}
+              className="flex-1 h-1.5 rounded-full appearance-none bg-gray-700 accent-amber-500 cursor-pointer"
+            />
+            <span className="text-xs text-gray-400 font-mono w-9 text-right">
+              {Math.round(selectedObject.opacity)}%
+            </span>
+          </div>
+        </section>
+
+</div></details>
         {/* ---- Shape-specific properties ---- */}
         {isShape && (
           <>
@@ -456,7 +462,7 @@ export default function DesignProperties({
               <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Fill Color
               </h4>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <details><summary className="text-xs text-gray-400 cursor-pointer min-h-8">Color presets</summary><div className="flex flex-wrap gap-1.5 mb-2">
                 {COLOR_SWATCHES.map((color) => (
                   <button
                     key={color}
@@ -472,7 +478,7 @@ export default function DesignProperties({
                     style={{ backgroundColor: color }}
                   />
                 ))}
-              </div>
+              </div></details>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -485,7 +491,7 @@ export default function DesignProperties({
                   value={selectedObject.fill ?? '#d97706'}
                   onChange={(e) => onUpdateProperty('fill', e.target.value)}
                   placeholder="#d97706"
-                  className="flex-1 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+                  className="min-w-0 flex-1 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
                 />
               </div>
             </section>
@@ -495,7 +501,7 @@ export default function DesignProperties({
               <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">
                 Stroke Color
               </h4>
-              <div className="flex flex-wrap gap-1.5 mb-2">
+              <details><summary className="text-xs text-gray-400 cursor-pointer min-h-8">Color presets</summary><div className="flex flex-wrap gap-1.5 mb-2">
                 {COLOR_SWATCHES.map((color) => (
                   <button
                     key={`stroke-${color}`}
@@ -511,7 +517,7 @@ export default function DesignProperties({
                     style={{ backgroundColor: color }}
                   />
                 ))}
-              </div>
+              </div></details>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
@@ -524,7 +530,7 @@ export default function DesignProperties({
                   value={selectedObject.stroke ?? '#92400e'}
                   onChange={(e) => onUpdateProperty('stroke', e.target.value)}
                   placeholder="#92400e"
-                  className="flex-1 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
+                  className="min-w-0 flex-1 bg-gray-800 border border-gray-700 rounded-md text-sm text-gray-200 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-amber-500 font-mono"
                 />
               </div>
             </section>
@@ -574,7 +580,7 @@ export default function DesignProperties({
       </div>
 
       {/* ---- Action buttons ---- */}
-      <div className="p-4 border-t border-gray-800 space-y-2">
+      <div className="sticky bottom-0 bg-gray-900 p-3 border-t border-gray-800 grid grid-cols-2 gap-2">
         {onDuplicate && (
           <button
             type="button"
@@ -591,7 +597,7 @@ export default function DesignProperties({
           className="flex items-center justify-center gap-2 w-full py-2 rounded-lg text-sm font-medium text-red-400 bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 hover:text-red-300 transition-colors"
         >
           <Trash2 className="w-4 h-4" />
-          Delete Object
+          Delete
         </button>
       </div>
     </div>

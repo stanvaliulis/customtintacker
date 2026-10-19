@@ -34,6 +34,7 @@ export interface TemplateMetrics {
  * Exported so the SVG and PDF generators cannot drift apart.
  */
 export function templateMetrics(widthInches: number, heightInches: number): TemplateMetrics {
+  if (![widthInches, heightInches].every(n => Number.isFinite(n) && n > 0)) throw new Error('Confirmed positive product dimensions are required for an artwork guide.');
   const bleedPx = Math.round(BLEED_INCHES * PPI);
   const safePx = Math.round(SAFE_AREA_INCHES * PPI);
   const trimW = Math.round(widthInches * PPI);
@@ -154,6 +155,10 @@ export function generateTemplateSVG(options: TemplateOptions): string {
   <!-- Safe area line (green dashed) -->
   ${safePath}
 
+  <!-- These catalog outlines are layout guides; production proof remains authoritative. -->
+  <text x="${cx}" y="${cy - 40}" text-anchor="middle" class="label" font-size="8" fill="#8a5a00">
+    LAYOUT GUIDE - confirm final cut and mounting holes in your proof
+  </text>
   <!-- Center text -->
   <text x="${cx}" y="${cy - 20}" text-anchor="middle" class="label"
         font-size="18" font-weight="bold" fill="#888888">

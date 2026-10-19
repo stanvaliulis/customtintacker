@@ -67,7 +67,7 @@ const benefits = [
     icon: PackageCheck,
     title: 'No Minimum Hassle',
     description:
-      'Low 25-unit minimums per design. Perfect for testing new products with clients or running smaller promotional campaigns.',
+      'Product-specific minimum quantities. Perfect for testing new products with clients or running smaller promotional campaigns.',
   },
   {
     icon: Image,
@@ -120,7 +120,7 @@ const faqs = [
   {
     question: 'What are the minimum order quantities?',
     answer:
-      'Our standard minimum is 25 units per design. Custom die-cut shapes have a 50-unit minimum. There are no overall account minimums to maintain your distributor status.',
+      'Minimum quantities are listed on each product page; custom projects require a quote. Custom die-cut shapes have a 50-unit minimum. There are no overall account minimums to maintain your distributor status.',
   },
   {
     question: 'What is the typical production lead time?',

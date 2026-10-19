@@ -1,0 +1,3 @@
+import {staffArtwork} from '@/lib/persistence/staff-invoice';
+import {failure} from '@/lib/commerce/runtime';
+export async function GET(req:Request){try{const q=new URL(req.url).searchParams,kind=q.get('kind');if(kind!=='original'&&kind!=='document')return Response.json({error:'Invalid artwork kind.'},{status:400});const result=await staffArtwork(q.get('order_id')||'',q.get('source_id')||'',kind);return new Response(new Uint8Array(result.bytes),{headers:{'Content-Type':'application/octet-stream','Content-Disposition':`attachment; filename="${result.name}"`,'Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff'}});}catch(e){return failure(e);}}

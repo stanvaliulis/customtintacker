@@ -1,60 +1,10 @@
-'use client';
-
-import { useEffect } from 'react';
-import { useCart } from '@/context/CartContext';
-import Container from '@/components/ui/Container';
-import Button from '@/components/ui/Button';
 import Link from 'next/link';
-import { CheckCircle, Phone, MessageSquare } from 'lucide-react';
-
-export default function CheckoutSuccessPage() {
-  const { clearCart } = useCart();
-
-  useEffect(() => {
-    clearCart();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return (
-    <section className="py-16 sm:py-24">
-      <Container>
-        <div className="text-center max-w-lg mx-auto">
-          <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-6" />
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">Payment Successful!</h1>
-          <p className="text-lg text-gray-600 mb-6">
-            Thank you for your order. You&apos;ll receive a confirmation email shortly.
-          </p>
-
-          <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-8 text-left">
-            <h2 className="font-semibold text-gray-900 mb-2">What happens next?</h2>
-            <ol className="text-sm text-gray-600 space-y-2 list-decimal list-inside">
-              <li>You&apos;ll receive an email confirmation with your order details</li>
-              <li>Our team reviews your order and begins production</li>
-              <li>Production takes approximately 15 business days</li>
-              <li>Your signs ship and you get a tracking number</li>
-            </ol>
-          </div>
-
-          <div className="flex items-center justify-center gap-6 text-sm text-gray-500 mb-8">
-            <Link href="/contact" className="flex items-center gap-1.5 hover:text-gray-700">
-              <MessageSquare className="w-4 h-4" />
-              Contact Us
-            </Link>
-            <a href="tel:8155414569" className="flex items-center gap-1.5 hover:text-gray-700">
-              <Phone className="w-4 h-4" />
-              (815) 541-4569
-            </a>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/products">
-              <Button>Continue Shopping</Button>
-            </Link>
-            <Link href="/">
-              <Button variant="outline">Back to Home</Button>
-            </Link>
-          </div>
-        </div>
-      </Container>
-    </section>
-  );
+/** A legacy payment redirect alone is not proof of payment. Invoice requests confirm inline. */
+export default function CheckoutSuccessPage(){
+ return <section className="max-w-xl mx-auto py-16 px-6 text-center">
+  <h1 className="text-2xl font-bold">Check your order confirmation</h1>
+  <p className="my-5">This page does not verify payment or approve production. Your cart has been kept. If you completed a card payment, contact Interstate Graphics to confirm its status before paying again.</p>
+  <p><Link className="underline" href="/contact">Contact Interstate Graphics</Link></p>
+  <p className="mt-5"><Link href="/cart">Return to cart</Link></p>
+ </section>;
 }

@@ -1,3 +1,4 @@
+import { publicTiers } from '@/lib/catalog-pricing';
 import { siteConfig } from '@/data/siteConfig';
 import { Product } from '@/types/product';
 import { BlogPost } from '@/data/blog-posts';
@@ -132,8 +133,9 @@ export function getLocalBusinessSchema() {
  * Prices in the data are stored in cents; converted to dollars here.
  */
 export function getProductSchema(product: Product) {
-  const lowestPrice = Math.min(...product.pricingTiers.map((t) => t.pricePerUnit)) / 100;
-  const highestPrice = Math.max(...product.pricingTiers.map((t) => t.pricePerUnit)) / 100;
+  const tiers = publicTiers(product.pricingTiers);
+  const lowestPrice = Math.min(...tiers.map((t) => t.pricePerUnit)) / 100;
+  const highestPrice = Math.max(...tiers.map((t) => t.pricePerUnit)) / 100;
   const shapeLabel = product.shape.replace(/-/g, ' ');
 
   return {
@@ -159,10 +161,10 @@ export function getProductSchema(product: Product) {
       name: siteConfig.company,
     },
     material: product.metadata.material,
-    countryOfOrigin: {
+    ...(product.metadata.madeInUSA ? { countryOfOrigin: {
       '@type': 'Country',
       name: 'US',
-    },
+    } } : {}),
     additionalProperty: [
       {
         '@type': 'PropertyValue',
@@ -195,12 +197,15 @@ export function getProductSchema(product: Product) {
         value: `${product.leadTimeDays} business days`,
       },
     ],
-    offers: {
+    ...(tiers.length ? { offers: {
       '@type': 'AggregateOffer',
       priceCurrency: 'USD',
       lowPrice: lowestPrice.toFixed(2),
       highPrice: highestPrice.toFixed(2),
-      offerCount: product.pricingTiers.length,
+      offerCount: tiers.length,
+      offers: tiers.map(tier => ({ '@type': 'Offer', url: siteConfig.url + '/products/' + product.slug,
+        priceCurrency: 'USD', price: (tier.pricePerUnit / 100).toFixed(2),
+        eligibleQuantity: { '@type': 'QuantitativeValue', minValue: tier.minQuantity, ...(tier.maxQuantity ? { maxValue: tier.maxQuantity } : {}), unitCode: 'C62' } })),
       availability: product.inStock
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
@@ -209,7 +214,7 @@ export function getProductSchema(product: Product) {
         '@id': `${siteConfig.url}/#organization`,
         name: siteConfig.company,
       },
-    },
+    } } : {}),
   };
 }
 
