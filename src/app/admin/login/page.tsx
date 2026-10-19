@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { safeAdminReturnPath } from '@/lib/admin-review';
 import { Lock } from 'lucide-react';
 
 export default function AdminLoginPage() {
@@ -22,7 +23,7 @@ export default function AdminLoginPage() {
     });
 
     if (res.ok) {
-      router.push('/admin');
+      router.push(safeAdminReturnPath(new URLSearchParams(window.location.search).get('next')));
       router.refresh();
     } else {
       setError('Invalid password.');

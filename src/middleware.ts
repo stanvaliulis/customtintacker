@@ -3,12 +3,22 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+  if(pathname.startsWith('/wholesale/password')) {
+    const response=NextResponse.next();
+    response.headers.set('Referrer-Policy','no-referrer');
+    response.headers.set('Cache-Control','no-store');
+    response.headers.set('X-Robots-Tag','noindex, nofollow');
+    response.headers.set('Content-Security-Policy',"frame-ancestors 'none'; form-action 'self'; base-uri 'self'");
+    return response;
+  }
 
   // Protect admin routes (except login and API)
   if (pathname.startsWith('/admin') && !pathname.startsWith('/admin/login')) {
     const adminSession = req.cookies.get('admin-session');
     if (!(await verifyAdminToken(adminSession?.value, process.env.AUTH_SECRET || ''))) {
-      return NextResponse.redirect(new URL('/admin/login', req.url));
+      const login = new URL('/admin/login', req.url);
+      login.searchParams.set('next', req.nextUrl.pathname + req.nextUrl.search);
+      return NextResponse.redirect(login);
     }
   }
 
@@ -23,5 +33,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/wholesale/dashboard/:path*', '/admin/:path*'],
+  matcher: ['/wholesale/dashboard/:path*', '/wholesale/password/:path*', '/admin/:path*'],
 };

@@ -1,3 +1,4 @@
+import { authenticateDurableDistributor, durableDistributorAccountsEnabled, isDistributorSessionCurrent } from './distributor-accounts';
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
 import { findDistributorByEmail, parseEnvCredentials } from '@/lib/distributors';
@@ -14,6 +15,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const email = (credentials?.email as string)?.trim().toLowerCase();
         const password = (credentials?.password as string)?.trim();
         if (!email || !password) return null;
+
+        if (durableDistributorAccountsEnabled()) {
+          try { return await authenticateDurableDistributor(email, password); }
+          catch { return null; } // No legacy bypass during an outage or after migration.
+        }
 
         // 1. Check WHOLESALE_CREDENTIALS env var (format: "email:password:name")
         const envAccounts = parseEnvCredentials();
@@ -57,12 +63,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+        token.accountVersion=user.accountVersion;
         token.role = (user as Record<string, unknown>).role as string || 'distributor';
         token.companyName = (user as Record<string, unknown>).companyName as string || '';
         token.asiNumber = (user as Record<string, unknown>).asiNumber as string || '';
         token.sageNumber = (user as Record<string, unknown>).sageNumber as string || '';
         token.ppaiNumber = (user as Record<string, unknown>).ppaiNumber as string || '';
         token.discountTier = (user as Record<string, unknown>).discountTier as number ?? 0.40;
+      }
+      if(durableDistributorAccountsEnabled()) {
+        try {if(!token.email || !await isDistributorSessionCurrent(token.email,token.accountVersion))return null;}
+        catch{return null;}
       }
       return token;
     },

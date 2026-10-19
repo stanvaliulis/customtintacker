@@ -2,10 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { isAdminAuthenticated } from '@/lib/admin-auth';
 import { isDatabaseConfigured } from '@/lib/env';
 import { readJsonFile, writeJsonFile } from '@/lib/json-store';
-import { sendEmailTo } from '@/lib/email';
-import { distributorApprovalEmail, distributorRejectionEmail } from '@/lib/email-templates';
-import { upsertDistributor } from '@/lib/distributors';
-import crypto from 'crypto';
+import { sendEmailTo, canSendSensitiveEmail } from '@/lib/email';
+import { distributorRejectionEmail } from '@/lib/email-templates';
+import { approveDistributorSetup, durableDistributorAccountsEnabled } from '@/lib/distributor-accounts';
+import { distributorRecoveryEnabled } from '@/lib/distributor-recovery';
+import { isSameOriginAdminMutation } from '@/lib/admin-review';
 
 interface DistributorRecord {
   id: string;
@@ -24,16 +25,6 @@ interface DistributorRecord {
   agreeTerms: boolean;
   status: string;
   submittedAt: string;
-}
-
-function generateTempPassword(): string {
-  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
-  let password = '';
-  for (let i = 0; i < 10; i++) {
-    password += chars.charAt(crypto.randomInt(chars.length));
-  }
-  password += '!' + crypto.randomInt(10);
-  return password;
 }
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -73,11 +64,24 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  if (!isSameOriginAdminMutation(req)) return NextResponse.json({error: 'Forbidden'}, {status: 403});
   const { id } = await params;
-  const { status } = await req.json();
-
-  if (!['pending', 'approved', 'rejected'].includes(status)) {
-    return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
+  let body;
+  try { body = await req.json(); } catch { return NextResponse.json({error: 'Invalid request'}, {status: 400}); }
+  const { status, confirmApproval } = body || {};
+  if (!['pending', 'approved', 'rejected'].includes(status)) return NextResponse.json({error: 'Invalid status'}, {status: 400});
+  if (status === 'approved') {
+    if (confirmApproval !== true) return NextResponse.json({error: 'Explicit approval confirmation required'}, {status: 400});
+    if (!durableDistributorAccountsEnabled() || !distributorRecoveryEnabled() || process.env.TIN_DISTRIBUTOR_RECOVERY_MAIL_ENABLED!=='1' || !isDatabaseConfigured()) {
+      return NextResponse.json({error: 'Approval unavailable until durable accounts migration is completed'}, {status: 503});
+    }
+    if (!canSendSensitiveEmail()) return NextResponse.json({error: 'Approval unavailable: credential email provider is not configured'}, {status: 503});
+    try {
+      const a = await approveDistributorSetup(id);
+      return NextResponse.json({id:a.id,status:a.status,notificationQueued:true,setupRequired:true});
+    } catch {
+      return NextResponse.json({error: 'Approval was not completed. Check pending status, existing account, and database readiness.'}, {status: 409});
+    }
   }
 
   if (isDatabaseConfigured()) {
@@ -85,40 +89,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       const { prisma } = await import('@/lib/db');
       const a = await prisma.distributorApplication.update({ where: { id }, data: { status } });
 
-      if (status === 'approved') {
-        const tempPassword = generateTempPassword();
 
-        // Save credentials to data/distributors.json so they can log in
-        upsertDistributor({
-          email: a.email,
-          password: tempPassword,
-          companyName: a.companyName,
-          contactName: a.contactName,
-          asiNumber: a.asiNumber || '',
-          sageNumber: a.sageNumber || '',
-          ppaiNumber: a.ppaiNumber || '',
-          discountTier: 0.40,
-          status: 'approved',
-          createdAt: new Date().toISOString(),
-        });
-
-        // Update DB notes to reflect approval
-        await prisma.distributorApplication.update({
-          where: { id },
-          data: { notes: `Approved. Login credentials generated.` },
-        });
-
-        // Send approval email with temp password and login URL
-        await sendEmailTo(
-          a.email,
-          distributorApprovalEmail({
-            contactName: a.contactName,
-            companyName: a.companyName,
-            email: a.email,
-            tempPassword,
-          })
-        );
-      }
 
       if (status === 'rejected') {
         await sendEmailTo(
@@ -153,33 +124,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const app = distributors[index];
   try {
-    if (status === 'approved') {
-      const tempPassword = generateTempPassword();
 
-      // Save login credentials to the distributor credential store
-      upsertDistributor({
-        email: app.email,
-        password: tempPassword,
-        companyName: app.companyName,
-        contactName: app.contactName,
-        asiNumber: app.asiNumber || '',
-        sageNumber: app.sageNumber || '',
-        ppaiNumber: app.ppaiNumber || '',
-        discountTier: 0.40,
-        status: 'approved',
-        createdAt: new Date().toISOString(),
-      });
-
-      await sendEmailTo(
-        app.email,
-        distributorApprovalEmail({
-          contactName: app.contactName,
-          companyName: app.companyName,
-          email: app.email,
-          tempPassword,
-        })
-      );
-    }
     if (status === 'rejected') {
       await sendEmailTo(
         app.email,
@@ -201,6 +146,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  if (!isSameOriginAdminMutation(req)) return NextResponse.json({error: 'Forbidden'}, {status: 403});
   const { id } = await params;
 
   if (isDatabaseConfigured()) {

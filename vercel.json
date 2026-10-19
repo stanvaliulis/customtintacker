@@ -3,6 +3,10 @@
     {
       "path": "/api/internal/invoice-worker",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/internal/distributor-recovery-worker",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

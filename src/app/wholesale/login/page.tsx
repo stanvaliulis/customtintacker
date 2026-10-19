@@ -137,6 +137,7 @@ export default function WholesaleLoginPage() {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+          <p className="text-center mt-4"><a href="/wholesale/password" className="text-amber-700 underline">Set or reset your password</a></p>
 
           <p className="text-center text-xs text-gray-400 mt-6">
             Distributor accounts are created when your application is approved.{' '}

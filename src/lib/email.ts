@@ -23,6 +23,10 @@ function isSmtpConfigured(): boolean {
   return !!(env.email.smtpHost && env.email.smtpPort && env.email.smtpUser && env.email.smtpPass);
 }
 
+export function canSendSensitiveEmail(): boolean {
+  return isResendConfigured() || isSmtpConfigured();
+}
+
 /**
  * Send a notification email. Safe to call fire-and-forget.
  * Never throws -- all errors are caught and logged.
@@ -90,13 +94,13 @@ export async function sendNotificationEmail(payload: EmailPayload): Promise<void
  * Send an email to a specific recipient (e.g. a customer or distributor).
  * Same provider logic as sendNotificationEmail but with a custom "to" address.
  */
-export async function sendEmailTo(to: string, payload: EmailPayload): Promise<void> {
+export async function sendEmailTo(to: string, payload: EmailPayload, options: { sensitive?: boolean } = {}): Promise<void> {
   try {
     if (isResendConfigured()) {
       const { Resend } = await import('resend');
       const resend = new Resend(env.email.resendApiKey);
 
-      await resend.emails.send({
+      const result = await resend.emails.send({
         from: env.email.resendFrom || 'Custom Tin Tackers <notifications@igiprint.com>',
         to,
         ...(payload.replyTo ? { replyTo: payload.replyTo } : {}),
@@ -105,6 +109,7 @@ export async function sendEmailTo(to: string, payload: EmailPayload): Promise<vo
         text: payload.text,
       });
 
+      if (result.error) throw new Error('Email provider rejected delivery');
       console.log(`[Email/Resend] Sent to ${to}: ${payload.subject}`);
       return;
     }
@@ -117,6 +122,7 @@ export async function sendEmailTo(to: string, payload: EmailPayload): Promise<vo
         host: smtpHost,
         port: Number(smtpPort),
         secure: Number(smtpPort) === 465,
+        ...(options.sensitive ? { requireTLS: Number(smtpPort) !== 465, tls: { rejectUnauthorized: true } } : {}),
         auth: { user: smtpUser, pass: smtpPass },
       });
 
@@ -133,12 +139,14 @@ export async function sendEmailTo(to: string, payload: EmailPayload): Promise<vo
       return;
     }
 
+    if (options.sensitive) throw new Error('Email provider unavailable');
     console.log('-----------------------------------------------------------');
     console.log(`[Email] Would send to: ${to}`);
     console.log(`Subject: ${payload.subject}`);
     console.log(payload.text);
     console.log('-----------------------------------------------------------');
   } catch (error) {
+    if (options.sensitive) throw new Error('Credential email delivery failed');
     console.error(`[Email] Failed to send to ${to}:`, error);
   }
 }

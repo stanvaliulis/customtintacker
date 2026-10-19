@@ -58,6 +58,8 @@ function timeAgo(dateString: string): string {
 
 export default function DistributorsPage() {
   const [applications, setApplications] = useState<DistributorApplication[]>([]);
+  const [confirmation, setConfirmation] = useState<{id: string; status: 'approved' | 'rejected'} | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -72,39 +74,52 @@ export default function DistributorsPage() {
     fetch('/api/admin/distributors')
       .then((r) => r.json())
       .then((data) => {
+        if (!Array.isArray(data)) throw new Error('Unable to load applications');
         setApplications(data);
+        const selected = new URLSearchParams(window.location.search).get('application');
+        if (selected) {
+          if (data.some((a: DistributorApplication) => a.id === selected)) setExpandedId(selected);
+          else setToast({message: 'The linked application was not found.', type: 'error'});
+        }
         setLoading(false);
       })
       .catch(() => setLoading(false));
   }, []);
 
   async function handleStatusChange(id: string, status: 'approved' | 'rejected') {
+    const application = applications.find(a => a.id === id);
+    if (!application || submitting) return;
+    setSubmitting(true);
     try {
-      const res = await fetch(`/api/admin/distributors/${id}`, {
+      const res = await fetch(`/api/admin/distributors/${encodeURIComponent(id)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify({ status, confirmApproval: status === 'approved' }),
       });
 
-      if (!res.ok) throw new Error('Failed to update');
+      if (!res.ok) { const failure = await res.json(); throw new Error(failure.error || 'Failed to update'); }
 
       const updated = await res.json();
       setApplications((prev) =>
         prev.map((a) => (a.id === id ? { ...a, status: updated.status } : a))
       );
+      if (status === 'approved' && updated.notificationQueued === true) {
+        showToast('Application approved. Password setup email queued; account remains locked until setup is complete.');
+        return;
+      }
       showToast(
         `Application ${status === 'approved' ? 'approved' : 'rejected'} successfully`
       );
-    } catch {
-      showToast('Failed to update application status', 'error');
-    }
+    } catch (error) {
+      showToast(error instanceof Error ? error.message : 'Failed to update application status', 'error');
+    } finally { setSubmitting(false); setConfirmation(null); }
   }
 
   async function handleDelete(id: string, companyName: string) {
     if (!confirm(`Delete application from "${companyName}"? This cannot be undone.`)) return;
 
     try {
-      const res = await fetch(`/api/admin/distributors/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/distributors/${id}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } });
       if (!res.ok) throw new Error('Failed to delete');
       setApplications((prev) => prev.filter((a) => a.id !== id));
       showToast('Application deleted');
@@ -149,6 +164,20 @@ export default function DistributorsPage() {
 
   return (
     <div className="p-8">
+      {confirmation && (() => {
+        const selected = applications.find(a => a.id === confirmation.id);
+        return <div role="dialog" aria-modal="true" aria-labelledby="confirm-title" className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h2 id="confirm-title" className="text-lg font-bold">Confirm {confirmation.status === 'approved' ? 'approval' : 'rejection'}</h2>
+            <p className="my-4">{selected?.companyName} ({selected?.email})</p>
+            <p className="mb-4">This changes the application status and sends an email to this applicant.</p>
+            <div className="flex gap-3">
+              <button disabled={submitting} onClick={() => setConfirmation(null)} className="rounded border px-4 py-2">Cancel</button>
+              <button disabled={submitting} onClick={() => handleStatusChange(confirmation.id, confirmation.status)} className="rounded bg-gray-900 px-4 py-2 text-white">{submitting ? 'Saving...' : 'Confirm ' + (confirmation.status === 'approved' ? 'approval' : 'rejection')}</button>
+            </div>
+          </div>
+        </div>;
+      })()}
       {/* Toast notification */}
       {toast && (
         <div
@@ -228,6 +257,7 @@ export default function DistributorsPage() {
             return (
               <div
                 key={app.id}
+                ref={node => { if (node && isExpanded) node.scrollIntoView({block: 'center'}); }}
                 className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
               >
                 <div className="p-5">
@@ -341,7 +371,7 @@ export default function DistributorsPage() {
                   <div className="flex items-center gap-2">
                     {app.status !== 'approved' && (
                       <button
-                        onClick={() => handleStatusChange(app.id, 'approved')}
+                        onClick={() => setConfirmation({id: app.id, status: 'approved'})}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition-colors"
                       >
                         <CheckCircle2 className="w-3.5 h-3.5" />
@@ -350,7 +380,7 @@ export default function DistributorsPage() {
                     )}
                     {app.status !== 'rejected' && (
                       <button
-                        onClick={() => handleStatusChange(app.id, 'rejected')}
+                        onClick={() => setConfirmation({id: app.id, status: 'rejected'})}
                         className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition-colors"
                       >
                         <XCircle className="w-3.5 h-3.5" />
