@@ -6,8 +6,7 @@ reviews the PrintIQ handoff. This approval does not authorize live activation.
 
 ## Release boundary
 
-Production remains recovery release 0e8eb66. This commerce work is local on
-feature/commerce-integration-review; it has not been pushed or deployed. Public
+Production remains recovery release 0e8eb66. This commerce work is on feature/commerce-integration-review and deployed only to isolated Preview. No Git push or production promotion occurred. Public
 Invoice me and customer recovery are unchanged. Production cards stay disabled.
 No production migration, credentials, provider payment, email or PrintIQ write
 was performed during this implementation pass.
@@ -103,6 +102,10 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: those names belong to legacy routes.
 
 ## October 20 isolated Preview checkpoint
 
+Ready deployment: https://customtintacker-hwuzcycst-stanvaliulis-6893s-projects.vercel.app
+Code commit: 0e10d2cd56b5cc81b225465a2fa6713fa6342ac3. Browser guest session and
+synthetic text save returned HTTP200; proof review POP-6FD3DC89 opened successfully.
+
 The earlier 11:42 isolation preflight is historical: inherited Production database
 and email credentials were removed from Preview scope, preserving their Production
 and Development values/scopes. Dedicated Neon Free database
@@ -125,8 +128,7 @@ lengths; decoded size limits and stored SHA-256 verification remain enforced.
 Regression tests cover compressed, absent and inconsistent transfer lengths.
 
 Deployment and browser acceptance evidence is in
-../distributor-review-evidence/PREVIEW-DEPLOYMENT-RESULT.json (relative to task root,
-not this docs directory). PREVIEW-ISOLATION-CURRENT.json verifies production remains
+../../distributor-review-evidence/PREVIEW-DEPLOYMENT-RESULT.json. PREVIEW-ISOLATION-CURRENT.json verifies production remains
 on dpl_3zuBgkURsKL2SjnE3ukV1SU6M693 and no legacy DB/email keys target Preview.
 
 Budget: US$5 total including tax for seven days, starting October20. Neon Free,
