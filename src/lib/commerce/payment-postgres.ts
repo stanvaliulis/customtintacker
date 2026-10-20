@@ -55,5 +55,10 @@ export function paymentPostgres(client:PrismaTransactions) {
   }),
   hold:(key:string,token:string)=>transaction(async tx=>{const n=await tx.$executeRawUnsafe("UPDATE tin_payments.outbox SET state='held' WHERE job_key=$1 AND lease_token=$2 AND state='claimed'",key,token);if(n!==1)throw new CommerceError('Payment outbox lease lost.',409);}),
  };
- return {repository,outbox};
+ const startSessionAttempt=(id:string)=>transaction(async tx=>{
+  const rows=await tx.$queryRawUnsafe<Array<{started:Date}>>("UPDATE tin_payments.payment_order SET session_first_attempt=COALESCE(session_first_attempt,clock_timestamp()) WHERE id=$1 AND NOT paid RETURNING session_first_attempt AS started",id);
+  if(!rows[0])throw new CommerceError('Payment order unavailable.',409);return rows[0].started.getTime();
+ });
+ const orderById=(owner:string,id:string)=>transaction(async tx=>{const o=await adapter(tx).byId(id);return o?.ownerId===owner?o:null;});
+ return {repository,outbox,startSessionAttempt,orderById};
 }

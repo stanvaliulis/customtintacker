@@ -22,7 +22,7 @@ export interface PricedOrder {
   subtotal: number; setup: number; rush: number; shipping: number; tax: number; total: number; currency: 'usd';
 }
 export interface Order extends PricedOrder { id: string; requestHash: string; sessionId?: string; checkoutUrl?: string; paid: boolean }
-export interface PaidEvent { id: string; type: string; sessionId: string; orderId: string; paymentIntentId: string; paymentStatus: string; currency: string; total: number; shipping: number; tax: number }
+export interface PaidEvent { id: string; type: string; sessionId: string; orderId: string; paymentIntentId: string; paymentStatus: string; currency: string; total: number; shipping: number; tax: number; reviewHash?:string }
 export interface Repository {
   // Durable unique(ownerId,key); conflict if hash differs. Must never reset existing state.
   reserve(ownerId: string, key: string, hash: string, order: PricedOrder): Promise<Order>;

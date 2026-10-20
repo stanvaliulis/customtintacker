@@ -1,155 +1,137 @@
-# Stripe and PrintIQ connection review — October 20, 2026
+# Reviewed payments: implementation and nonproduction handoff
 
-## Live baseline
+Updated October 20, 2026 on SPIKE. Stan approved: Invoice me -> staff confirms
+proof, shipping and tax -> customer pays the final amount through Stripe -> staff
+reviews the PrintIQ handoff. This approval does not authorize live activation.
 
-GitHub main and production remain the released recovery commit `0e8eb66`.
-Invoice me remains the working checkout option: unpaid IG/Interstate Graphics
-requests, with final shipping/tax and invoice preparation left to staff.
-Recovery preserves four accounts and five applications. No replacement setup
-emails, password changes, or customer login attempts belong to this work.
+## Release boundary
 
-## Implemented locally, not activated
+Production remains recovery release 0e8eb66. This commerce work is local on
+feature/commerce-integration-review; it has not been pushed or deployed. Public
+Invoice me and customer recovery are unchanged. Production cards stay disabled.
+No production migration, credentials, provider payment, email or PrintIQ write
+was performed during this implementation pass.
 
-`payment-postgres.ts` now implements the durable payment repository and outbox.
-The review-only `payment-ledger-v1.sql` adds a separate tin_payments namespace:
-immutable order snapshots, unique owner/request/session/payment bindings,
-immutable event receipts, and a single outbox row per paid order. Serializable
-transactions retry database conflicts; provider actions never run inside them.
-An expired claimed outbox item is held for reconciliation rather than resent.
-Ten real PostgreSQL tests passed in a new local synthetic database, including
-two-client races and atomic rollback after an injected outbox failure. No
-production migration has been applied. The rehearsal server was stopped.
+## Implemented
 
-`final-payment-review.ts` prepares the staff-reviewed final amount from an
-existing invoice request, reconciles item totals, requires explicit shipping/tax,
-and binds approved print/emboss artifacts to the invoice's immutable source.
-It does not mark an invoice paid, issue a payment link, or release production.
+Staff can prepare proofs against the invoice's owned source and approve explicit
+shipping/tax in integer cents. Approval locks source/proof versions and hashes,
+product bindings, final amounts and a review hash in one serializable transaction.
+Identical approval retries return the original receipt. Changed approvals fail
+closed and require staff reconciliation. The current shared administrator login
+records authenticated-admin, not a verified individual staff identity.
 
-`stripe-events.ts` validates the original request body with Stripe's installed
-SDK and a five-minute signature tolerance. It rejects wrong test/live mode,
-Connect-account events, non-IG metadata, incomplete payment references,
-discounts not represented by the order contract, and inconsistent USD totals.
-Unpaid/unrelated events do not mark an order paid. A verified event still needs
-the existing transaction contract to compare it to its durable reserved order.
-This module makes no provider call and is not wired into the legacy webhook.
+The customer page shows the approved breakdown and private proof downloads,
+requires acknowledgment, and posts only the invoice ID. Server ownership checks
+select the frozen amount. A return URL never marks an order paid.
 
-`printiq-plan.ts` prepares a review-only GetPrice payload for one paid IG order
-line with an explicit IG customer code, product/backing-specific approved recipe,
-and separately versioned print/emboss artifact hashes. It binds the source hash
-and recipe to a deterministic review hash. Acceptance, invoice creation, invoice
-email and invoice export are explicitly false. No HTTP client is included.
-Multi-line orders fail closed until add-to-quote reconciliation is implemented.
-Even this unaccepted quote payload would create a real numbered quote if sent.
+The server Stripe adapter verifies the IG account, uses test mode only, sends
+one fixed final USD amount including staff-approved shipping/tax, and disables
+Stripe automatic tax, discounts and automatic invoice creation. Metadata carries
+order/review references, not customer personal data. A stable order idempotency
+key and first-attempt timestamp bound retries to Stripe's retention window;
+ambiguous or expired attempts require reconciliation instead of a new charge.
 
-## Verified connection evidence
+The dedicated webhook validates raw-body signatures, test mode, IG metadata,
+review hash and exact amount against a durable order. Payment/event/outbox writes
+are atomic; duplicates cannot create a second release. Outbox claims are fenced,
+and expired external-operation claims are held. There is no PrintIQ executor.
 
-The existing Stripe browser session displays Interstate Graphics account
-`acct_1TO24PIpmMqjUaQp`. No account setting, key or payment was changed.
-Production configuration contains none of `STRIPE_SECRET_KEY`,
-`NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY`, or `STRIPE_WEBHOOK_SECRET`.
-Adding those keys alone is unsafe: the legacy checkout/webhook routes are not
-connected to the newer immutable-order transaction service.
+Payment routes require Preview, an explicit enable flag, and an exact isolated
+DB hostname. The known production Neon endpoint is explicitly rejected. Legacy
+Stripe routes are untouched; never populate their environment variables for this
+test. Approved proof downloads verify stored hashes and bytes before responding.
 
-The existing Claude PrintIQ API skill was read from the shared
-`Dropbox/API/PrintIQAPI/printiq-api.skill` archive without installing it.
-Existing local configuration contains all six documented PrintIQ fields.
-A `GET /api/v1/odata/Jobs?$top=0` returned 200 using the existing reporting key.
-No job rows were requested. QuoteProcess login/write permissions were not tested.
-No credentials were copied into source, Vercel or output.
+## Validation and limits
 
-The skill's historical IG sample is not an approved per-product tacker recipe:
-its example uses sample customer, stock and finish dimensions. The saved
-QuoteProcess Swagger confirms GetPrice creates a quote unless adding to a
-specified quote. It has not established provider idempotency or safe automatic
-retry after an unknown response.
+172 synthetic tests and TypeScript validation passed after the final code edits.
+Fourteen real local PostgreSQL checks passed, including concurrent reservation,
+concurrent staff approval, stale proof heads, duplicate paid events, atomic outbox
+rollback, immutable bindings, first-attempt races and claim fencing. The synthetic
+PostgreSQL server was stopped. The build result is recorded in
+COMMERCE-CONNECTIONS-RESULT.json after completion.
 
-## Remaining engineering and decisions
+React/JSDOM checks exercise the actual staff/customer components. These are not
+end-to-end browser, actual Stripe test payment, or provider-webhook acceptance.
+Those remain blocked on the isolated Preview configuration below.
 
-1. Stripe: confirm whether payment is collected before or after proof approval;
-   approve the shipping and tax calculation policy. Current policy intentionally
-   leaves both unresolved; zero is not a valid substitute for an unknown charge.
-2. The concrete payment repository and ten-check PostgreSQL rehearsal are now
-   complete locally. Production still needs a reviewed migration/recovery point,
-   verified runtime wiring, staff authentication and final-amount approval UI.
-3. Add the Stripe session provider, replace legacy checkout/webhook/status
-   wiring with the durable service, and preserve Invoice me. Customer data must
-   remain in the order store rather than serialized into Stripe metadata.
-4. Verify IG account/test-mode configuration, configure an approved nonproduction
-   webhook and perform test-mode completion/replay/amount-mismatch acceptance.
-   A signed synthetic webhook is not an actual Stripe payment acceptance test.
-5. PrintIQ: approve exact customer mappings, stock/backing/dimension units,
-   operations and recipe versions per tacker product; confirm separate approved
-   print/emboss versions and production release authority. Paid invoice requests
-   need reconciliation before this paid-order handoff can accept them.
-6. Implement a durable PrintIQ handoff ledger and staff-review/claim/reconcile
-   flow. An ambiguous GetPrice response must enter a hold, never automatic retry.
-   Verify a supported lookup by external order reference and multi-line contract.
-   Do not equate an unaccepted quote with a production job.
+## Exact nonproduction configuration handoff
 
-## Concrete approval boundaries for the next pass
+1. Select a dedicated Vercel Preview of project customtintacker at a fixed HTTPS
+   *.vercel.app origin. No production domains or production environment scope.
+2. Provision or approve an isolated nonproduction database and private Blob store.
+   Do not copy production customer rows, artwork, passwords or storage tokens.
+   Apply the existing artwork/invoice workflow schema and required base schema,
+   then migrations/payment-ledger-v1.sql to that isolated database only. Verify
+   tin_workflow.schema_version=1 and tin_payments.schema_version=1.
+3. Enter secrets directly in that Preview's environment, never in chat or source.
+   Use dedicated nonproduction values for POSTGRES_PRISMA_URL,
+   ARTWORK_BLOB_READ_WRITE_TOKEN, AUTH_SECRET and ADMIN_PASSWORD. Set
+   TIN_WORKFLOW_ENABLED=1. Keep mail/recovery sending disabled and leave email
+   provider credentials absent. Do not reuse production sessions.
+4. In the existing Interstate Graphics Stripe account acct_1TO24PIpmMqjUaQp,
+   approve a test-mode key and dedicated test webhook registration. The endpoint
+   is https://<fixed-preview-host>/api/payments/stripe-webhook, with events
+   checkout.session.completed and checkout.session.async_payment_succeeded.
+   Any deployment protection must allow Stripe to reach this endpoint through
+   an explicitly approved configuration; do not disable protection implicitly.
+5. Set the following Preview-only values:
 
-Recommended minimal launch decision: keep Invoice me as the sole public order
-submission flow. Staff confirms proof, merchandise/setup/rush, shipping and tax;
-the customer then pays the approved final USD amount on Stripe's hosted page.
-Only a signed, reconciled payment event marks the order paid. Staff approves the
-PrintIQ mapping and handoff afterward. This is a recommendation, not an activated
-business policy.
+| Variable | Required value |
+| --- | --- |
+| TIN_PAYMENTS_TEST_DATABASE_HOST | Exact hostname in the isolated database URL |
+| TIN_STRIPE_TEST_SECRET_KEY | IG test secret beginning sk_test_ |
+| TIN_STRIPE_TEST_WEBHOOK_SECRET | Dedicated test endpoint secret beginning whsec_ |
+| TIN_STRIPE_ACCOUNT_ID | acct_1TO24PIpmMqjUaQp |
+| TIN_PAYMENTS_RETURN_ORIGIN | Exact HTTPS Preview origin, no path/query |
+| TIN_PAYMENTS_TEST_ENABLED | 1, set last after isolation is verified |
+| VERCEL_ENV | Must be preview, supplied by Vercel |
 
-Alternatives: (A) keep staff-issued invoices/payments entirely manual for launch,
-which needs no new website payment connection; (B) recommended reviewed-amount
-hosted payment above; (C) upfront cart payment, which additionally needs approved
-automated shipping/tax and an explicit policy for proof rejection or price changes.
-No automatic capture on an unfinished estimate is recommended.
+No publishable key is needed for the server-created hosted Checkout redirect.
+Do not set STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET or
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: those names belong to legacy routes.
 
-Read-only PrintIQ results identify IG-INT0001 (Interstate Graphics), plus two
-active CorPro candidates IG-COR0001 and IG-CPV0001. Do not choose between the latter
-by name alone. Bounded searches for UBC/beer/cooling names found no confirmed UBC
-match; this is not proof that no differently named account exists. Existing IG
-tacker jobs and .024/.040 aluminum stock variants were found. They are historical
-mapping candidates, not manufacturing approval or permission to reuse a quote.
+6. Redeploy the same candidate to that Preview after configuration. Use synthetic
+   customer/artwork data and Stripe test payment methods only. Verify source and
+   proof approval, integer final amount, ownership denial, unchanged request body
+   on retry, hosted test checkout, signed webhook delivery/replay and one paid
+   transition/outbox. Verify payment remains unpaid after canceled checkout or a
+   return URL alone. Confirm PrintIQ execution stays disabled.
+7. Disable TIN_PAYMENTS_TEST_ENABLED after acceptance if the Preview is no longer
+   needed. Retain synthetic ledger receipts for reconciliation. Production release
+   and live keys require a separate review and scoped approval.
 
-Exact mapping fields needed:
-- Customer: site account/owner ID -> verified PrintIQ IG customer ID and Code;
-  select the correct CorPro billing entity and locate/approve UBC's customer.
-- Recipe: site productId and backingId -> version/approver/date, finish width and
-  height with confirmed tenant units, ProductCategory, SectionType, FoldCatalog,
-  StockCode (distinguish stock definition/sheet size from finish size), ProcessFront,
-  ProcessReverse, Pages, section/job operations, and whether embossing is included.
-- Artwork: owned source revision/hash plus approved print artifact ID/version/hash
-  and, when requested, separate emboss artifact ID/version/hash. Artwork transport
-  and PrintIQ attachment receipt still need a verified contract; this review only
-  carries references and does not claim that PrintIQ has received the files.
-- Handoff: external order reference, approved recipe/customer mapping, quote receipt
-  and subsequent explicit production-release authority. Credit terms are not
-  implied by Invoice me; this staged handoff requires reconciled payment.
+Current blockers: no approved isolated Preview DB/Blob configuration, no entered
+IG test credentials, and no registered reachable test webhook for this candidate.
+Credential creation/entry, endpoint registration and infrastructure configuration
+are a separate user handoff; none have been performed. Existing authorization
+already covers the workflow choice, so that decision need not be asked again.
 
-First resolve payment timing, shipping/tax policy and product/customer recipe
-mapping. Then finish the dependent implementation before requesting activation.
+## PrintIQ mapping review
 
-For provider acceptance testing, the bounded proposed scope is: the existing IG
-Stripe account's test mode only; a dedicated nonproduction deployment of project
-`customtintacker`; test credentials and webhook secret entered by Stan into that
-deployment's environment, never chat; synthetic customer data and test payment
-methods; no live charges, automatic customer emails, or production configuration
-change. The final credential entry/security grant remains a user handoff.
+Existing authorized reporting access returned HTTP 200. Bounded read-only queries
+found IG-INT0001 for Interstate Graphics and two active CorPro candidates,
+IG-COR0001 and IG-CPV0001. Staff must select the correct billing entity. No UBC
+customer was confirmed by the bounded name search; this does not prove absence.
+Historical tacker jobs and .024/.040 aluminum stock variants are candidates only.
 
-For PrintIQ, prefer a vendor sandbox. If none exists, approval must name one
-staff-owned scratch quote and its exact operations before any write. No guessed
-customer, GetPrice call, accept-quote/job conversion, automatic invoice, email,
-deletion, or retry is authorized by this review. Existing read-only access is
-already working and does not require new keys.
+Approval must bind each site customer to its IG customer ID/code and each
+product/backing to a versioned recipe: approver/date, finish width/height and
+confirmed units, ProductCategory, SectionType, FoldCatalog, StockCode,
+ProcessFront/Reverse, Pages, section/job operations and emboss treatment.
+Keep source, print and emboss revisions/hashes distinct. Artwork transfer and its
+PrintIQ receipt are not implemented. Multi-line quoting remains blocked pending
+an explicit reconciliation contract.
 
-Production activation needs a separate concrete release review after these
-tests, including account binding, migration diff, rollback retaining paid records,
-worker gates and the precise approved production actions. This document is not
-an activation request and does not claim those remaining integrations are ready.
+printiq-plan.ts prepares a disabled single-line review payload only. GetPrice
+creates a real numbered quote even without acceptance. Its payload explicitly
+disables acceptance, invoice creation, invoice email and export. No quoting,
+job conversion, email or unknown-result retry is authorized here. A provider
+sandbox or separately approved staff-owned scratch quote is required for writes.
 
-## References
+## Evidence
 
-- Stripe Checkout Sessions: https://docs.stripe.com/payments/checkout-sessions
-- Stripe create-session contract: https://docs.stripe.com/api/checkout/sessions/create
-- Existing PrintIQ skill: `C:\Users\Stan\Dropbox\API\PrintIQAPI\printiq-api.skill`
-- Existing QuoteProcess contract: `C:\Users\Stan\Dropbox\API\PrintIQAPI\quoteprocess-v0.swagger.json`
-- Local access receipt: `../distributor-review-evidence/INTEGRATION-ACCESS.json`
-
-Shared HANDOFF was not written because the prior write denial remains in force.
+Local distributor-review-evidence contains PAYMENT-LEDGER-DATABASE.json,
+COMMERCE-CONNECTIONS-RESULT.json, commerce-connections-tests.log,
+commerce-connections-build.log and PRINTIQ-CANDIDATES.json. Shared HANDOFF was
+not updated because its prior write denial remains in force.

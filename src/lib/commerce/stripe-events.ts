@@ -2,7 +2,7 @@ import Stripe from 'stripe';
 import { CommerceError, type PaidEvent } from './service';
 
 /** Disconnected verifier. No client/key, API call, route wiring or payment activation. */
-export function stripeEventVerifier(config: { signingSecret: string; live: boolean }) {
+export function stripeEventVerifier(config: { signingSecret: string; live: boolean; reviewedOnly?:boolean }) {
   if (!config.signingSecret.startsWith('whsec_') || config.signingSecret.length < 16)
     throw new CommerceError('Stripe webhook signing configuration required.', 503);
   return async (body: string, signature: string): Promise<PaidEvent | null> => {
@@ -19,6 +19,7 @@ export function stripeEventVerifier(config: { signingSecret: string; live: boole
     if (session.mode !== 'payment' || session.livemode !== config.live || session.metadata?.business !== 'IG')
       throw new CommerceError('Payment event business or mode mismatch.', 400);
     if (session.payment_status !== 'paid') return null;
+    if(config.reviewedOnly&&session.metadata?.paymentContract!=='reviewed-final-v1')throw new CommerceError('Unsupported payment contract.',400);
     const payment = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
     const orderId = session.metadata?.orderId;
     const total = session.amount_total, subtotal = session.amount_subtotal;
@@ -29,7 +30,16 @@ export function stripeEventVerifier(config: { signingSecret: string; live: boole
         [total, subtotal, shipping, tax, discount].some(n => typeof n !== 'number' || !Number.isSafeInteger(n) || n < 0) ||
         discount !== 0 || total !== subtotal! + shipping! + tax!)
       throw new CommerceError('Incomplete or inconsistent payment event.', 400);
+    let reconciledShipping=shipping!,reconciledTax=tax!;
+    if(session.metadata?.paymentContract==='reviewed-final-v1'){
+      const cents=(value:string|undefined)=>value&&/^(0|[1-9][0-9]{0,14})$/.test(value)?Number(value):NaN;
+      reconciledShipping=cents(session.metadata.shippingCents);reconciledTax=cents(session.metadata.taxCents);
+      if(shipping!==0||tax!==0||![reconciledShipping,reconciledTax].every(Number.isSafeInteger)||
+        reconciledShipping+reconciledTax>total!||!session.metadata.reviewHash?.match(/^[a-f0-9]{64}$/))
+        throw new CommerceError('Invalid reviewed payment breakdown.',400);
+    }
     return { id: event.id, type: event.type, sessionId: session.id, orderId, paymentIntentId: payment,
-      paymentStatus: 'paid', currency: 'usd', total: total!, shipping: shipping!, tax: tax! };
+      paymentStatus: 'paid', currency: 'usd', total: total!, shipping: reconciledShipping, tax: reconciledTax,
+      ...(session.metadata?.paymentContract==='reviewed-final-v1'?{reviewHash:session.metadata.reviewHash}:{}) };
   };
 }

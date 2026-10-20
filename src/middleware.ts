@@ -3,7 +3,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  if(pathname.startsWith('/wholesale/password')) {
+  if(pathname.startsWith('/wholesale/password')||pathname.startsWith('/invoice-payment')) {
     const response=NextResponse.next();
     response.headers.set('Referrer-Policy','no-referrer');
     response.headers.set('Cache-Control','no-store');
@@ -33,5 +33,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/wholesale/dashboard/:path*', '/wholesale/password/:path*', '/admin/:path*'],
+  matcher: ['/wholesale/dashboard/:path*', '/wholesale/password/:path*', '/invoice-payment/:path*', '/admin/:path*'],
 };

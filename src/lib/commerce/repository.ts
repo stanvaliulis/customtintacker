@@ -17,6 +17,7 @@ export interface TransactionStore { transaction<T>(work: (tx: CommerceTransactio
 export function transactionalRepository(store: TransactionStore): Repository {
   return {
     reserve: (owner, key, requestHash, snapshot) => store.transaction(async tx => {
+      if(!owner||snapshot.ownerId!==owner||snapshot.business!=='IG')throw new CommerceError('Payment owner or business mismatch.',409);
       const old = await tx.byRequest(owner, key);
       if (old) { if (old.requestHash !== requestHash) throw new CommerceError('Request key conflict.', 409); return old; }
       const order: Order = { ...snapshot, id: randomUUID(), requestHash, paid: false };
@@ -34,7 +35,7 @@ export function transactionalRepository(store: TransactionStore): Repository {
       const receipt = await tx.event(event.id);
       if (receipt) { if (receipt !== fingerprint) throw new Error('Event collision'); return 'duplicate'; }
       const order = await tx.byId(event.orderId), payment = await tx.byPayment(event.paymentIntentId);
-      if (!order || order.sessionId !== event.sessionId || order.currency !== event.currency || order.total !== event.total || order.shipping !== event.shipping || order.tax !== event.tax || (payment && payment.id !== order.id)) throw new Error('Payment mismatch');
+      if (!order || order.sessionId !== event.sessionId || order.currency !== event.currency || order.total !== event.total || order.shipping !== event.shipping || order.tax !== event.tax || (event.reviewHash!==undefined&&event.reviewHash!==order.requestHash) || (payment && payment.id !== order.id)) throw new Error('Payment mismatch');
       const existing = order as Order & { paymentId?: string };
       if (existing.paymentId && existing.paymentId !== event.paymentIntentId) throw new Error('Payment conflict');
       await tx.insertEvent(event.id, fingerprint, order.id);

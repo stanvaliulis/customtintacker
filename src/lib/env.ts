@@ -1,3 +1,4 @@
+import './isolated-preview';
 /**
  * Centralized environment variable configuration.
  *

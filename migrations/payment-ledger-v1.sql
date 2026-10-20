@@ -7,7 +7,7 @@ INSERT INTO tin_payments.schema_version VALUES(1);
 CREATE TABLE tin_payments.payment_order (
  id text PRIMARY KEY, owner_id text NOT NULL, request_key text NOT NULL,
  request_hash text NOT NULL CHECK(request_hash ~ '^[a-f0-9]{64}$'), snapshot jsonb NOT NULL,
- session_id text UNIQUE, checkout_url text, payment_id text UNIQUE, paid boolean NOT NULL DEFAULT false,
+ session_id text UNIQUE, checkout_url text, payment_id text UNIQUE, paid boolean NOT NULL DEFAULT false, session_first_attempt timestamptz,
  created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(),
  UNIQUE(owner_id,request_key),
  CHECK(snapshot->>'business'='IG' AND snapshot->>'currency'='usd'),
@@ -25,6 +25,10 @@ CREATE TABLE tin_payments.outbox (
  lease_token text, lease_until timestamptz, provider_receipt text,
  created_at timestamptz NOT NULL DEFAULT now(), completed_at timestamptz
 );
+CREATE TABLE tin_payments.final_review (
+ invoice_id text PRIMARY KEY, owner_id text NOT NULL, request_hash text NOT NULL CHECK(request_hash ~ '^[a-f0-9]{64}$'),
+ review_hash text NOT NULL CHECK(review_hash ~ '^[a-f0-9]{64}$'), payload jsonb NOT NULL, created_at timestamptz NOT NULL DEFAULT now()
+);
 CREATE FUNCTION tin_payments.guard_order() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
  IF TG_OP='DELETE' THEN RAISE EXCEPTION 'Payment records must be retained'; END IF;
@@ -34,6 +38,7 @@ BEGIN
     (OLD.paid AND NOT NEW.paid) OR
     (OLD.session_id IS NOT NULL AND (NEW.session_id IS DISTINCT FROM OLD.session_id OR NEW.checkout_url IS DISTINCT FROM OLD.checkout_url)) OR
     (OLD.payment_id IS NOT NULL AND NEW.payment_id IS DISTINCT FROM OLD.payment_id)
+    OR (OLD.session_first_attempt IS NOT NULL AND NEW.session_first_attempt IS DISTINCT FROM OLD.session_first_attempt)
  THEN RAISE EXCEPTION 'Immutable payment binding'; END IF;
  RETURN NEW;
 END $$;
@@ -41,6 +46,7 @@ CREATE TRIGGER payment_order_guard BEFORE UPDATE OR DELETE ON tin_payments.payme
 CREATE FUNCTION tin_payments.guard_event() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN RAISE EXCEPTION 'Payment event receipts must be retained unchanged'; END $$;
 CREATE TRIGGER payment_event_guard BEFORE UPDATE OR DELETE ON tin_payments.payment_event FOR EACH ROW EXECUTE FUNCTION tin_payments.guard_event();
+CREATE TRIGGER final_review_guard BEFORE UPDATE OR DELETE ON tin_payments.final_review FOR EACH ROW EXECUTE FUNCTION tin_payments.guard_event();
 REVOKE ALL ON ALL TABLES IN SCHEMA tin_payments FROM PUBLIC;
 REVOKE ALL ON ALL FUNCTIONS IN SCHEMA tin_payments FROM PUBLIC;
 COMMIT;
