@@ -44,7 +44,7 @@ test. Approved proof downloads verify stored hashes and bytes before responding.
 
 ## Validation and limits
 
-172 synthetic tests and TypeScript validation passed after the final code edits.
+175 synthetic tests and TypeScript validation passed after the Preview storage fix.
 Fourteen real local PostgreSQL checks passed, including concurrent reservation,
 concurrent staff approval, stale proof heads, duplicate paid events, atomic outbox
 rollback, immutable bindings, first-attempt races and claim fencing. The synthetic
@@ -53,9 +53,9 @@ COMMERCE-CONNECTIONS-RESULT.json after completion.
 
 React/JSDOM checks exercise the actual staff/customer components. These are not
 end-to-end browser, actual Stripe test payment, or provider-webhook acceptance.
-Those remain blocked on the isolated Preview configuration below.
+Stripe payment/webhook acceptance remains outside the current approval.
 
-## Exact nonproduction configuration handoff
+## Future payment configuration (not authorized or executed in this pass)
 
 1. Select a dedicated Vercel Preview of project customtintacker at a fixed HTTPS
    *.vercel.app origin. No production domains or production environment scope.
@@ -101,11 +101,41 @@ NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: those names belong to legacy routes.
    needed. Retain synthetic ledger receipts for reconciliation. Production release
    and live keys require a separate review and scoped approval.
 
-Current blockers: no approved isolated Preview DB/Blob configuration, no entered
-IG test credentials, and no registered reachable test webhook for this candidate.
-Credential creation/entry, endpoint registration and infrastructure configuration
-are a separate user handoff; none have been performed. Existing authorization
-already covers the workflow choice, so that decision need not be asked again.
+## October 20 isolated Preview checkpoint
+
+The earlier 11:42 isolation preflight is historical: inherited Production database
+and email credentials were removed from Preview scope, preserving their Production
+and Development values/scopes. Dedicated Neon Free database
+customtintacker-preview-test and private IAD1 Blob store
+customtintacker-preview-artwork (store_vkZMJn6eTVRE1A3K) are connected to Preview
+only. Provider database variables retain the sensitive TINTEST prefix and are
+aliased server-side after isolation checks. Dedicated AUTH_SECRET and ADMIN_PASSWORD
+are Sensitive; no credential values were exported to source or chat.
+
+TIN_WORKFLOW_ENABLED=1; payments, invoice email and recovery email are forced off.
+No Stripe keys/webhooks or PrintIQ writes were configured. Preview has Vercel
+Authentication protection and no cron schedule. Database bootstrap requires an
+empty database or the exact test identity marker; no production data was copied.
+Schema versions, private Blob write/read/hash and the real artwork adapter passed.
+
+The first browser save with text exposed a transport-size comparison bug: SDK
+size derives from HTTP Content-Length, whereas Fetch returns decoded bytes.
+The adapter now requests identity encoding and only compares applicable transfer
+lengths; decoded size limits and stored SHA-256 verification remain enforced.
+Regression tests cover compressed, absent and inconsistent transfer lengths.
+
+Deployment and browser acceptance evidence is in
+../distributor-review-evidence/PREVIEW-DEPLOYMENT-RESULT.json (relative to task root,
+not this docs directory). PREVIEW-ISOLATION-CURRENT.json verifies production remains
+on dpl_3zuBgkURsKL2SjnE3ukV1SU6M693 and no legacy DB/email keys target Preview.
+
+Budget: US$5 total including tax for seven days, starting October20. Neon Free,
+no upgrades; four small Preview builds plus synthetic storage/function requests.
+Actual provider billing and tax are delayed and not certified by these checks;
+no hard spending cap was configured. Retain test data/resources pending separate
+permanent-deletion approval. No future monitoring automation was created.
+Staff browser login and final payment acceptance are not claimed; generated
+Sensitive admin password was not retained locally or delivered through chat.
 
 ## PrintIQ mapping review
 
