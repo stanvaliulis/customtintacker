@@ -31,3 +31,10 @@ test('Resend adapter requires actual acceptance, exact recipient and stable prov
  for(mode of ['throw','fail','empty'])await assert.rejects(transport.send(message,'invoice-request:synthetic'));
  const count=calls.length;await assert.rejects(transport.send({...message,to:['other@example.invalid']},'invoice-request:synthetic'));assert.equal(calls.length,count);assert.throws(()=>resendInvoiceTransport('','sender@example.invalid'));
 });
+
+test('private reads distinguish compressed or missing wire length from decoded artwork integrity',async()=>{
+ const bytes=Buffer.from(JSON.stringify({text:'SYNTHETIC '.repeat(200)})),key='artwork/'+['a','b','d'].map(c=>c.repeat(64)).join('/');
+ const object={key,sha256:digest(bytes),bytes:bytes.length,mime:'application/json',name:'source.json'};let mode='gzip',corrupt=false;
+ const sdk={put:async()=>{},get:async(k,o)=>{assert.equal(o.headers['accept-encoding'],'identity');return {statusCode:200,headers:new Headers(mode==='gzip'?{'content-encoding':'gzip','content-length':'70'}:mode==='missing'?{}:{'content-length':'70'}),blob:{pathname:k,size:mode==='missing'?0:70,contentType:'application/json'},stream:new ReadableStream({start(c){c.enqueue(corrupt?bytes.subarray(0,100):bytes);c.close();}})};}};
+ const store=vercelPrivateBlobs('synthetic',sdk);await store.putIfAbsent(object,bytes);mode='missing';await store.putIfAbsent(object,bytes);mode='identity';await assert.rejects(store.read(key),/truncated/);mode='gzip';corrupt=true;await assert.rejects(store.putIfAbsent(object,bytes),/conflict/);
+});
