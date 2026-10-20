@@ -21,6 +21,17 @@ export async function paymentTestGate(){
  const rows=await prisma.$queryRawUnsafe<Array<{version:number}>>('SELECT version FROM tin_payments.schema_version');
  if(rows.length!==1||rows[0].version!==1)throw new CommerceError('Payment schema is not ready.',503);
 }
+export async function paymentReviewGate(){
+ if(process.env.VERCEL_ENV==='preview'&&process.env.TIN_ISOLATED_PREVIEW==='1'){
+  const raw=process.env.TINTEST_POSTGRES_PRISMA_URL||'';
+  let host:string;try{host=new URL(raw).hostname;}catch{throw new CommerceError('Isolated preview database required.',503);}
+  if(process.env.POSTGRES_PRISMA_URL!==raw||!host.endsWith('.neon.tech')||host.includes('ep-jolly-shape-a4ni83gl')||process.env.TIN_PAYMENTS_TEST_ENABLED!=='0')throw new CommerceError('Isolated review configuration required.',503);
+  const rows=await prisma.$queryRawUnsafe<Array<{id:string;version:number}>>('SELECT i.id,s.version FROM tin_preview.identity i CROSS JOIN tin_payments.schema_version s');
+  if(rows.length!==1||rows[0].id!=='customtintacker-preview-test-20261020'||rows[0].version!==1)throw new CommerceError('Synthetic review database required.',503);
+  return;
+ }
+ await paymentTestGate();
+}
 function stripeConfig(){
  const key=process.env.TIN_STRIPE_TEST_SECRET_KEY||'',signingSecret=process.env.TIN_STRIPE_TEST_WEBHOOK_SECRET||'',accountId=process.env.TIN_STRIPE_ACCOUNT_ID||'',returnOrigin=process.env.TIN_PAYMENTS_RETURN_ORIGIN||'';
  if(!key.startsWith('sk_test_')||!signingSecret.startsWith('whsec_')||accountId!=='acct_1TO24PIpmMqjUaQp')throw new CommerceError('IG Stripe test configuration required.',503);
@@ -33,8 +44,8 @@ async function paymentFor(owner:string,id:string){const rows=await prisma.$query
 async function preparedProofs(owner:string,sourceIds:string[]){const rows=await prisma.$queryRawUnsafe<Array<{payload:ProofRevision}>>("SELECT r.payload FROM tin_workflow.revision r JOIN tin_workflow.head h ON h.owner_id=r.owner_id AND h.revision_id=r.id AND h.kind='proof' WHERE r.owner_id=$1 AND r.kind='proof'",owner);return rows.map(r=>r.payload).filter(p=>sourceIds.includes(p.sourceId)).map(p=>({id:p.id,sourceId:p.sourceId,designId:p.designId,version:p.version,printName:p.print.name,embossName:p.emboss?.name}));}
 function proofFile(raw:unknown){const f=raw as {name?:unknown;base64?:unknown};if(!f||typeof f.name!=='string'||typeof f.base64!=='string'||!f.base64.length||f.base64.length>4_000_000||!/^[A-Za-z0-9+/]*={0,2}$/.test(f.base64))throw new CommerceError('Valid prepared proof file required.');return {name:f.name,bytes:Uint8Array.from(Buffer.from(f.base64,'base64'))};}
 export const paymentActions:PaymentActions={
- async staffView(id){await paymentTestGate();const invoice=await staffInvoice(id),review=await reviews().get(id),order=await paymentFor(invoice.ownerId,id);return {invoice,proofs:await preparedProofs(invoice.ownerId,invoice.sources.map(s=>s.revisionId)),review,paymentStatus:order?.paid?'paid':order?.sessionId?'awaiting-payment':'not-started',customerPath:'/invoice-payment/'+id};},
- async staffAction(id,body){await paymentTestGate();const invoice=await staffInvoice(id);
+ async staffView(id){await paymentReviewGate();const invoice=await staffInvoice(id),review=await reviews().get(id),order=await paymentFor(invoice.ownerId,id);return {invoice,proofs:await preparedProofs(invoice.ownerId,invoice.sources.map(s=>s.revisionId)),review,paymentStatus:order?.paid?'paid':order?.sessionId?'awaiting-payment':'not-started',customerPath:'/invoice-payment/'+id};},
+ async staffAction(id,body){await paymentReviewGate();const invoice=await staffInvoice(id);
   if(body.action==='prepare-proof'){
    if(await reviews().get(id))throw new CommerceError('Final review already locked; new proof requires staff reconciliation.',409);
    const sourceId=String(body.sourceId||'');if(!invoice.sources.some(s=>s.revisionId===sourceId))throw new CommerceError('Source is not part of this invoice.',403);
@@ -46,7 +57,7 @@ export const paymentActions:PaymentActions={
   if(body.action==='printiq-review'){const order=await paymentFor(invoice.ownerId,id);if(!order?.paid)throw new CommerceError('Verified payment required before PrintIQ review.',409);return {business:'IG',orderId:order.id,paid:true,productionReleased:false,artwork:order.items.map(i=>({productId:i.productId,quantity:i.quantity,backingId:i.backingId,design:i.design})),execution:'disabled',mappingRequired:true};}
   throw new CommerceError('Unknown staff payment action.');
  },
- async customerView(id){await paymentTestGate();const d=await productionContext(),who=await d.principal(),invoice=await d.invoiceById(id);if(!invoice)throw new CommerceError('Invoice request unavailable.',404);const review=await reviews().get(id,who.ownerId),order=await paymentFor(who.ownerId,id);return {invoiceId:id,businessName:'Interstate Graphics',reviewed:!!review,amounts:review?{merchandise:review.priced.subtotal,setup:review.priced.setup,rush:review.priced.rush,shipping:review.priced.shipping,tax:review.priced.tax,total:review.priced.total}:null,paid:!!order?.paid,productionReleased:false,proofs:review?review.priced.items.map(i=>({designId:i.design.id,print:i.design.print,emboss:i.design.emboss})):[]};},
+ async customerView(id){await paymentReviewGate();const d=await productionContext(),who=await d.principal(),invoice=await d.invoiceById(id);if(!invoice)throw new CommerceError('Invoice request unavailable.',404);const review=await reviews().get(id,who.ownerId),order=await paymentFor(who.ownerId,id);return {checkoutEnabled:process.env.TIN_PAYMENTS_TEST_ENABLED==='1',invoiceId:id,businessName:'Interstate Graphics',reviewed:!!review,amounts:review?{merchandise:review.priced.subtotal,setup:review.priced.setup,rush:review.priced.rush,shipping:review.priced.shipping,tax:review.priced.tax,total:review.priced.total}:null,paid:!!order?.paid,productionReleased:false,proofs:review?review.priced.items.map(i=>({designId:i.design.id,print:i.design.print,emboss:i.design.emboss})):[]};},
  async checkout(id){await paymentTestGate();const d=await productionContext(),who=await d.principal();if(!(await d.invoiceById(id)))throw new CommerceError('Invoice request unavailable.',404);const review=await reviews().get(id,who.ownerId);if(!review)throw new CommerceError('Final staff review is pending.',409);
   const config=stripeConfig(),store=payments(),order=await store.repository.reserve(who.ownerId,requestKey(id),review.reviewHash,review.priced);
   if(order.paid)return {orderId:order.id,paid:true};if(order.sessionId&&order.checkoutUrl)return {url:order.checkoutUrl};
@@ -57,7 +68,7 @@ export const paymentActions:PaymentActions={
 };
 /** Staff/customer proof downloads verify the frozen approval and bytes; never return private blob URLs. */
 export async function paymentProof(invoiceId:string,artifactId:string){
- await paymentTestGate();const d=await productionContext(),who=await d.principal();if(!(await d.invoiceById(invoiceId)))throw new CommerceError('Invoice unavailable.',404);
+ await paymentReviewGate();const d=await productionContext(),who=await d.principal();if(!(await d.invoiceById(invoiceId)))throw new CommerceError('Invoice unavailable.',404);
  const review=await reviews().get(invoiceId,who.ownerId);const artifact=review?.priced.items.flatMap(i=>[i.design.print,i.design.emboss]).find(a=>a?.id===artifactId);if(!artifact)throw new CommerceError('Approved proof unavailable.',404);
  const [proofId,kind]=artifact.id.split(':');if(!['print','emboss'].includes(kind))throw new CommerceError('Invalid proof reference.');
  const rows=await prisma.$queryRawUnsafe<Array<{payload:ProofRevision}>>("SELECT payload FROM tin_workflow.revision WHERE owner_id=$1 AND id=$2 AND kind='proof'",who.ownerId,proofId);const proof=rows[0]?.payload,object=kind==='print'?proof?.print:proof?.emboss;

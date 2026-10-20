@@ -17,6 +17,6 @@ export default async function InvoiceReview({params}:{params:Promise<{id:string}
    <a className="mr-5 underline" href={'/api/admin/invoice-artwork?'+new URLSearchParams({order_id:id,source_id:source.revisionId,kind:'document'})}>Download saved source</a>
    <a className="underline" href={'/api/admin/invoice-artwork?'+new URLSearchParams({order_id:id,source_id:source.revisionId,kind:'original'})}>Download original upload (if supplied)</a>
   </li>)}</ul>
-  {process.env.TIN_PAYMENTS_TEST_ENABLED==='1'&&process.env.VERCEL_ENV==='preview'&&<PaymentReview invoiceId={id} sources={order.sources} subtotal={order.estimate.subtotal}/>}
+  {(process.env.TIN_PAYMENTS_TEST_ENABLED==='1'||process.env.TIN_ISOLATED_PREVIEW==='1')&&process.env.VERCEL_ENV==='preview'&&<PaymentReview invoiceId={id} sources={order.sources} subtotal={order.estimate.subtotal}/>}
  </section>;
 }
