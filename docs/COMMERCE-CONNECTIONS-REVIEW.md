@@ -10,6 +10,21 @@ emails, password changes, or customer login attempts belong to this work.
 
 ## Implemented locally, not activated
 
+`payment-postgres.ts` now implements the durable payment repository and outbox.
+The review-only `payment-ledger-v1.sql` adds a separate tin_payments namespace:
+immutable order snapshots, unique owner/request/session/payment bindings,
+immutable event receipts, and a single outbox row per paid order. Serializable
+transactions retry database conflicts; provider actions never run inside them.
+An expired claimed outbox item is held for reconciliation rather than resent.
+Ten real PostgreSQL tests passed in a new local synthetic database, including
+two-client races and atomic rollback after an injected outbox failure. No
+production migration has been applied. The rehearsal server was stopped.
+
+`final-payment-review.ts` prepares the staff-reviewed final amount from an
+existing invoice request, reconciles item totals, requires explicit shipping/tax,
+and binds approved print/emboss artifacts to the invoice's immutable source.
+It does not mark an invoice paid, issue a payment link, or release production.
+
 `stripe-events.ts` validates the original request body with Stripe's installed
 SDK and a five-minute signature tolerance. It rejects wrong test/live mode,
 Connect-account events, non-IG metadata, incomplete payment references,
@@ -53,10 +68,9 @@ retry after an unknown response.
 1. Stripe: confirm whether payment is collected before or after proof approval;
    approve the shipping and tax calculation policy. Current policy intentionally
    leaves both unresolved; zero is not a valid substitute for an unknown charge.
-2. Implement a concrete durable payment repository with event/session/payment
-   uniqueness, atomic paid transition/outbox and owner-bound immutable snapshots.
-   The current commerce repository is a transaction contract, not a connected
-   PostgreSQL adapter. Rehearse migrations and concurrency before production.
+2. The concrete payment repository and ten-check PostgreSQL rehearsal are now
+   complete locally. Production still needs a reviewed migration/recovery point,
+   verified runtime wiring, staff authentication and final-amount approval UI.
 3. Add the Stripe session provider, replace legacy checkout/webhook/status
    wiring with the durable service, and preserve Invoice me. Customer data must
    remain in the order store rather than serialized into Stripe metadata.
@@ -73,6 +87,41 @@ retry after an unknown response.
    Do not equate an unaccepted quote with a production job.
 
 ## Concrete approval boundaries for the next pass
+
+Recommended minimal launch decision: keep Invoice me as the sole public order
+submission flow. Staff confirms proof, merchandise/setup/rush, shipping and tax;
+the customer then pays the approved final USD amount on Stripe's hosted page.
+Only a signed, reconciled payment event marks the order paid. Staff approves the
+PrintIQ mapping and handoff afterward. This is a recommendation, not an activated
+business policy.
+
+Alternatives: (A) keep staff-issued invoices/payments entirely manual for launch,
+which needs no new website payment connection; (B) recommended reviewed-amount
+hosted payment above; (C) upfront cart payment, which additionally needs approved
+automated shipping/tax and an explicit policy for proof rejection or price changes.
+No automatic capture on an unfinished estimate is recommended.
+
+Read-only PrintIQ results identify IG-INT0001 (Interstate Graphics), plus two
+active CorPro candidates IG-COR0001 and IG-CPV0001. Do not choose between the latter
+by name alone. Bounded searches for UBC/beer/cooling names found no confirmed UBC
+match; this is not proof that no differently named account exists. Existing IG
+tacker jobs and .024/.040 aluminum stock variants were found. They are historical
+mapping candidates, not manufacturing approval or permission to reuse a quote.
+
+Exact mapping fields needed:
+- Customer: site account/owner ID -> verified PrintIQ IG customer ID and Code;
+  select the correct CorPro billing entity and locate/approve UBC's customer.
+- Recipe: site productId and backingId -> version/approver/date, finish width and
+  height with confirmed tenant units, ProductCategory, SectionType, FoldCatalog,
+  StockCode (distinguish stock definition/sheet size from finish size), ProcessFront,
+  ProcessReverse, Pages, section/job operations, and whether embossing is included.
+- Artwork: owned source revision/hash plus approved print artifact ID/version/hash
+  and, when requested, separate emboss artifact ID/version/hash. Artwork transport
+  and PrintIQ attachment receipt still need a verified contract; this review only
+  carries references and does not claim that PrintIQ has received the files.
+- Handoff: external order reference, approved recipe/customer mapping, quote receipt
+  and subsequent explicit production-release authority. Credit terms are not
+  implied by Invoice me; this staged handoff requires reconciled payment.
 
 First resolve payment timing, shipping/tax policy and product/customer recipe
 mapping. Then finish the dependent implementation before requesting activation.
