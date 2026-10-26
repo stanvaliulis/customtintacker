@@ -115,9 +115,7 @@ export default function TermsPage() {
                 Production and Delivery Timeline
               </h2>
               <p className="text-gray-600 leading-relaxed mb-3">
-                Standard production time is approximately 15 business days from proof
-                approval. Larger orders may require additional time depending on
-                order size and current production schedules.
+                Standard aluminum timing is 2–3 weeks; rush is 1–2 weeks with a 30% surcharge. Both ranges run from proof approval to shipment, not delivery.
               </p>
               <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>

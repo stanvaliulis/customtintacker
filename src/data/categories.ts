@@ -59,7 +59,7 @@ export const catalog: MaterialGroup[] = [
   {
     value: 'aluminum',
     label: 'Embossed Aluminum',
-    description: 'Our classic tin tacker: recycled aluminum, full-color print, raised embossing.',
+    description: 'Our classic tin tacker: .024-inch aluminum, full-color print, raised embossing.',
     subcategories: [
       { value: 'squares', label: 'Squares', description: '6" to 24" square tackers.' },
       { value: 'rectangles', label: 'Rectangles', description: 'Poster and banner proportions.' },

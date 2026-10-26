@@ -36,7 +36,7 @@ export default function QuoteBuilderPage() {
           </h1>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Configure your sign step-by-step and get an instant quote. All signs are
-            made from recycled embossed aluminum with full-color printing, right here
+            made from embossed .024-inch aluminum with full-color printing, right here
             in the USA.
           </p>
         </div>

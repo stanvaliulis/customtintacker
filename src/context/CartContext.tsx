@@ -1,4 +1,6 @@
 'use client';
+import { manufacturingFacts } from '@/data/manufacturing-facts';
+
 
 import type { ProofAttachment } from '@/lib/design/proof-attachment';
 import { createContext, useContext, useReducer, useEffect, useState, useRef, ReactNode } from 'react';
@@ -148,8 +150,8 @@ export function cartReducer(state: CartState, action: CartAction): CartState {
   }
 }
 
-/** Rush processing fee = 25% of item subtotal */
-export const RUSH_FEE_RATE = 0.25;
+/** Rush processing fee = 30% of item subtotal */
+export const RUSH_FEE_RATE = manufacturingFacts.rushSurchargeRate;
 
 interface CartContextType {
   attachGuided: (product: Product, attachment: ProofAttachment) => void;

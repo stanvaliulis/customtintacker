@@ -101,7 +101,7 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
                 Product-specific minimums
               </span>
               <span className="w-1 h-1 rounded-full bg-gray-700" />
-              <span>~15 business day lead time</span>
+              <span>Standard aluminum: 2–3 weeks</span>
               <span className="w-1 h-1 rounded-full bg-gray-700" />
               <span>Made in USA</span>
             </div>
@@ -220,14 +220,14 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
                 step: '2',
                 title: 'We Make Your Signs',
                 description:
-                  'Your artwork gets printed in full color onto embossed recycled aluminum. Each sign is individually shrink-wrapped and inspected before shipping.',
+                  'Your artwork gets printed in full color onto embossed .024-inch aluminum. Each sign is individually shrink-wrapped and inspected before shipping.',
                 Icon: Factory,
               },
               {
                 step: '3',
-                title: 'Ships in ~15 Business Days',
+                title: 'Standard: 2–3 Weeks',
                 description:
-                  'Standard production is about 15 business days. Larger orders may require additional time. We ship directly to you (or your distributor, your accounts, wherever you need them).',
+                  'Standard aluminum timing is 2–3 weeks. Rush is 1–2 weeks with a 30% surcharge. Both ranges run from proof approval to shipment, not delivery. We ship directly to you (or your distributor, your accounts, wherever you need them).',
                 Icon: Truck,
               },
             ].map((item, i) => (

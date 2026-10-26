@@ -125,7 +125,7 @@ const faqs = [
   },
   {
     q: 'Can I get samples in different gauges?',
-    a: 'Our samples ship in our standard .024" recycled aluminum gauge, which is the same material used in production orders. If you need a specific gauge, let us know in the notes field.',
+    a: 'Our samples ship in our standard .024-inch aluminum, white on both sides, which is the same material used in production orders. If you need a specific gauge, let us know in the notes field.',
   },
   {
     q: 'How long does shipping take?',

@@ -29,7 +29,7 @@ export const blogPosts: BlogPost[] = [
 
       <p>A tin tacker sign is a printed, embossed aluminum sign. Despite the name, they're not actually made of tin — they're aluminum. The "tacker" part comes from how they were originally installed: tacked to walls with small nails or screws. The embossing gives the sign a three-dimensional, raised look that flat printed signs just can't match. You get depth, texture, and a premium feel without the cost of a neon sign or a hand-painted wooden board.</p>
 
-      <p>Most tin tackers are made from lightweight .025" aluminum sheet. The artwork is printed directly onto the metal using high-quality lithographic or digital printing, and then the sheet is run through an embossing press that raises the design off the surface. Pre-drilled mounting holes at the corners make hanging dead simple.</p>
+      <p>Our aluminum signs are direct printed on .024-inch aluminum, white on both sides. White on both sides describes the material, not two-sided artwork printing. Embossed versions add raised areas to the printed surface; check each product for its material, shape and whether it is embossed or flat.</p>
 
       <h2>A Quick History</h2>
 
@@ -129,7 +129,7 @@ export const blogPosts: BlogPost[] = [
 
       <h2>Step 2: Printing</h2>
 
-      <p>Once approved, your artwork is printed onto flat aluminum sheets. We use high-quality lithographic printing that bonds the ink directly to the metal surface. The colors are rich and vibrant, and the print is durable enough to handle years of bar life without fading. For smaller runs, we use digital printing, which gives us flexibility on quantity without sacrificing quality.</p>
+      <p>Your artwork is direct printed on .024-inch aluminum, white on both sides. Embossed products then gain raised areas; flat products remain flat. The team confirms the production proof for the selected product.</p>
 
       <h2>Step 3: Embossing</h2>
 
@@ -149,7 +149,7 @@ export const blogPosts: BlogPost[] = [
 
       <h2>Step 6: Shipping</h2>
 
-      <p>Tin tackers are lightweight and flat, which makes shipping straightforward. A box of 100 signs doesn't weigh much and stacks nicely on a pallet. Most domestic orders ship within 3-4 weeks from proof approval, though rush options are available if you need them faster.</p>
+      <p>Shipping requirements depend on the selected products, quantities and packaging. Standard aluminum timing is 2–3 weeks; rush is 1–2 weeks with a 30% surcharge. Both ranges run from proof approval to shipment, not delivery.</p>
 
       <p>The whole process is surprisingly hands-on. Despite modern printing technology, tin tacker manufacturing still relies on skilled operators running heavy presses. It's a blend of old-school metalwork and modern design that produces something genuinely unique.</p>
     `,
@@ -298,7 +298,7 @@ export const blogPosts: BlogPost[] = [
 
       <h2>Lead Times</h2>
 
-      <p>A standard tin tacker order takes about 3-4 weeks from proof approval to delivery. That includes printing, embossing, cutting, quality check, and shipping. First-time orders might take a bit longer if custom die tooling is needed.</p>
+      <p>Standard aluminum timing is 2–3 weeks; rush is 1–2 weeks with a 30% surcharge. Both ranges run from proof approval to shipment, not delivery.</p>
 
       <p>Rush orders are possible but cost more. If you need signs for a specific event, plan ahead. We've seen too many orders come in two weeks before a beer festival with "we need these yesterday" energy. Plan for a month and you'll be stress-free.</p>
 

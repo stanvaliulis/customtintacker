@@ -1,4 +1,6 @@
 'use client';
+import { productTiming, isAluminumProduct } from '@/data/manufacturing-facts';
+
 
 import { useState } from 'react';
 import Link from 'next/link';
@@ -39,8 +41,8 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
       <div>
         <label className="block text-sm font-semibold text-white mb-3">Material</label>
         <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/5">
-          <span className="font-medium text-sm text-amber-400">{backingConfig?.label ?? '.024" Gauge Aluminum'}</span>
-          <p className="text-xs text-gray-500 mt-1">{backingConfig?.description ?? 'Industry-standard recycled aluminum.'}</p>
+          <span className="font-medium text-sm text-amber-400">{isAluminumProduct(product) ? backingConfig?.label ?? product.metadata.material : product.metadata.material}</span>
+          <p className="text-xs text-gray-500 mt-1">{isAluminumProduct(product) ? backingConfig?.description ?? product.metadata.material : 'Base material for the selected product. Confirm details with the team.'}</p>
         </div>
       </div>
 
@@ -130,7 +132,7 @@ export default function AddToCartForm({ product }: AddToCartFormProps) {
 
       <div className="flex items-center justify-center gap-2 text-sm text-gray-500">
         <Zap className="w-4 h-4 text-amber-500/50" />
-        <span>Estimated production: ~{product.leadTimeDays} business days</span>
+        <span>Estimated timing: {productTiming(product)}</span>
       </div>
     </div>
   );

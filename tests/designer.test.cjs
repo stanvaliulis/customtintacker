@@ -92,7 +92,7 @@ test('headline price equals a visible tier, with no change to catalog values', (
 test('all homepage priced shape links use the same aluminum product as their price', () => {
   for(const shape of ['square','circle','rectangle','bottle-cap','can','license-plate','die-cut']) {
     const p=shapePriceProduct(products,shape);
-    assert.ok(p && p.metadata.material.includes('Aluminum'));
+    assert.ok(p && p.metadata.material.toLowerCase().includes('aluminum'));
     assert.ok(lowestTier(publicTiers(p.pricingTiers)));
   }
 });

@@ -8,7 +8,7 @@ import { Factory, Award, Recycle, Users } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'About Us — Tin Tacker Manufacturer | Interstate Graphics, Machesney Park IL',
   description:
-    'Interstate Graphics is a leading American tin tacker manufacturer based in Machesney Park, Illinois. We produce custom embossed aluminum tin tacker signs for breweries, bars, restaurants, and brands nationwide. Decades of expertise, recycled aluminum materials, factory-direct pricing, and premium craftsmanship on every tin tacker we make.',
+    'Interstate Graphics is a leading American tin tacker manufacturer based in Machesney Park, Illinois. We produce custom embossed aluminum tin tacker signs for breweries, bars, restaurants, and brands nationwide. Decades of expertise, .024-inch aluminum materials, factory-direct pricing, and premium craftsmanship on every tin tacker we make.',
   keywords: [
     'Interstate Graphics',
     'tin tacker manufacturer',
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     'Machesney Park IL',
     'made in USA tin tackers',
     'American sign manufacturer',
-    'recycled aluminum signs',
+    '.024-inch aluminum signs',
     'custom tin tacker company',
     'who makes tin tackers',
   ],
@@ -46,8 +46,8 @@ const highlights = [
   },
   {
     icon: Recycle,
-    title: 'Recycled Materials',
-    description: 'Our embossed aluminum signs are made from recycled materials, reducing environmental impact without compromising quality.',
+    title: 'Direct-printed Aluminum',
+    description: 'Our aluminum signs are direct printed on .024-inch aluminum, white on both sides.',
   },
   {
     icon: Users,

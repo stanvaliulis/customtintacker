@@ -1,4 +1,6 @@
 'use client';
+import { productTiming, manufacturingFacts } from '@/data/manufacturing-facts';
+
 
 import { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
@@ -408,10 +410,10 @@ export default function QuoteBuilder() {
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-amber-600" />
                 <span className="font-semibold text-gray-900 text-sm">Rush Processing</span>
-                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">+25%</span>
+                <span className="text-xs font-medium text-amber-700 bg-amber-100 px-2 py-0.5 rounded-full">+30%</span>
               </div>
               <p className="text-xs text-gray-500 mt-1">
-                Get your order in ~7 business days instead of ~15. Rush fee is 25% of your order subtotal.
+                Aluminum timing: standard 2–3 weeks; rush 1–2 weeks. Rush surcharge is 30%. Timing runs from proof approval to shipment, not delivery.
               </p>
             </div>
           </button>
@@ -441,7 +443,7 @@ export default function QuoteBuilder() {
               />
               <SummaryRow label="Material" value={selectedProduct?.metadata.material || '--'} />
               <SummaryRow label="Quantity" value={selectedProduct ? quantity.toLocaleString() : '--'} />
-              <SummaryRow label="Rush" value={isRush ? 'Yes (+25%)' : 'Standard'} />
+              <SummaryRow label="Rush" value={isRush ? 'Yes (+30%)' : 'Standard'} />
             </div>
 
             {/* Divider */}
@@ -537,7 +539,7 @@ export default function QuoteBuilder() {
             }`}>
               <p className="font-semibold text-amber-800 mb-1">Estimated Lead Time</p>
               <p className="text-amber-700">
-                {isRush ? '~15' : `~${selectedProduct.leadTimeDays}`} business days from artwork approval
+                {isRush ? manufacturingFacts.rush : productTiming(selectedProduct)}
                 {isRush && <span className="block mt-1 text-xs text-amber-600 font-medium">Rush processing selected</span>}
               </p>
             </div>

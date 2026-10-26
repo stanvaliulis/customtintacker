@@ -1,3 +1,4 @@
+import { manufacturingFacts } from '@/data/manufacturing-facts';
 import Container from '@/components/ui/Container';
 import { Flag, Recycle, Palette, Clock, Shield, Layers } from 'lucide-react';
 
@@ -9,8 +10,8 @@ const differentiators = [
   },
   {
     icon: Recycle,
-    title: 'Recycled aluminum',
-    description: 'Embossed on .024 gauge recycled aluminum. Built to last indoors and out.',
+    title: '.024-inch aluminum',
+    description: 'Direct print on .024-inch aluminum, white on both sides.',
   },
   {
     icon: Palette,
@@ -19,8 +20,8 @@ const differentiators = [
   },
   {
     icon: Clock,
-    title: '15 business days',
-    description: 'Most orders ship in about 15 business days from artwork approval.',
+    title: manufacturingFacts.standard,
+    description: manufacturingFacts.timing,
   },
   {
     icon: Layers,

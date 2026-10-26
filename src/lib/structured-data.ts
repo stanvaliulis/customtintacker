@@ -1,3 +1,4 @@
+import { productTiming } from '@/data/manufacturing-facts';
 import { publicTiers } from '@/lib/catalog-pricing';
 import { siteConfig } from '@/data/siteConfig';
 import { Product } from '@/types/product';
@@ -194,7 +195,7 @@ export function getProductSchema(product: Product) {
       {
         '@type': 'PropertyValue',
         name: 'Lead Time',
-        value: `${product.leadTimeDays} business days`,
+        value: `${productTiming(product)}`,
       },
     ],
     ...(tiers.length ? { offers: {

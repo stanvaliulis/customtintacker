@@ -60,7 +60,7 @@ export const metadata: Metadata = {
     'tin tacker bulk pricing',
     'Interstate Graphics',
     'Machesney Park IL',
-    'recycled aluminum signs',
+    '.024-inch aluminum signs',
     'promotional products signs',
     'brewery promotional signs',
     'bar wall signs',

@@ -1,3 +1,4 @@
+import { manufacturingFacts } from '@/data/manufacturing-facts';
 import { Metadata } from 'next';
 import Container from '@/components/ui/Container';
 import { siteConfig } from '@/data/siteConfig';
@@ -6,7 +7,7 @@ import { Clock, Truck, PackageCheck, ShieldCheck } from 'lucide-react';
 export const metadata: Metadata = {
   title: 'Tin Tacker Shipping & Returns | Production Timeline & Delivery Info',
   description:
-    'Shipping information and return policy for custom tin tacker signs by Interstate Graphics. Tin tacker production takes approximately 15 business days. Nationwide shipping via UPS and FedEx. Learn about delivery timelines, damage claims, and our quality guarantee on all embossed aluminum tin tackers.',
+    'Shipping information and return policy for custom tin tacker signs by Interstate Graphics. Standard aluminum timing: 2–3 weeks; rush: 1–2 weeks with a 30% surcharge. Nationwide shipping via UPS and FedEx. Learn about delivery timelines, damage claims, and our quality guarantee on all embossed aluminum tin tackers.',
   openGraph: {
     title: 'Tin Tacker Shipping & Returns | Production Timeline & Delivery Info',
     description:
@@ -21,9 +22,9 @@ export const metadata: Metadata = {
 const highlights = [
   {
     icon: Clock,
-    title: '~15 Business Day Production',
+    title: manufacturingFacts.standard,
     description:
-      'Each order is custom manufactured from scratch. Plan for approximately 15 business days from proof approval to shipment. Larger orders may require additional time.',
+      manufacturingFacts.timing,
   },
   {
     icon: Truck,
@@ -90,19 +91,13 @@ export default function ShippingPage() {
               </p>
               <ul className="list-disc pl-5 space-y-2 text-gray-600">
                 <li>
-                  <strong>Standard production:</strong> approximately 30
-                  business days from proof approval and payment.
+                  <strong>Standard aluminum timing:</strong> {manufacturingFacts.standard}.
                 </li>
                 <li>
-                  <strong>Rush production:</strong> approximately 15 business
-                  days from proof approval and payment. Rush processing is
-                  available on all orders for an additional 25% fee, which you
-                  can select when adding items to your cart or building a quote.
+                  <strong>Rush aluminum timing:</strong> {manufacturingFacts.rush}, with a 30% surcharge. Confirm availability and the schedule with the team.
                 </li>
                 <li>
-                  Production does not begin until you approve your digital proof
-                  and payment is received. The sooner you approve, the sooner
-                  we start.
+                  Both ranges run from proof approval to shipment, not delivery.
                 </li>
                 <li>
                   We&apos;ll notify you when your order ships and provide

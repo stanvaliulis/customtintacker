@@ -1,3 +1,4 @@
+import { manufacturingFacts } from '@/data/manufacturing-facts';
 import { savedAttachment, attachmentMatches, type ProofAttachment } from '../design/proof-attachment';
 import { createHash } from 'node:crypto';
 import type { Product, BackingConfig } from '../../types/product';
@@ -82,7 +83,7 @@ export async function priceOrder(raw: unknown, d: Dependencies, forPayment = tru
     const discount = who.discountTier ?? 0.40;
     if (!Number.isFinite(discount) || discount < 0 || discount > 1) throw new CommerceError('Invalid account pricing.', 503);
     const unitPrice = cents(reseller ? getResellerUnitPrice(tier, backing.priceMultiplier, discount) : Math.round(tier.pricePerUnit * backing.priceMultiplier));
-    const line = cents(unitPrice * q), rushLine = i.isRush ? cents(Math.round(line * 0.25)) : 0;
+    const line = cents(unitPrice * q), rushLine = i.isRush ? cents(Math.round(line * manufacturingFacts.rushSurchargeRate)) : 0;
     const id = text(i.designId, 'saved design reference', 200);
     const record = await d.design(id, who.ownerId);
     if (!record || record.id !== id || record.ownerId !== who.ownerId || record.productId !== p.id) throw new CommerceError('Design unavailable for this customer/product.', 403);

@@ -1,3 +1,4 @@
+import { manufacturingFacts } from '@/data/manufacturing-facts';
 import { Metadata } from 'next';
 import Link from 'next/link';
 import Container from '@/components/ui/Container';
@@ -125,7 +126,7 @@ const faqs = [
   {
     question: 'What is the typical production lead time?',
     answer:
-      'Standard shapes ship in approximately 3-4 weeks after art approval. Custom die-cut shapes require 4-6 weeks. Rush production is available for an additional fee.',
+      manufacturingFacts.timing,
   },
   {
     question: 'Do you provide product samples?',

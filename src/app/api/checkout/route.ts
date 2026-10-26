@@ -1,3 +1,4 @@
+import { manufacturingFacts } from '@/data/manufacturing-facts';
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
 import { env } from '@/lib/env';
@@ -30,7 +31,7 @@ interface CheckoutBody {
   distributorDiscount?: number;
 }
 
-const RUSH_FEE_RATE = 0.25;
+const RUSH_FEE_RATE = manufacturingFacts.rushSurchargeRate;
 
 export async function POST(req: NextRequest) {
   try {

@@ -182,7 +182,7 @@ export default function PricingTable({ tiers, selectedQuantity, backingMultiplie
       <div className="px-4 py-3 border-t border-gray-700/50 flex items-start gap-2">
         <Info className="w-3.5 h-3.5 text-gray-500 mt-0.5 shrink-0" />
         <p className="text-xs text-gray-500">
-          Average lead time: ~15 business days. Orders over 500 units may require additional time.
+          Aluminum timing: standard 2–3 weeks; rush 1–2 weeks with a 30% surcharge. Timing runs from proof approval to shipment, not delivery. Confirm other materials with the team.
         </p>
       </div>
 

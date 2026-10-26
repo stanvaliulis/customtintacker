@@ -1,3 +1,4 @@
+import { productTiming } from '@/data/manufacturing-facts';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
@@ -43,7 +44,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const shapeLabel = product.shape.replace(/-/g, ' ');
   const shapeTitleCase = shapeLabel.charAt(0).toUpperCase() + shapeLabel.slice(1);
   const title = product.name + ' | ' + product.metadata.material;
-  const description = product.shortDescription + ' ' + product.metadata.material + '. Minimum order: ' + product.minimumOrder + ' units. Production lead time: ' + product.leadTimeDays + ' business days. See quantity pricing and artwork options.';
+  const description = product.shortDescription + ' ' + product.metadata.material + '. Minimum order: ' + product.minimumOrder + ' units. Production lead time: ' + productTiming(product) + '. See quantity pricing and artwork options.';
 
   return {
     title,
@@ -107,7 +108,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <div><dt className="text-gray-400">Material</dt><dd className="text-white">{product.metadata.material}</dd></div>
           <div><dt className="text-gray-400">Finished size</dt><dd className="text-white">{product.dimensions.displaySize}</dd></div>
           <div><dt className="text-gray-400">Minimum order</dt><dd className="text-white">{product.minimumOrder} units</dd></div>
-          <div><dt className="text-gray-400">Production lead time</dt><dd className="text-white">{product.leadTimeDays} business days</dd></div>
+          <div><dt className="text-gray-400">Production lead time</dt><dd className="text-white">{productTiming(product)}</dd></div>
         </dl>
         <p className="text-sm text-gray-300 mt-4">Price depends on quantity and selected options. Check the volume table below or request a quote for custom requirements.</p>
         <div className="flex flex-wrap gap-5 mt-4 text-amber-300 text-sm underline"><Link href={uploadProductHref(product.id)}>Upload Artwork</Link><Link href={'/design/' + product.id}>Design your own</Link><Link href="/artwork-templates">Artwork guides and file requirements</Link></div>
@@ -176,7 +177,7 @@ export default async function ProductDetailPage({ params }: Props) {
                 </div>
                 <div className="flex items-center gap-2 bg-gray-900/50 rounded-xl border border-gray-800/50 px-3 py-3">
                   <Truck className="w-4 h-4 text-amber-400 shrink-0" />
-                  <span className="text-xs text-gray-300 font-medium">{product.leadTimeDays}-Day Lead</span>
+                  <span className="text-xs text-gray-300 font-medium">{productTiming(product)}</span>
                 </div>
               </div>
             </div>
@@ -327,7 +328,7 @@ export default async function ProductDetailPage({ params }: Props) {
                   <SpecItem
                     icon={<Clock className="w-4 h-4" />}
                     label="Lead Time"
-                    value={`${product.leadTimeDays} business days`}
+                    value={productTiming(product)}
                   />
                 </div>
               </div>
