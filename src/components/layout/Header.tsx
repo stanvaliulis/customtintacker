@@ -22,7 +22,8 @@ const industryLinks = [
 
 const navLinks = [
   { href: '/products', label: 'Products' },
-  { href: '/ai-designer', label: 'AI Designer' },
+  { href: '/upload-proof', label: 'Upload Artwork' },
+  { href: '/design#diy-products', label: 'Design your own' },
   { href: '/quote', label: 'Get a Quote' },
   { href: '/distributors', label: 'Distributors' },
   { href: '/about', label: 'About' },

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 const routes = [
-  { href: '/upload-proof', label: 'Upload & emboss', text: 'Fit finished artwork, review raised-area suggestions, or ask for a team proof.' },
+  { href: '/upload-proof', label: 'Upload Artwork', text: 'Fit finished artwork, review raised-area suggestions, or ask for a team proof.' },
   { href: '/design', label: 'Design your own', text: 'Choose an exact product and edit text, images and layouts.' },
   { href: '/mockup', label: 'Preview a mockup', text: 'See how your logo looks on a sample shape.' },
   { href: '/ai-designer', label: 'AI artwork review', text: 'Get artwork suggestions and an embossed preview.' },

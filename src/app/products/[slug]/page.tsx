@@ -110,7 +110,7 @@ export default async function ProductDetailPage({ params }: Props) {
           <div><dt className="text-gray-400">Production lead time</dt><dd className="text-white">{product.leadTimeDays} business days</dd></div>
         </dl>
         <p className="text-sm text-gray-300 mt-4">Price depends on quantity and selected options. Check the volume table below or request a quote for custom requirements.</p>
-        <div className="flex flex-wrap gap-5 mt-4 text-amber-300 text-sm underline"><Link href={'/design/' + product.id}>Design your own</Link><Link href={uploadProductHref(product.id)}>Upload &amp; emboss this product</Link><Link href="/artwork-templates">Artwork guides and file requirements</Link></div>
+        <div className="flex flex-wrap gap-5 mt-4 text-amber-300 text-sm underline"><Link href={uploadProductHref(product.id)}>Upload Artwork</Link><Link href={'/design/' + product.id}>Design your own</Link><Link href="/artwork-templates">Artwork guides and file requirements</Link></div>
       </section></Container>
       {/* Main Product Section */}
       <section className="py-10 sm:py-14">
