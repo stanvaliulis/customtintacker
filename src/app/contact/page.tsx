@@ -25,10 +25,10 @@ export const metadata: Metadata = {
     title: 'Contact Us — Order Custom Tin Tackers | Interstate Graphics',
     description:
       'Get in touch with Interstate Graphics for custom tin tacker sign orders, quotes, and support. We respond within 1 business day.',
-    url: 'https://customtintackers.com/contact',
+    url: 'https://www.customtintackers.com/contact',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/contact',
+    canonical: 'https://www.customtintackers.com/contact',
   },
 };
 

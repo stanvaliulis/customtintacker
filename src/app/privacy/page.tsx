@@ -10,10 +10,10 @@ export const metadata: Metadata = {
     title: 'Privacy Policy | Custom Tin Tackers by Interstate Graphics',
     description:
       'How Custom Tin Tackers by Interstate Graphics collects, uses, and protects your information.',
-    url: 'https://customtintackers.com/privacy',
+    url: 'https://www.customtintackers.com/privacy',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/privacy',
+    canonical: 'https://www.customtintackers.com/privacy',
   },
 };
 

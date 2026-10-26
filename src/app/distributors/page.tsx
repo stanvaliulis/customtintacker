@@ -43,10 +43,10 @@ export const metadata: Metadata = {
     title: 'Wholesale Tin Tackers Distributor Program | ASI SAGE PPAI Tin Tacker Signs',
     description:
       'Join our distributor program for exclusive wholesale pricing on premium embossed aluminum tin tacker signs. Up to 30% off retail with blind dropship available.',
-    url: 'https://customtintackers.com/distributors',
+    url: 'https://www.customtintackers.com/distributors',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/distributors',
+    canonical: 'https://www.customtintackers.com/distributors',
   },
 };
 

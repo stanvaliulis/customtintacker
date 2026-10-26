@@ -11,10 +11,10 @@ export const metadata: Metadata = {
   openGraph: {
     title: industry.metaTitle,
     description: industry.metaDescription,
-    url: `https://customtintackers.com/${industry.slug}`,
+    url: `https://www.customtintackers.com/${industry.slug}`,
   },
   alternates: {
-    canonical: `https://customtintackers.com/${industry.slug}`,
+    canonical: `https://www.customtintackers.com/${industry.slug}`,
   },
 };
 

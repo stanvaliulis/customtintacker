@@ -18,10 +18,10 @@ export const metadata: Metadata = {
     title: 'Tin Tacker Quote Builder | Configure & Price Custom Embossed Aluminum Signs',
     description:
       'Interactive quote builder for custom embossed aluminum tin tacker signs. Instant pricing on all shapes and sizes from Interstate Graphics.',
-    url: 'https://customtintackers.com/quote/builder',
+    url: 'https://www.customtintackers.com/quote/builder',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/quote/builder',
+    canonical: 'https://www.customtintackers.com/quote/builder',
   },
 };
 

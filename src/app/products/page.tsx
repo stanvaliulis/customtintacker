@@ -15,9 +15,8 @@ import Link from 'next/link';
 export const revalidate = 3600; // revalidate every hour
 
 export const metadata: Metadata = {
-  title: 'Tin Tacker Signs — All Shapes & Sizes | Custom Embossed Aluminum Tin Tackers',
-  description:
-    'Browse our full catalog of custom embossed aluminum tin tacker signs. Square, circle, can shape, bottle cap, street sign, arrow, license plate, and custom die-cut tin tackers. Factory-direct bulk pricing from $3.50/unit. Made in USA by Interstate Graphics, Machesney Park, IL. Order tin tackers for breweries, bars, and brand promotions.',
+  title: 'Custom Signs: Shapes, Sizes & Materials',
+  description: 'Browse embossed metal tin tackers and vinyl signs by shape, size and material. See product-specific minimums, quantity pricing and artwork options.',
   keywords: [
     'tin tacker signs',
     'tin tackers catalog',
@@ -37,13 +36,12 @@ export const metadata: Metadata = {
     'tin tacker sizes',
   ],
   openGraph: {
-    title: 'Tin Tacker Signs — All Shapes & Sizes | Custom Embossed Aluminum Tin Tackers',
-    description:
-      'Premium embossed aluminum tin tacker signs in every shape and size. Square, circle, can shape, bottle cap, arrow, and custom die-cut tin tackers. Factory-direct bulk pricing. Made in the USA by Interstate Graphics.',
-    url: 'https://customtintackers.com/products',
+    title: 'Custom Signs: Shapes, Sizes & Materials',
+    description: 'Browse embossed metal tin tackers and vinyl signs by shape, size and material. See product-specific minimums, quantity pricing and artwork options.',
+    url: 'https://www.customtintackers.com/products',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/products',
+    canonical: 'https://www.customtintackers.com/products',
   },
 };
 

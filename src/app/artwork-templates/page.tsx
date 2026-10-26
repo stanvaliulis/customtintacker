@@ -37,10 +37,10 @@ export const metadata: Metadata = {
     title: 'Artwork Templates | Download Tin Tacker Design Templates',
     description:
       'Download artwork layout guides with bleed and safe areas marked. Confirm product geometry and final artwork in your production proof.',
-    url: 'https://customtintackers.com/artwork-templates',
+    url: 'https://www.customtintackers.com/artwork-templates',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/artwork-templates',
+    canonical: 'https://www.customtintackers.com/artwork-templates',
   },
 };
 

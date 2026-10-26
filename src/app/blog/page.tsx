@@ -24,11 +24,11 @@ export const metadata: Metadata = {
     title: 'Tin Tacker Blog | Tips, Guides & Embossed Aluminum Sign Insights',
     description:
       'Tips, guides, and insights about custom embossed aluminum tin tacker signs for breweries, bars, brands, and promotional products distributors.',
-    url: 'https://customtintackers.com/blog',
+    url: 'https://www.customtintackers.com/blog',
     type: 'website',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/blog',
+    canonical: 'https://www.customtintackers.com/blog',
   },
 };
 

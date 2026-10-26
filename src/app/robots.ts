@@ -19,6 +19,6 @@ export default function robots(): MetadataRoute.Robots {
         ],
       },
     ],
-    sitemap: 'https://customtintackers.com/sitemap.xml',
+    sitemap: 'https://www.customtintackers.com/sitemap.xml',
   };
 }

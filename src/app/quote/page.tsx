@@ -27,10 +27,10 @@ export const metadata: Metadata = {
     title: 'Get a Free Tin Tacker Quote | Custom Embossed Aluminum Sign Pricing',
     description:
       'Request a free quote for custom embossed aluminum tin tacker signs. Bulk pricing, custom shapes, sizes, and die-cuts available. Fast response within 1 business day from Interstate Graphics.',
-    url: 'https://customtintackers.com/quote',
+    url: 'https://www.customtintackers.com/quote',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/quote',
+    canonical: 'https://www.customtintackers.com/quote',
   },
 };
 

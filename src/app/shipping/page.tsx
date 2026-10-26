@@ -11,10 +11,10 @@ export const metadata: Metadata = {
     title: 'Tin Tacker Shipping & Returns | Production Timeline & Delivery Info',
     description:
       'Production timelines, shipping details, and return policy for custom embossed aluminum tin tacker signs from Interstate Graphics.',
-    url: 'https://customtintackers.com/shipping',
+    url: 'https://www.customtintackers.com/shipping',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/shipping',
+    canonical: 'https://www.customtintackers.com/shipping',
   },
 };
 

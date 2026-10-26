@@ -79,7 +79,7 @@ export function getLocalBusinessSchema() {
 
   return {
     '@context': 'https://schema.org',
-    '@type': ['LocalBusiness', 'Manufacturer'],
+    '@type': 'LocalBusiness',
     '@id': `${siteConfig.url}/#localbusiness`,
     name: siteConfig.company,
     alternateName: siteConfig.name,

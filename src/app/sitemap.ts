@@ -4,7 +4,7 @@ import { blogPosts } from '@/data/blog-posts';
 import { industries } from '@/data/industries';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://customtintackers.com';
+  const baseUrl = 'https://www.customtintackers.com';
   const products = await getAllProducts();
 
   // Static pages with SEO-optimized priorities

@@ -26,10 +26,10 @@ export const metadata: Metadata = {
     title: 'About Us — Tin Tacker Manufacturer | Interstate Graphics, Machesney Park IL',
     description:
       'Interstate Graphics is a leading US manufacturer of custom embossed aluminum tin tacker signs. Located in Machesney Park, IL, serving breweries, bars, and brands nationwide with premium tin tackers.',
-    url: 'https://customtintackers.com/about',
+    url: 'https://www.customtintackers.com/about',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/about',
+    canonical: 'https://www.customtintackers.com/about',
   },
 };
 

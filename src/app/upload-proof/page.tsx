@@ -4,7 +4,7 @@ import type {Metadata} from 'next';
 import {notFound} from 'next/navigation';
 import Link from 'next/link';
 import {uploadTitle,uploadDescription,uploadAnswers,selectUploadProduct} from '@/lib/design/upload-content';
-export const metadata:Metadata={title:uploadTitle,description:uploadDescription,alternates:{canonical:'https://customtintackers.com/upload-proof'},openGraph:{title:uploadTitle,description:uploadDescription,url:'https://customtintackers.com/upload-proof',type:'website'},twitter:{card:'summary_large_image',title:uploadTitle,description:uploadDescription}};
+export const metadata:Metadata={title:uploadTitle,description:uploadDescription,alternates:{canonical:'https://www.customtintackers.com/upload-proof'},openGraph:{title:uploadTitle,description:uploadDescription,url:'https://www.customtintackers.com/upload-proof',type:'website'},twitter:{card:'summary_large_image',title:uploadTitle,description:uploadDescription}};
 export default async function Page({searchParams}:{searchParams:Promise<{product?:string|string[]}>}){
  const products=await getAllProducts(),query=await searchParams;
  const productId=selectUploadProduct(query.product,products);if(!productId)notFound();

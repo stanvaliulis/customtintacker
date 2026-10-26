@@ -22,13 +22,12 @@ export default function HeroSection() {
 
           {/* Main headline */}
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[1.05]">
-            We Make Tin Tackers.
+            Custom Embossed Metal Signs.
           </h1>
 
           {/* Subtext */}
           <p className="mt-8 text-lg sm:text-xl text-gray-300 max-w-2xl leading-relaxed">
-            The signs you see in every brewery and bar? We make those.
-            Custom shapes, your artwork, shipped in about 15 business days.
+            Put your logo, label or artwork on a custom sign for your brewery, bar, restaurant, shop or brand. Explore shapes and sizes, upload finished artwork, or request a quote for a custom project.
           </p>
 
           {/* CTAs */}

@@ -24,10 +24,10 @@ export const metadata: Metadata = {
     title: 'Instant Tin Tacker Mockup Generator | Preview Your Custom Sign',
     description:
       'Upload your logo and preview it on any tin tacker shape. Takes 10 seconds. Free mockup tool.',
-    url: 'https://customtintackers.com/mockup',
+    url: 'https://www.customtintackers.com/mockup',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/mockup',
+    canonical: 'https://www.customtintackers.com/mockup',
   },
 };
 

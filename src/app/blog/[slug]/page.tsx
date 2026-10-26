@@ -45,7 +45,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title: post.metaTitle,
       description: post.metaDescription,
-      url: `https://customtintackers.com/blog/${post.slug}`,
+      url: `https://www.customtintackers.com/blog/${post.slug}`,
       type: 'article',
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt,
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         {
           url: post.coverImage.startsWith('http')
             ? post.coverImage
-            : `https://customtintackers.com${post.coverImage}`,
+            : `https://www.customtintackers.com${post.coverImage}`,
           width: 1200,
           height: 630,
           alt: post.title,
@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: post.metaDescription,
     },
     alternates: {
-      canonical: `https://customtintackers.com/blog/${post.slug}`,
+      canonical: `https://www.customtintackers.com/blog/${post.slug}`,
     },
   };
 }

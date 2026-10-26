@@ -10,10 +10,10 @@ export const metadata: Metadata = {
     title: 'Terms of Service | Custom Tin Tackers by Interstate Graphics',
     description:
       'Terms and conditions for ordering custom embossed aluminum tin tacker signs from Custom Tin Tackers by Interstate Graphics.',
-    url: 'https://customtintackers.com/terms',
+    url: 'https://www.customtintackers.com/terms',
   },
   alternates: {
-    canonical: 'https://customtintackers.com/terms',
+    canonical: 'https://www.customtintackers.com/terms',
   },
 };
 

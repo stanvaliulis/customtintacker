@@ -52,10 +52,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title,
       description,
-      url: `https://customtintackers.com/products/${slug}`,
+      url: `https://www.customtintackers.com/products/${slug}`,
       type: 'website',
       images: product.images.length > 0
-        ? [{ url: product.images[0].startsWith('http') ? product.images[0] : `https://customtintackers.com${product.images[0]}`, width: 800, height: 800, alt: `${product.name} — Custom ${shapeTitleCase} Tin Tacker Sign` }]
+        ? [{ url: product.images[0].startsWith('http') ? product.images[0] : `https://www.customtintackers.com${product.images[0]}`, width: 800, height: 800, alt: `${product.name} — Custom ${shapeTitleCase} Tin Tacker Sign` }]
         : undefined,
     },
     twitter: {
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
     },
     alternates: {
-      canonical: `https://customtintackers.com/products/${slug}`,
+      canonical: `https://www.customtintackers.com/products/${slug}`,
     },
   };
 }
