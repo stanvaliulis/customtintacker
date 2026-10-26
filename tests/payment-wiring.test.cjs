@@ -11,3 +11,23 @@ test('old or invalid payment attempts cannot create a fresh charge after retenti
 test('real Stripe signatures reconcile reviewed shipping/tax and retain approval hash',async()=>{const secret='whsec_synthetic_payment_wiring_only',e={id:'evt_test',livemode:false,type:'checkout.session.completed',data:{object:{id:'cs_test_synthetic',mode:'payment',livemode:false,payment_status:'paid',payment_intent:'pi_synthetic',currency:'usd',amount_total:12200,amount_subtotal:12200,total_details:{amount_shipping:0,amount_tax:0,amount_discount:0},metadata:{business:'IG',orderId:'synthetic-order',paymentContract:'reviewed-final-v1',reviewHash:hash,shippingCents:'500',taxCents:'700'}}}};const verify=stripeEventVerifier({signingSecret:secret,live:false,reviewedOnly:true}),call=async()=>{const body=JSON.stringify(e);return verify(body,Stripe.webhooks.generateTestHeaderString({payload:body,secret}));};const r=await call();assert.equal(r.shipping,500);assert.equal(r.tax,700);assert.equal(r.reviewHash,hash);e.data.object.metadata.taxCents='999999';await assert.rejects(call());e.data.object.metadata.paymentContract='other';await assert.rejects(call());});
 test('payment HTTP layer rejects foreign origins and browser-supplied totals before actions',async()=>{let calls=0;const actions={checkout:async()=>{calls++;return {url:'synthetic'};},staffAction:async()=>{calls++;return {};}};const h=paymentHttp(actions),req=(body,origin='https://shop.invalid')=>new Request('https://shop.invalid/api/payments/checkout',{method:'POST',headers:{origin,'content-type':'application/json'},body:JSON.stringify(body)});assert.equal((await h.checkoutPost(req({invoiceId:id},'https://evil.invalid'))).status,403);assert.equal((await h.checkoutPost(req({invoiceId:id,total:1}))).status,400);assert.equal(calls,0);assert.equal((await h.checkoutPost(req({invoiceId:id}))).status,200);assert.equal(calls,1);assert.equal((await h.staffPost(req({invoiceId:id},'https://evil.invalid'))).status,403);});
 test('webhook preserves exact signed bytes and safe failures never disclose provider details',async()=>{let received;const h=paymentHttp({webhook:async(body,sig)=>{received=[body,sig];return {received:true};},customerView:async()=>{throw Error('SECRET-provider-response');}});const body='{ "synthetic" : true }';const r=await h.webhookPost(new Request('https://shop.invalid/api/payments/stripe-webhook',{method:'POST',headers:{'stripe-signature':'synthetic-signature'},body}));assert.equal(r.status,200);assert.deepEqual(received,[body,'synthetic-signature']);assert.equal((await h.webhookPost(new Request('https://shop.invalid',{method:'POST',body}))).status,400);const failure=await h.customerGet(new Request('https://shop.invalid?invoice_id='+id));assert.equal(failure.status,503);assert.ok(!(await failure.text()).includes('SECRET'));});
+
+test('live signature verifier rejects tampering stale signatures test mode and Connect events offline',async()=>{
+ const secret='whsec_offline_live_fixture_only',verify=stripeEventVerifier({signingSecret:secret,live:true,reviewedOnly:true});
+ const event={id:'evt_offline',livemode:true,type:'checkout.session.completed',data:{object:{id:'cs_live_offline',mode:'payment',livemode:true,payment_status:'paid',payment_intent:'pi_offline',currency:'usd',amount_total:12200,amount_subtotal:12200,total_details:{amount_shipping:0,amount_tax:0,amount_discount:0},metadata:{business:'IG',orderId:'offline-order',paymentContract:'reviewed-final-v1',reviewHash:hash,shippingCents:'500',taxCents:'700'}}}};
+ const call=(e,timestamp)=>{const payload=JSON.stringify(e);return verify(payload,Stripe.webhooks.generateTestHeaderString({payload,secret,...(timestamp?{timestamp}:{})}));};
+ assert.equal((await call(event)).total,12200);
+ const payload=JSON.stringify(event),signature=Stripe.webhooks.generateTestHeaderString({payload,secret});
+ await assert.rejects(verify(payload+' ',signature),/signature/);
+ await assert.rejects(call(event,Math.floor(Date.now()/1000)-600),/signature/);
+ await assert.rejects(call({...event,livemode:false}),/mode mismatch/);
+ await assert.rejects(call({...event,account:'acct_foreign'}),/account or mode mismatch/);
+ assert.equal(await call({...event,type:'charge.refunded'}),null);
+ assert.equal(await call({...event,data:{object:{...event.data.object,payment_status:'unpaid'}}}),null);
+});
+
+test('webhook HTTP rejects oversized payload before invoking operational actions',async()=>{
+ let calls=0;const h=paymentHttp({webhook:async()=>{calls++;return {};}});
+ const r=await h.webhookPost(new Request('https://fixture.invalid',{method:'POST',headers:{'stripe-signature':'offline-fixture'},body:'x'.repeat(1024*1024+1)}));
+ assert.equal(r.status,413);assert.equal(calls,0);
+});

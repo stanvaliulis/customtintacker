@@ -1,6 +1,8 @@
+import {livePaymentConfig} from './live-payment-config';
 /** Pure preflight: no credentials returned, provider calls, activation or configuration writes. */
 export function firstLaunchReadiness(values:Record<string,string|undefined>){
  const blockers:string[]=[];
+ try{livePaymentConfig(values);}catch{blockers.push('Runtime payment configuration is incomplete or inconsistent; verify production database binding and live configuration.');}
  if(values.TIN_CHECKOUT_PAUSED!=='0')blockers.push('Checkout remains paused until explicit launch.');
  if(values.VERCEL_ENV!=='production'||values.TIN_ISOLATED_PREVIEW==='1')blockers.push('Production environment required for live activation.');
  if(values.TIN_REVIEWED_LIVE_ENABLED!=='1')blockers.push('Live payment activation is not approved/configured.');

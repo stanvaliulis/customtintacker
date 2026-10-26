@@ -26,3 +26,14 @@ test('reviewed reconciliation rejects missing and stale acknowledgment before an
  ack=true;assert.equal(await repo.commitPaid(event),'applied');assert.equal(writes,3);
  ack=false;assert.equal(await repo.commitPaid(event),'duplicate');assert.equal(writes,3);
 });
+
+test('readiness cannot report payment-ready when runtime database binding fails',()=>{
+ const ready={...env,TIN_CHECKOUT_PAUSED:'0',TIN_PRODUCTION_PAYMENT_SCHEMA_VERIFIED:'1'};
+ assert.equal(firstLaunchReadiness(ready).paymentReady,true);
+ for(const changes of [{TIN_LIVE_DATABASE_HOST:undefined},{TIN_LIVE_DATABASE_HOST:'wrong.neon.tech'},{POSTGRES_PRISMA_URL:'invalid'},{TIN_STRIPE_LIVE_WEBHOOK_SECRET:'whsec_short'}]){
+  const values={...ready,...changes},r=firstLaunchReadiness(values);
+  assert.equal(r.paymentReady,false);
+  assert.ok(!JSON.stringify(r).includes(ready.TIN_STRIPE_LIVE_SECRET_KEY));
+  assert.ok(!JSON.stringify(r).includes(ready.POSTGRES_PRISMA_URL));
+ }
+});
