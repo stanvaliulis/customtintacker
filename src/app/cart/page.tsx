@@ -6,6 +6,7 @@ import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
 import CartItemRow from '@/components/cart/CartItem';
 import Link from 'next/link';
+import ShippingEstimate from '@/components/shipping/ShippingEstimate';
 import { ShoppingCart } from 'lucide-react';
 
 export default function CartPage() {
@@ -71,6 +72,7 @@ export default function CartPage() {
                 </div>
               </div>
 
+              <ShippingEstimate items={items.map(item => ({productId:item.product.id,quantity:item.quantity}))} />
               <Link href="/checkout" className="block mt-6">
                 <Button size="lg" className="w-full">Proceed to Checkout</Button>
               </Link>
