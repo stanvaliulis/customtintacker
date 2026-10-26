@@ -9,7 +9,8 @@ export function configureIsolatedPreview(values:NodeJS.ProcessEnv){
  values.POSTGRES_PRISMA_URL=raw;
  values.POSTGRES_URL_NON_POOLING=values.TINTEST_POSTGRES_URL_NON_POOLING||raw;
  values.ARTWORK_BLOB_READ_WRITE_TOKEN=values.BLOB_READ_WRITE_TOKEN;
- values.TIN_PAYMENTS_TEST_ENABLED='0';values.TIN_INVOICE_MAIL_ENABLED='0';values.TIN_DISTRIBUTOR_RECOVERY_MAIL_ENABLED='0';
+ const testPayments=values.TIN_PAYMENTS_TEST_ENABLED==='1'&&values.TIN_PAYMENTS_TEST_DATABASE_HOST===host&&values.TIN_STRIPE_TEST_SECRET_KEY?.startsWith('sk_test_')&&values.TIN_STRIPE_ACCOUNT_ID==='acct_1TO24PIpmMqjUaQp'&&values.TIN_TEST_RECEIVER_ENABLED==='1';
+ values.TIN_PAYMENTS_TEST_ENABLED=testPayments?'1':'0';values.TIN_INVOICE_MAIL_ENABLED='0';values.TIN_PAID_ORDER_MAIL_ENABLED='0';values.TIN_DISTRIBUTOR_RECOVERY_MAIL_ENABLED='0';
 }
 if(typeof window==='undefined')configureIsolatedPreview(process.env);
 

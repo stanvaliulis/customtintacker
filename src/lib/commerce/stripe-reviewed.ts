@@ -1,7 +1,7 @@
 import type Stripe from 'stripe';
 import {CommerceError,type Order} from './service';
 /** One fixed final amount: staff's shipping/tax are included, never recalculated by Stripe Tax. */
-export function reviewedStripe(client:Pick<Stripe,'accounts'|'checkout'>,config:{accountId:string;returnOrigin:string;now?:()=>number}){
+export function reviewedStripe(client:Pick<Stripe,'accounts'|'checkout'>,config:{accountId:string;returnOrigin:string;live?:boolean;now?:()=>number}){
  const origin=new URL(config.returnOrigin);if(origin.protocol!=='https:'||origin.pathname!=='/'||origin.search||origin.hash)throw new CommerceError('Verified HTTPS return origin required.',503);
  const now=config.now||Date.now;
  return {create:async(order:Order,reviewHash:string,invoiceId:string,started:number)=>{
@@ -20,9 +20,9 @@ export function reviewedStripe(client:Pick<Stripe,'accounts'|'checkout'>,config:
    success_url:origin.origin+'/invoice-payment/'+encodeURIComponent(invoiceId)+'?returned=1',
    cancel_url:origin.origin+'/invoice-payment/'+encodeURIComponent(invoiceId),
   },{idempotencyKey:'reviewed-payment:'+order.id});
-  if(result.livemode||!result.id.startsWith('cs_test_')||!result.url||new URL(result.url).origin!=='https://checkout.stripe.com'||
+  if(result.livemode!==(config.live===true)||!result.id.startsWith(config.live?'cs_live_':'cs_test_')||!result.url||new URL(result.url).origin!=='https://checkout.stripe.com'||
     result.amount_total!==order.total||result.currency!=='usd'||result.metadata?.reviewHash!==reviewHash)
-    throw new CommerceError('Stripe test session receipt mismatch; staff reconciliation required.',503);
+    throw new CommerceError('Stripe session receipt mismatch; staff reconciliation required.',503);
   return {id:result.id,url:result.url};
  }};
 }

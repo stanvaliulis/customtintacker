@@ -1,5 +1,5 @@
 import type { Order } from './service';
-/** Resolved by a server adapter from the SAME active setting used for leads.
+/** Resolved by a server adapter from the explicitly approved staff destination.
  * No historical fallback or customer-provided destination is accepted. */
 export interface LeadAudience { addresses: string[]; configurationKey: 'NOTIFICATION_EMAIL'; verifiedActive: true; revision: string }
 export interface DeliveryBinding { audience: LeadAudience; firstAttemptAt: number }
@@ -62,5 +62,5 @@ export async function deliverNextPaidOrder(deps: { store: NotificationStore; tra
     return 'retry';
   }
 }
-/** Recipient verified from original October 13 lead email headers in connected Outlook. Delivery adapters remain disabled. */
-export async function activeLeadAudience(): Promise<LeadAudience | null> { return { addresses: ['web@igiprint.com'], configurationKey: 'NOTIFICATION_EMAIL', verifiedActive: true, revision: 'Outlook-original-quote-2026-10-13' }; }
+/** Completed-order destination explicitly approved October 19. Delivery requires separate production activation. */
+export async function activeLeadAudience(): Promise<LeadAudience | null> { return { addresses: ['sales@customtintackers.com'], configurationKey: 'NOTIFICATION_EMAIL', verifiedActive: true, revision: 'completed-order-recipient-approved-2026-10-19' }; }

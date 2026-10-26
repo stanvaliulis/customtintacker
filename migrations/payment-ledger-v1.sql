@@ -21,7 +21,7 @@ CREATE TABLE tin_payments.payment_event (
 );
 CREATE TABLE tin_payments.outbox (
  job_key text PRIMARY KEY, order_id text NOT NULL UNIQUE REFERENCES tin_payments.payment_order(id),
- state text NOT NULL DEFAULT 'pending' CHECK(state IN ('pending','claimed','held','completed')),
+ state text NOT NULL DEFAULT 'held' CHECK(state IN ('pending','claimed','held','completed')),
  lease_token text, lease_until timestamptz, provider_receipt text,
  created_at timestamptz NOT NULL DEFAULT now(), completed_at timestamptz
 );

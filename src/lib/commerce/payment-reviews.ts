@@ -5,13 +5,14 @@ import type {SourceRevision,ProofRevision} from '../artwork-storage/service';
 import {prepareFinalPaymentReview} from './final-payment-review';
 import {CommerceError,hash} from './service';
 export type FinalReview=ReturnType<typeof prepareFinalPaymentReview>;
-export interface ReviewInput {shipping:number;tax:number;version:string;proofIds:string[];confirmFinalAmount:true}
+export interface ReviewInput {shipping:number;tax:number;version:string;proofIds:string[];confirmFinalAmount:true;embossResolutions?:Array<{designId:string;preference:'yes'|'no'}>}
 export function paymentReviews(client:PrismaTransactions){
  async function tx<T>(work:(tx:SqlTransaction)=>Promise<T>):Promise<T>{for(let attempt=0;;attempt++)try{return await client.$transaction(work,{isolationLevel:'Serializable',maxWait:5000,timeout:15000});}catch(error){const e=error as {code?:string;meta?:{code?:string}},code=e.code==='P2010'?e.meta?.code:e.code;if(attempt>=3||!['P2034','40001','40P01','P2002','23505'].includes(code||''))throw error;}}
  const get=async(invoiceId:string,ownerId?:string)=>tx(async db=>{const rows=await db.$queryRawUnsafe<Array<{owner_id:string;payload:FinalReview}>>('SELECT owner_id,payload FROM tin_payments.final_review WHERE invoice_id=$1 AND ($2::text IS NULL OR owner_id=$2)',invoiceId,ownerId||null);const row=rows[0];if(row&&(row.payload.invoiceRequestId!==invoiceId||row.payload.priced.ownerId!==row.owner_id))throw new CommerceError('Final review ownership mismatch.',503);return row?.payload||null;});
  const approve=async(invoiceId:string,input:ReviewInput)=>{
   if(input.confirmFinalAmount!==true||!/^[A-Za-z0-9_-]{1,80}$/.test(input.version)||!Array.isArray(input.proofIds)||input.proofIds.length>50||input.proofIds.some(x=>typeof x!=='string'||!/^proof-[a-f0-9]{64}$/.test(x)))throw new CommerceError('Explicit final-amount and proof confirmation required.',400);
-  const raw={shipping:input.shipping,tax:input.tax,version:input.version,proofIds:[...input.proofIds]},requestHash=hash(canonical(raw));
+  if(input.embossResolutions!==undefined&&(!Array.isArray(input.embossResolutions)||input.embossResolutions.length>50||input.embossResolutions.some(r=>!r||typeof r.designId!=='string'||!['yes','no'].includes(r.preference))))throw new CommerceError('Explicit emboss resolution required.',400);
+  const raw={shipping:input.shipping,tax:input.tax,version:input.version,proofIds:[...input.proofIds],...(input.embossResolutions?.length?{embossResolutions:structuredClone(input.embossResolutions)}:{})},requestHash=hash(canonical(raw));
   return tx(async db=>{
    const old=await db.$queryRawUnsafe<Array<{request_hash:string;payload:FinalReview}>>('SELECT request_hash,payload FROM tin_payments.final_review WHERE invoice_id=$1',invoiceId);
    if(old[0]){if(old[0].request_hash!==requestHash)throw new CommerceError('A final review already exists; staff reconciliation required before amendment.',409);return old[0].payload;}

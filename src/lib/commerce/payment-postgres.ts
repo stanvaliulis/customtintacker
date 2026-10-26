@@ -37,7 +37,8 @@ export function paymentPostgres(client:PrismaTransactions) {
   },
   event:async id=>{const rows=await tx.$queryRawUnsafe<Array<{payload_hash:string}>>('SELECT payload_hash FROM tin_payments.payment_event WHERE id=$1',id);return rows[0]?.payload_hash||null;},
   insertEvent:async(id,h,orderId)=>{await tx.$executeRawUnsafe('INSERT INTO tin_payments.payment_event(id,payload_hash,order_id) VALUES($1,$2,$3)',id,h,orderId);},
-  enqueueOnce:async(key,o)=>{if(!o.paid)throw new CommerceError('Unpaid order cannot be released.',409);await tx.$executeRawUnsafe('INSERT INTO tin_payments.outbox(job_key,order_id) VALUES($1,$2) ON CONFLICT(job_key) DO NOTHING',key,o.id);},
+  authorizeReviewedPayment:async o=>{const rows=await tx.$queryRawUnsafe<Array<{review_hash:string}>>("SELECT a.review_hash FROM tin_payments.customer_acknowledgment a JOIN tin_payments.final_review r ON r.invoice_id=a.invoice_id AND r.owner_id=a.owner_id AND r.review_hash=a.review_hash JOIN tin_payments.payment_order p ON p.owner_id=a.owner_id AND p.request_key='invoice-'||a.invoice_id AND p.request_hash=a.review_hash WHERE p.id=$1 FOR SHARE OF a,r",o.id);if(rows.length!==1||rows[0].review_hash!==o.requestHash)throw new CommerceError('Current customer acknowledgment required.',409);},
+  enqueueOnce:async(key,o)=>{if(!o.paid)throw new CommerceError('Unpaid order cannot be released.',409);await tx.$executeRawUnsafe("INSERT INTO tin_payments.outbox(job_key,order_id,state) VALUES($1,$2,'held') ON CONFLICT(job_key) DO NOTHING",key,o.id);await tx.$executeRawUnsafe("INSERT INTO tin_payments.notification_outbox(job_key,order_id) VALUES($1,$2) ON CONFLICT(job_key) DO NOTHING",'paid-staff-'+o.id,o.id);},
  });
  const repository=transactionalRepository({transaction:work=>transaction(tx=>work(adapter(tx)))});
  const outbox={

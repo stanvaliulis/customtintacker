@@ -1,4 +1,9 @@
+import {checkoutPaused,requireCheckoutOpen} from '../commerce/checkout-pause';
 import 'server-only';
+import {livePaymentConfig} from '../commerce/live-payment-config';
+import {manualHandoff} from '../commerce/manual-handoff';
+import {reusableCheckout} from '../commerce/checkout-reuse';
+import {paymentAcknowledgments} from '../commerce/payment-acknowledgments';
 import Stripe from 'stripe';
 import {createHash} from 'node:crypto';
 import {prisma} from '../db';
@@ -15,29 +20,42 @@ import {CommerceError} from '../commerce/service';
 import type {PaymentActions} from '../commerce/payment-http';
 
 export async function paymentTestGate(){
+ if(Date.now()>=Date.parse('2026-10-27T13:00:00Z'))throw new CommerceError('Test payment window expired.',503);
  if(process.env.TIN_PAYMENTS_TEST_ENABLED!=='1'||process.env.VERCEL_ENV!=='preview')throw new CommerceError('Reviewed payments are not active.',503);
  let host:string;try{host=new URL(process.env.POSTGRES_PRISMA_URL||'').hostname;}catch{throw new CommerceError('Isolated preview database required.',503);}
  if(!process.env.TIN_PAYMENTS_TEST_DATABASE_HOST||host!==process.env.TIN_PAYMENTS_TEST_DATABASE_HOST||host.includes('ep-jolly-shape-a4ni83gl'))throw new CommerceError('Verified nonproduction payment database required.',503);
  const rows=await prisma.$queryRawUnsafe<Array<{version:number}>>('SELECT version FROM tin_payments.schema_version');
  if(rows.length!==1||rows[0].version!==1)throw new CommerceError('Payment schema is not ready.',503);
+ const identity=await prisma.$queryRawUnsafe<Array<{id:string}>>('SELECT id FROM tin_preview.identity');
+ if(identity.length!==1||identity[0].id!=='customtintacker-preview-test-20261020')throw new CommerceError('Synthetic payment database required.',503);
+}
+async function paymentExecutionGate(){
+ if(process.env.VERCEL_ENV!=='production')return paymentTestGate();
+ livePaymentConfig(process.env);
+ const rows=await prisma.$queryRawUnsafe<Array<{contract:string}>>("SELECT contract FROM tin_payments.launch_identity WHERE id='customtintackers-production'");
+ if(rows.length!==1||rows[0].contract!=='staff-reviewed-manual-v1')throw new CommerceError('Reviewed production schema is not ready.',503);
+ const preview=await prisma.$queryRawUnsafe<Array<{marker:string|null}>>("SELECT to_regclass('tin_preview.identity')::text marker");
+ if(preview[0]?.marker)throw new CommerceError('Preview database cannot accept live payments.',503);
 }
 export async function paymentReviewGate(){
  if(process.env.VERCEL_ENV==='preview'&&process.env.TIN_ISOLATED_PREVIEW==='1'){
   const raw=process.env.TINTEST_POSTGRES_PRISMA_URL||'';
   let host:string;try{host=new URL(raw).hostname;}catch{throw new CommerceError('Isolated preview database required.',503);}
-  if(process.env.POSTGRES_PRISMA_URL!==raw||!host.endsWith('.neon.tech')||host.includes('ep-jolly-shape-a4ni83gl')||process.env.TIN_PAYMENTS_TEST_ENABLED!=='0')throw new CommerceError('Isolated review configuration required.',503);
+  if(process.env.POSTGRES_PRISMA_URL!==raw||!host.endsWith('.neon.tech')||host.includes('ep-jolly-shape-a4ni83gl'))throw new CommerceError('Isolated review configuration required.',503);
+  if(process.env.TIN_PAYMENTS_TEST_ENABLED==='1')await paymentTestGate();
   const rows=await prisma.$queryRawUnsafe<Array<{id:string;version:number}>>('SELECT i.id,s.version FROM tin_preview.identity i CROSS JOIN tin_payments.schema_version s');
   if(rows.length!==1||rows[0].id!=='customtintacker-preview-test-20261020'||rows[0].version!==1)throw new CommerceError('Synthetic review database required.',503);
   return;
  }
- await paymentTestGate();
+ await paymentExecutionGate();
 }
 function stripeConfig(){
- const key=process.env.TIN_STRIPE_TEST_SECRET_KEY||'',signingSecret=process.env.TIN_STRIPE_TEST_WEBHOOK_SECRET||'',accountId=process.env.TIN_STRIPE_ACCOUNT_ID||'',returnOrigin=process.env.TIN_PAYMENTS_RETURN_ORIGIN||'';
- if(!key.startsWith('sk_test_')||!signingSecret.startsWith('whsec_')||accountId!=='acct_1TO24PIpmMqjUaQp')throw new CommerceError('IG Stripe test configuration required.',503);
+ if(process.env.VERCEL_ENV==='production')return livePaymentConfig(process.env);
+ const key=process.env.TIN_STRIPE_TEST_SECRET_KEY||'',signingSecret=process.env.TIN_STRIPE_TEST_WEBHOOK_SECRET||'',accountId=process.env.TIN_STRIPE_ACCOUNT_ID||'',returnOrigin=process.env.TIN_PAYMENTS_RETURN_ORIGIN||(process.env.VERCEL_ENV==='preview'&&process.env.VERCEL_URL?.startsWith('customtintacker-')?'https://'+process.env.VERCEL_URL:'');
+ if(!key.startsWith('sk_test_')||accountId!=='acct_1TO24PIpmMqjUaQp')throw new CommerceError('IG Stripe test configuration required.',503);
  let url:URL;try{url=new URL(returnOrigin);}catch{throw new CommerceError('Approved preview origin required.',503);}
  if(url.protocol!=='https:'||!url.hostname.endsWith('.vercel.app')||url.pathname!=='/'||url.search||url.hash)throw new CommerceError('Approved preview origin required.',503);
- return {key,signingSecret,accountId,returnOrigin};
+ return {key,signingSecret,accountId,returnOrigin,live:false as const};
 }
 const reviews=()=>paymentReviews(prisma),payments=()=>paymentPostgres(prisma),requestKey=(id:string)=>'invoice-'+id;
 async function paymentFor(owner:string,id:string){const rows=await prisma.$queryRawUnsafe<Array<{id:string}>>('SELECT id FROM tin_payments.payment_order WHERE owner_id=$1 AND request_key=$2',owner,requestKey(id));return rows[0]?payments().orderById(owner,rows[0].id):null;}
@@ -53,18 +71,20 @@ export const paymentActions:PaymentActions={
    const proof=await publishProof({sourceId,key:String(body.requestKey||''),expectedHead:body.expectedHead===null?null:String(body.expectedHead||''),print:proofFile(body.print),...(body.emboss?{emboss:proofFile(body.emboss)}:{})},{principal:async()=>({ownerId:invoice.ownerId,canPrepareProofs:true}),repository:adapters.storage,blobs:blob,draft:async()=>null,product:async()=>null});
    return {proofId:proof.id,version:proof.version};
   }
-  if(body.action==='approve-final'){const input:ReviewInput={shipping:body.shipping as number,tax:body.tax as number,version:String(body.version||''),proofIds:body.proofIds as string[],confirmFinalAmount:body.confirmFinalAmount as true};const review=await reviews().approve(id,input);return {reviewHash:review.reviewHash,total:review.priced.total,customerPath:'/invoice-payment/'+id};}
-  if(body.action==='printiq-review'){const order=await paymentFor(invoice.ownerId,id);if(!order?.paid)throw new CommerceError('Verified payment required before PrintIQ review.',409);return {business:'IG',orderId:order.id,paid:true,productionReleased:false,artwork:order.items.map(i=>({productId:i.productId,quantity:i.quantity,backingId:i.backingId,design:i.design})),execution:'disabled',mappingRequired:true};}
+  if(body.action==='approve-final'){const input:ReviewInput={shipping:body.shipping as number,tax:body.tax as number,version:String(body.version||''),proofIds:body.proofIds as string[],confirmFinalAmount:body.confirmFinalAmount as true,embossResolutions:body.embossResolutions as ReviewInput['embossResolutions']};const review=await reviews().approve(id,input);return {reviewHash:review.reviewHash,total:review.priced.total,customerPath:'/invoice-payment/'+id};}
+  if(body.action==='printiq-review'){const order=await paymentFor(invoice.ownerId,id);if(!order?.paid)throw new CommerceError('Verified payment required before PrintIQ review.',409);return manualHandoff(order);}
   throw new CommerceError('Unknown staff payment action.');
  },
- async customerView(id){await paymentReviewGate();const d=await productionContext(),who=await d.principal(),invoice=await d.invoiceById(id);if(!invoice)throw new CommerceError('Invoice request unavailable.',404);const review=await reviews().get(id,who.ownerId),order=await paymentFor(who.ownerId,id);return {checkoutEnabled:process.env.TIN_PAYMENTS_TEST_ENABLED==='1',invoiceId:id,businessName:'Interstate Graphics',reviewed:!!review,amounts:review?{merchandise:review.priced.subtotal,setup:review.priced.setup,rush:review.priced.rush,shipping:review.priced.shipping,tax:review.priced.tax,total:review.priced.total}:null,paid:!!order?.paid,productionReleased:false,proofs:review?review.priced.items.map(i=>({designId:i.design.id,print:i.design.print,emboss:i.design.emboss})):[]};},
- async checkout(id){await paymentTestGate();const d=await productionContext(),who=await d.principal();if(!(await d.invoiceById(id)))throw new CommerceError('Invoice request unavailable.',404);const review=await reviews().get(id,who.ownerId);if(!review)throw new CommerceError('Final staff review is pending.',409);
+ async acknowledge(id,reviewHash){await paymentReviewGate();const d=await productionContext(),who=await d.principal();if(!await d.invoiceById(id))throw new CommerceError('Invoice request unavailable.',404);return paymentAcknowledgments(prisma).acknowledge(id,who.ownerId,reviewHash);},
+ async customerView(id){await paymentReviewGate();const d=await productionContext(),who=await d.principal(),invoice=await d.invoiceById(id);if(!invoice)throw new CommerceError('Invoice request unavailable.',404);const review=await reviews().get(id,who.ownerId),order=await paymentFor(who.ownerId,id);return {reviewHash:review?.reviewHash||null,acknowledged:review?await paymentAcknowledgments(prisma).current(id,who.ownerId,review.reviewHash):false,testMode:process.env.VERCEL_ENV!=='production',checkoutEnabled:!checkoutPaused(process.env)&&(process.env.VERCEL_ENV==='production'||process.env.TIN_PAYMENTS_TEST_ENABLED==='1'),invoiceId:id,businessName:'Interstate Graphics',reviewed:!!review,amounts:review?{merchandise:review.priced.subtotal,setup:review.priced.setup,rush:review.priced.rush,shipping:review.priced.shipping,tax:review.priced.tax,total:review.priced.total}:null,paid:!!order?.paid,productionReleased:false,proofs:review?review.priced.items.map(i=>({designId:i.design.id,preference:i.design.preference,staffResolved:!!review.embossResolutions?.some(r=>r.designId===i.design.id),print:i.design.print,emboss:i.design.emboss})):[]};},
+ async checkout(id){requireCheckoutOpen(process.env);await paymentExecutionGate();const d=await productionContext(),who=await d.principal();if(!(await d.invoiceById(id)))throw new CommerceError('Invoice request unavailable.',404);const review=await reviews().get(id,who.ownerId);if(!review)throw new CommerceError('Final staff review is pending.',409);
+  await paymentAcknowledgments(prisma).require(id,who.ownerId,review.reviewHash);
   const config=stripeConfig(),store=payments(),order=await store.repository.reserve(who.ownerId,requestKey(id),review.reviewHash,review.priced);
-  if(order.paid)return {orderId:order.id,paid:true};if(order.sessionId&&order.checkoutUrl)return {url:order.checkoutUrl};
+  if(order.paid)return {orderId:order.id,paid:true};if(order.sessionId&&order.checkoutUrl)return reusableCheckout(new Stripe(config.key,{maxNetworkRetries:0,timeout:15000}),order,config.accountId,config.live);
   const started=await store.startSessionAttempt(order.id),client=new Stripe(config.key,{maxNetworkRetries:0,timeout:15000});
   const receipt=await reviewedStripe(client,config).create(order,review.reviewHash,id,started);await store.repository.attachSession(order.id,receipt);return {url:receipt.url};
  },
- async webhook(body,signature){await paymentTestGate();const config=stripeConfig(),event=await stripeEventVerifier({signingSecret:config.signingSecret,live:false,reviewedOnly:true})(body,signature);if(!event)return {received:true};await payments().repository.commitPaid(event);return {received:true};},
+ async webhook(body,signature){if(process.env.TIN_ISOLATED_PREVIEW==='1')throw new CommerceError('Use the dedicated test webhook receiver.',503);await paymentExecutionGate();const config=stripeConfig(),event=await stripeEventVerifier({signingSecret:config.signingSecret,live:config.live,reviewedOnly:true})(body,signature);if(!event)return {received:true};await payments().repository.commitPaid(event);return {received:true};},
 };
 /** Staff/customer proof downloads verify the frozen approval and bytes; never return private blob URLs. */
 export async function paymentProof(invoiceId:string,artifactId:string){

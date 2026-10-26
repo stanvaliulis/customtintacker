@@ -11,6 +11,7 @@ export interface CommerceTransaction {
   update(order: Order & { paymentId?: string }): Promise<void>;
   event(id: string): Promise<string | null>;
   insertEvent(id: string, payloadHash: string, orderId: string): Promise<void>;
+  authorizeReviewedPayment?(order:Order):Promise<void>;
   enqueueOnce(key: string, paidOrder: Order): Promise<void>;
 }
 export interface TransactionStore { transaction<T>(work: (tx: CommerceTransaction) => Promise<T>): Promise<T> }
@@ -38,6 +39,10 @@ export function transactionalRepository(store: TransactionStore): Repository {
       if (!order || order.sessionId !== event.sessionId || order.currency !== event.currency || order.total !== event.total || order.shipping !== event.shipping || order.tax !== event.tax || (event.reviewHash!==undefined&&event.reviewHash!==order.requestHash) || (payment && payment.id !== order.id)) throw new Error('Payment mismatch');
       const existing = order as Order & { paymentId?: string };
       if (existing.paymentId && existing.paymentId !== event.paymentIntentId) throw new Error('Payment conflict');
+      if(!order.paid&&tx.authorizeReviewedPayment){
+        if(!event.reviewHash)throw new CommerceError('Approved review binding required.',409);
+        await tx.authorizeReviewedPayment(order);
+      }
       await tx.insertEvent(event.id, fingerprint, order.id);
       if (order.paid) return 'duplicate';
       await tx.update({ ...order, paid: true, paymentId: event.paymentIntentId });
