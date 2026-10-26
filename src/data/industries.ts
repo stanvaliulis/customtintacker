@@ -34,9 +34,9 @@ export const industries: IndustryData[] = [
   {
     slug: 'brewery-signs',
     name: 'Breweries',
-    headline: 'Tin Tackers Built for Breweries',
+    headline: 'Custom Brewery Signs',
     heroSubtext:
-      'Your beer deserves more than a sticker on a wall. Custom embossed aluminum tin tackers give your brewery brand that real, permanent feel — the kind of sign people steal from bars because they love it that much.',
+      'Create custom metal beer signs for your taproom, distributors and events. Embossed aluminum signs add raised detail; choose the product construction that fits your artwork.',
     benefits: [
       {
         title: 'Taproom Wall Art',

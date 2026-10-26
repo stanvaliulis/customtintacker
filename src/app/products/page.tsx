@@ -135,6 +135,13 @@ export default async function ProductsPage({ searchParams }: Props) {
                 Products
               </span>
             </h1>
+            <p className="mt-4 max-w-3xl text-gray-300">
+              Explore promotional metal signs and branded bar signs for your logo or artwork.
+              Browse <Link href="/products/custom-shape-tacker" className="underline">custom die-cut metal signs</Link>,{' '}
+              <Link href="/products/22-inch-bottle-cap-tacker" className="underline">custom bottle cap signs</Link>,
+              or <Link href="/brewery-signs" className="underline">custom brewery signs</Link>.
+              Check each product for embossed or flat construction; vinyl options are listed separately.
+            </p>
             <p className="mt-4 text-lg sm:text-xl text-gray-400 max-w-2xl leading-relaxed">
               Premium embossed aluminum tin tacker signs built to make your brand impossible to ignore. Choose from squares, circles, can shapes, bottle caps, and fully custom die-cuts.
             </p>

@@ -15,3 +15,11 @@ test('visible fact-safe answers and FAQ markup share exactly the same content',(
  for(const [i,item]of signAnswers.entries()){assert.equal(d.querySelectorAll('h3')[i].textContent,item.question);assert.equal(d.querySelectorAll('p')[i].textContent,item.answer);assert.equal(faq.mainEntity[i].acceptedAnswer.text,item.answer);}
  assert(signAnswers[0].answer.includes('whether it is embossed or flat'));assert(signAnswers[1].answer.includes('does not submit an order'));
 });
+
+test('approved naming families use existing relevant pages without inventing routes or embossing flat products',()=>{
+ const catalog=fs.readFileSync('src/app/products/page.tsx','utf8'),{getIndustryBySlug}=require('../src/data/industries.ts'),brewery=getIndustryBySlug('brewery-signs');
+ assert.equal(brewery.headline,'Custom Brewery Signs');assert(brewery.heroSubtext.includes('custom metal beer signs'));assert(brewery.heroSubtext.includes('Embossed aluminum signs'));
+ for(const phrase of ['promotional metal signs','branded bar signs','custom die-cut metal signs','custom bottle cap signs'])assert(catalog.includes(phrase));
+ for(const slug of ['custom-shape-tacker','22-inch-bottle-cap-tacker'])assert(products.some(p=>p.slug===slug));
+ assert(catalog.includes('embossed or flat construction; vinyl options are listed separately'));
+});

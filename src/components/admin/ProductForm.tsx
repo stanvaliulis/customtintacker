@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { manufacturingFacts } from '@/data/manufacturing-facts';
 import { useRouter } from 'next/navigation';
 import PricingTierEditor, { TierRow } from './PricingTierEditor';
 import ImageUploader, { ImageRow } from './ImageUploader';
@@ -66,6 +67,8 @@ export default function ProductForm({ initialData }: ProductFormProps) {
   const [sku, setSku] = useState(initialData?.sku || '');
   const [shortDescription, setShortDescription] = useState(initialData?.shortDescription || '');
   const [longDescription, setLongDescription] = useState(initialData?.longDescription || '');
+  const [material, setMaterial] = useState(initialData?.material ?? '');
+  const [printMethod, setPrintMethod] = useState(initialData?.printMethod ?? '');
   const [category, setCategory] = useState(initialData?.category || 'standard');
   const [shape, setShape] = useState(initialData?.shape || 'square');
   const [width, setWidth] = useState(initialData?.width || 12);
@@ -74,11 +77,11 @@ export default function ProductForm({ initialData }: ProductFormProps) {
   const [wholesaleDiscount, setWholesaleDiscount] = useState(initialData?.wholesaleDiscount ?? 0.40);
   const [minimumOrder, setMinimumOrder] = useState(initialData?.minimumOrder || 25);
   const [leadTimeDays, setLeadTimeDays] = useState(initialData?.leadTimeDays || 30);
-  const [setupFee, setSetupFee] = useState(initialData?.setupFee || 20000);
+  const [setupFee, setSetupFee] = useState(initialData?.setupFee ?? 20000);
   const [inStock, setInStock] = useState(initialData?.inStock ?? true);
   const [featured, setFeatured] = useState(initialData?.featured ?? false);
   const [sortOrder, setSortOrder] = useState(initialData?.sortOrder || 0);
-  const [mountingHoles, setMountingHoles] = useState(initialData?.mountingHoles || 2);
+  const [mountingHoles, setMountingHoles] = useState(initialData?.mountingHoles ?? 2);
   const [shrinkWrapped, setShrinkWrapped] = useState(initialData?.shrinkWrapped ?? true);
 
   const [images, setImages] = useState<ImageRow[]>(initialData?.images || []);
@@ -122,6 +125,10 @@ export default function ProductForm({ initialData }: ProductFormProps) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (!material.trim() || !printMethod.trim()) {
+      setError('Enter the material and print method before saving.');
+      return;
+    }
     setSaving(true);
     setError('');
 
@@ -143,11 +150,11 @@ export default function ProductForm({ initialData }: ProductFormProps) {
       inStock,
       featured,
       sortOrder,
-      material: 'Recycled Aluminum',
-      printMethod: 'Silkscreen / 4-Color Process',
+      material,
+      printMethod,
       mountingHoles,
       shrinkWrapped,
-      madeInUSA: true,
+      madeInUSA: initialData?.madeInUSA ?? true,
       images: images.map((img, i) => ({ url: img.url, alt: img.alt, sortOrder: i })),
       pricingTiers: pricingTiers.map((t) => ({
         minQuantity: t.minQuantity,
@@ -244,6 +251,17 @@ export default function ProductForm({ initialData }: ProductFormProps) {
             />
           </div>
         </div>
+      </section>
+
+      {/* Manufacturing facts are explicit; edits preserve existing variants. */}
+      <section className="bg-white rounded-xl border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Material and Printing</h2>
+        <label htmlFor="product-material" className="block text-sm font-medium text-gray-700 mb-1">Material</label>
+        <input id="product-material" required value={material} onChange={(e) => setMaterial(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm mb-4" />
+        <label htmlFor="product-print-method" className="block text-sm font-medium text-gray-700 mb-1">Print method</label>
+        <input id="product-print-method" required value={printMethod} onChange={(e) => setPrintMethod(e.target.value)} className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm" />
+        {!isEdit && <button type="button" onClick={() => { setMaterial(manufacturingFacts.material); setPrintMethod(manufacturingFacts.printMethod); }} className="mt-3 text-sm font-medium text-amber-700">Use standard aluminum specifications</button>}
+        <p className="mt-2 text-xs text-gray-500">Keep the selected product&apos;s material and printing details. White on both sides describes the aluminum, not two-sided artwork printing. Embossed or flat construction remains product-specific.</p>
       </section>
 
       {/* Product Details */}
