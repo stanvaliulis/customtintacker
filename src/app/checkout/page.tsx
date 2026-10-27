@@ -11,6 +11,7 @@ import Input from '@/components/ui/Input';
 import Link from 'next/link';
 import { ArrowLeft, FileText } from 'lucide-react';
 import { useSpamProtection } from '@/hooks/useSpamProtection';
+import {staffShippingIntake,US_SHIPPING_REGIONS} from '@/lib/shipping/staff-intake';
 
 export default function CheckoutPage() {
 
@@ -24,6 +25,7 @@ export default function CheckoutPage() {
     phone: '',
     company: distributorInfo?.companyName || '',
     notes: '',
+    shippingAddress:'',city:'',state:'',zip:'',shippingCountry:'US',shippingAddressType:'',
   });
   const requestKey = useRef<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -43,6 +45,7 @@ export default function CheckoutPage() {
     }
 
     if (items.some(i => !i.proofAttachment || i.designId !== i.proofAttachment.designId)) { setError('Review and attach a saved design for every product before continuing.'); return; }
+    try{if(!staffShippingIntake(form))throw Error();}catch{setError('Complete the shipping destination so staff can quote shipping.');return;}
     setLoading(true);
     setError('');
 
@@ -62,6 +65,7 @@ export default function CheckoutPage() {
           customerPhone: form.phone,
           company: form.company,
           notes: form.notes,
+          shippingAddress:form.shippingAddress,city:form.city,state:form.state,zip:form.zip,shippingCountry:form.shippingCountry,shippingAddressType:form.shippingAddressType,
           isDistributor: isDistributor || cartIsDistributor,
           distributorDiscount: distributorDiscount,
           items: items.map((i) => ({
@@ -120,7 +124,7 @@ export default function CheckoutPage() {
         </Link>
 
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto">
-          <h1 className="text-2xl font-bold text-gray-900 mb-8">Checkout</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-8">Request staff review</h1>
 
           <div className="grid gap-6">
             {/* Order Summary */}
@@ -208,6 +212,18 @@ export default function CheckoutPage() {
             </div>
 
             {/* Notes */}
+            <section className="bg-white rounded-xl border border-gray-200 p-6">
+              <h2 className="font-semibold mb-3">Shipping destination</h2>
+              <p className="text-sm mb-4">Shipping requires a staff quote. Submit your destination with the saved artwork and cart; staff will confirm packing, shipping and tax for your approval before payment. No shipping amount is included in the subtotal.</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Input label="Street address and unit" id="shippingAddress" required maxLength={300} value={form.shippingAddress} onChange={e=>updateField('shippingAddress',e.target.value)}/>
+                <Input label="City" id="city" required maxLength={100} value={form.city} onChange={e=>updateField('city',e.target.value)}/>
+                <label htmlFor="state">State / territory<select id="state" required value={form.state} onChange={e=>updateField('state',e.target.value)} className="w-full border rounded p-2"><option value="">Select</option>{US_SHIPPING_REGIONS.map(s=><option key={s} value={s}>{s}</option>)}</select></label>
+                <Input label="ZIP / ZIP+4" id="zip" required maxLength={10} value={form.zip} onChange={e=>updateField('zip',e.target.value)}/>
+                <label htmlFor="shippingAddressType">Address type<select id="shippingAddressType" required value={form.shippingAddressType} onChange={e=>updateField('shippingAddressType',e.target.value)} className="w-full border rounded p-2"><option value="">Select</option><option value="business">Business</option><option value="residential">Residential</option><option value="unsure">Not sure — staff review</option></select></label>
+              </div>
+              <p className="text-xs mt-3">United States, including Alaska, Hawaii and territories. Remote, military, PO box, mixed-size, custom and freight shipments need individual service confirmation. For international destinations, <Link href="/quote" className="underline">request a custom quote</Link>.</p>
+            </section>
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="font-semibold text-gray-900 mb-4">Order Notes</h2>
               <textarea
@@ -227,7 +243,7 @@ export default function CheckoutPage() {
             {pendingOrder && <p role="status" className="text-sm text-green-700">Invoice request {pendingOrder} recorded for Interstate Graphics. Unpaid: no invoice sent, no card charged and no production approval granted.</p>}
             <Button type="submit" loading={loading} size="lg" className="w-full">
               <FileText className="w-5 h-5 mr-2" />
-              Invoice me
+              Request shipping &amp; invoice review
             </Button>
             <p className="text-xs text-gray-500">Interstate Graphics will review your request and prepare an invoice. Shipping and tax will be confirmed separately. Submitting this request does not take payment or approve production.</p>
           </div>

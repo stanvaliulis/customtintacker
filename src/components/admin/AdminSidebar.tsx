@@ -39,6 +39,7 @@ const navSections: NavSection[] = [
     title: 'SALES',
     items: [
       { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+      { href: '/admin/invoice-requests', label: 'Shipping / invoice requests', icon: FileText },
       { href: '/admin/quotes', label: 'Quotes', icon: FileText },
     ],
   },

@@ -6,6 +6,13 @@ import type {InvoiceRequest} from '../commerce/invoice';
 import {vercelPrivateBlobs} from './vercel-private';
 import {createHash} from 'node:crypto';
 /** Staff access is a separate signed administrator session, never a customer-controlled owner claim. */
+export async function staffInvoiceRequests(page=1){
+ if(!(await isAdminAuthenticated()))throw new StorageError('Administrator sign-in required.',401);
+ if(process.env.TIN_WORKFLOW_ENABLED!=='1')throw new StorageError('Invoice requests are not active.',503);
+ if(!Number.isSafeInteger(page)||page<1||page>10000)throw new StorageError('Invalid page.');
+ const rows=await prisma.$queryRawUnsafe<Array<{payload:InvoiceRequest}>>('SELECT payload FROM tin_workflow.invoice_request ORDER BY id LIMIT 51 OFFSET $1',(page-1)*50);
+ return {orders:rows.slice(0,50).map(r=>r.payload),hasMore:rows.length>50};
+}
 export async function staffInvoice(id:string){
  if(!(await isAdminAuthenticated()))throw new StorageError('Administrator sign-in required.',401);
  if(process.env.TIN_WORKFLOW_ENABLED!=='1')throw new StorageError('Invoice requests are not active.',503);

@@ -6,7 +6,7 @@ import Container from '@/components/ui/Container';
 import Button from '@/components/ui/Button';
 import CartItemRow from '@/components/cart/CartItem';
 import Link from 'next/link';
-import ShippingEstimate from '@/components/shipping/ShippingEstimate';
+import StaffShippingNotice from '@/components/shipping/StaffShippingNotice';
 import { ShoppingCart } from 'lucide-react';
 
 export default function CartPage() {
@@ -67,14 +67,14 @@ export default function CartPage() {
                   <span>{formatPrice(setupFees)}</span>
                 </div>
                 <div className="border-t border-gray-200 pt-3 flex justify-between font-semibold text-gray-900 text-base">
-                  <span>Estimated Total</span>
+                  <span>Estimated subtotal</span>
                   <span>{formatPrice(total)}</span>
                 </div>
               </div>
 
-              <ShippingEstimate items={items.map(item => ({productId:item.product.id,quantity:item.quantity,backing:item.selectedBacking}))} />
+              <StaffShippingNotice />
               <Link href="/checkout" className="block mt-6">
-                <Button size="lg" className="w-full">Proceed to Checkout</Button>
+                <Button size="lg" className="w-full">Request shipping &amp; invoice review</Button>
               </Link>
 
               <Link
