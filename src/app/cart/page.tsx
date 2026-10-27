@@ -72,7 +72,7 @@ export default function CartPage() {
                 </div>
               </div>
 
-              <ShippingEstimate items={items.map(item => ({productId:item.product.id,quantity:item.quantity}))} />
+              <ShippingEstimate items={items.map(item => ({productId:item.product.id,quantity:item.quantity,backing:item.selectedBacking}))} />
               <Link href="/checkout" className="block mt-6">
                 <Button size="lg" className="w-full">Proceed to Checkout</Button>
               </Link>
