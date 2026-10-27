@@ -10,3 +10,5 @@ test('bad auth and oversized or redirected responses are sanitized with no retry
 test('abort settles even if injected wire ignores cancellation',async()=>{const c=new AbortController();const pending=ratingTransport(config,()=>new Promise(()=>{}))('/rating/v2409/Shop',{},c.signal);c.abort();await assert.rejects(pending,/unavailable/);});
 
 test('owner-confirmed origin contains no inferred pickup or carrier account',()=>{const {confirmedShippingOrigin:o}=require('../src/lib/shipping/origin.ts');assert.deepEqual(o,{streetLines:['7817 Burden Road'],city:'Machesney Park',state:'IL',postalCode:'61115',country:'US'});assert.equal(o.pickupType,undefined);assert.equal(o.accountNumber,undefined);});
+
+test('both origin pickups are confirmed without inventing carrier contract or API code',()=>{const {confirmedCarrierPickup:p}=require('../src/lib/shipping/origin.ts');for(const carrier of ['ups','fedex']){assert.equal(p[carrier].atOrigin,true);assert.equal(p[carrier].apiPickupCode,null);assert.equal(p[carrier].accountContractVerified,false);}});
