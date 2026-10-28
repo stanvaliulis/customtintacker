@@ -8,7 +8,7 @@ module.exports=async()=>{
  const original=Module._load,stubs={'@/lib/persistence/server':{productionContext:async()=>d},'@/lib/spam-protection':{rateLimit:()=>null,detectSpam:()=>null}};
  const load=relative=>{const filename=path.resolve(__dirname,'../src/app/api',relative),m=new Module(filename,module);m.filename=filename;m.paths=Module._nodeModulePaths(path.dirname(filename));m._compile(ts.transpileModule(fs.readFileSync(filename,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2020}}).outputText,filename);return m.exports;};
  Module._load=function(id,p,m){return stubs[id]||original.call(this,id,p,m);};let post,get;try{post=load('orders/invoice/route.ts').POST;get=load('orders/invoice/status/route.ts').GET;}finally{Module._load=original;}
- const body={name:'Synthetic',email:'synthetic@example.invalid',items:[{productId:'p',quantity:2,backingId:'standard',designId:record.id,proofAttachment:a}]};
+ const body={shippingAddress:'123 Synthetic Lane',city:'Example',state:'IL',zip:'61115',shippingCountry:'US',shippingAddressType:'business',name:'Synthetic',email:'synthetic@example.invalid',items:[{productId:'p',quantity:2,backingId:'standard',designId:record.id,proofAttachment:a}]};
  const request=(b,key='fixture-invoice-key-0001',origin='https://example.invalid')=>new Request('https://example.invalid/api/orders/invoice',{method:'POST',headers:{Origin:origin,'Content-Type':'application/json','Idempotency-Key':key},body:JSON.stringify(b)});
  return {record,body,orders,jobs,post,get,request,setOwner:v=>owner=v};
 };

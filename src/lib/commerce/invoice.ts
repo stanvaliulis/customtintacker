@@ -38,7 +38,7 @@ export async function requestInvoice(raw:unknown,key:string,d:InvoiceDependencie
  const who=await d.principal();if(!who.ownerId)throw new CommerceError('Verified customer session required.',401);
  const requestHash=hash(canonical({ownerId:who.ownerId,method:'invoice',request:snapshot}));
  const old=await d.repository.byRequest(who.ownerId,key);if(old){if(old.ownerId!==who.ownerId||old.requestHash!==requestHash)throw new CommerceError('Invoice request key conflict.',409);return {orderId:old.id,status:old.status,paid:false as const};}
- let destination:ReturnType<typeof staffShippingIntake>;try{destination=staffShippingIntake(snapshot);}catch(e){throw new CommerceError(e instanceof Error?e.message:'Invalid shipping destination.');}
+ let destination:ReturnType<typeof staffShippingIntake>;try{destination=staffShippingIntake(snapshot);if(!destination)throw new Error('Complete shipping destination required for a new invoice request.');}catch(e){throw new CommerceError(e instanceof Error?e.message:'Invalid shipping destination.');}
  const sources:InvoiceRequest['sources']=[];
  // Reuse server catalog, ownership and cart/hash validation. Zero charge placeholders stay internal;
  // invoice requests explicitly expose null shipping/tax/final total until staff prepares an invoice.
