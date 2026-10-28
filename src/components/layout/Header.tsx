@@ -76,12 +76,12 @@ export default function Header() {
       )}
 
       <Container>
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between gap-4 h-16">
           <Link href="/" className="flex items-center shrink-0">
-            <Logo size="sm" variant="dark" />
+            <Logo size="sm" variant="dark" className="!w-32 min-[360px]:!w-40" />
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-7">
+          <nav className="hidden xl:flex items-center gap-4 whitespace-nowrap shrink-0">
             <Link
               href="/products"
               aria-current={pathname === '/products' ? 'page' : undefined}
@@ -137,11 +137,11 @@ export default function Header() {
               ))}
           </nav>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 shrink-0">
             {/* Desktop search trigger */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="hidden md:flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300 hover:text-gray-600 transition-colors"
+              className="hidden 2xl:flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg border border-gray-200 bg-gray-50 text-gray-400 hover:border-gray-300 hover:text-gray-600 transition-colors"
               aria-label="Search the site"
             >
               <Search className="w-4 h-4" />
@@ -154,7 +154,7 @@ export default function Header() {
             {/* Mobile search trigger */}
             <button
               onClick={() => setSearchOpen(true)}
-              className="md:hidden p-2 text-gray-600 hover:text-amber-600 transition-colors"
+              className="2xl:hidden p-2 text-gray-600 hover:text-amber-600 transition-colors"
               aria-label="Search the site"
             >
               <Search className="w-5 h-5" />
@@ -202,7 +202,7 @@ export default function Header() {
 
             <button
               onClick={() => setMobileOpen(!mobileOpen)}
-              className="lg:hidden p-2 text-gray-600 hover:text-gray-900"
+              className="xl:hidden p-2 text-gray-600 hover:text-gray-900"
               aria-label="Toggle menu"
               aria-expanded={mobileOpen}
             >
@@ -213,7 +213,7 @@ export default function Header() {
       </Container>
 
       {mobileOpen && (
-        <div className="lg:hidden border-t border-gray-200 bg-white">
+        <div className="xl:hidden max-h-[calc(100dvh-6rem)] overflow-y-auto border-t border-gray-200 bg-white">
           <nav className="flex flex-col py-3">
             {navLinks.map((link) => (
               <Link
