@@ -1,3 +1,4 @@
+import { signBuyingGuide } from '@/data/sign-buying-guide';
 import { productTiming } from '@/data/manufacturing-facts';
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
@@ -113,6 +114,11 @@ export default async function ProductDetailPage({ params }: Props) {
         <p className="text-sm text-gray-300 mt-4">Price depends on quantity and selected options. Check the volume table below or request a quote for custom requirements.</p>
         <div className="flex flex-wrap gap-5 mt-4 text-amber-300 text-sm underline"><Link href={uploadProductHref(product.id)}>Upload Artwork</Link><Link href={'/design/' + product.id}>Design your own</Link><Link href="/artwork-templates">Artwork guides and file requirements</Link></div>
       </section></Container>
+      {(product.slug === 'custom-shape-tacker' || product.slug === '22-inch-bottle-cap-tacker') && <Container><section className="pb-8 text-gray-300" aria-label="Choosing this sign">
+        <h2 className="text-xl font-semibold text-white">{product.slug === 'custom-shape-tacker' ? signBuyingGuide[3].title : signBuyingGuide[4].title}</h2>
+        <p className="mt-3">{product.slug === 'custom-shape-tacker' ? signBuyingGuide[3].text : signBuyingGuide[4].text}</p>
+        <p className="mt-3"><Link href="/products#sign-buying-guide" className="text-amber-300 underline">Compare construction and artwork requirements</Link> or explore <Link href="/brewery-signs" className="text-amber-300 underline">brewery sign ideas</Link>.</p>
+      </section></Container>}
       {/* Main Product Section */}
       <section className="py-10 sm:py-14">
         <Container>

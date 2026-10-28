@@ -93,9 +93,8 @@ export const industries: IndustryData[] = [
       'Hang them in your taproom, hand them out at beer festivals, give them to your distributors, sell them in your merch shop, or send them as gifts to loyal accounts.',
     pricingStart: '$3.50',
     ctaText: 'Ready to make your brewery signs?',
-    metaTitle: 'Custom Tin Tacker Signs for Breweries | Embossed Aluminum Brewery Signs',
-    metaDescription:
-      'Order custom embossed aluminum tin tacker signs for your brewery. Bottle cap, can shape, and circle tin tackers perfect for taprooms, beer festivals, and distributor swag. Made in USA. See product-specific minimum quantities and volume pricing.',
+    metaTitle: 'Custom Brewery Signs & Metal Beer Signs',
+    metaDescription: 'Compare custom brewery signs and metal beer signs for taprooms and promotions. Choose a shape, review flat or embossed construction, and prepare your artwork.',
     keywords: [
       'brewery signs',
       'custom brewery signs',
@@ -122,9 +121,9 @@ export const industries: IndustryData[] = [
   {
     slug: 'bar-signs',
     name: 'Bars & Pubs',
-    headline: 'Tin Tackers That Belong Behind the Bar',
+    headline: 'Branded Bar Signs for Bars & Pubs',
     heroSubtext:
-      'Every great bar has that wall. The one covered in signs, stickers, and memories. Custom tin tackers are the centerpiece — embossed, full-color, and built to outlast every happy hour.',
+      'Put your bar logo or beverage artwork on a custom sign. Compare raised-detail embossed aluminum with flat metal options, and choose a size that fits your display.',
     benefits: [
       {
         title: 'Bar Wall Decor',
@@ -181,9 +180,8 @@ export const industries: IndustryData[] = [
       'Cover your bar walls, mark the entrance, decorate the patio, give them to regulars, or hand them out during promotional events and grand openings.',
     pricingStart: '$3.50',
     ctaText: 'Ready to make your bar signs?',
-    metaTitle: 'Custom Tin Tacker Signs for Bars & Pubs | Embossed Aluminum Bar Signs',
-    metaDescription:
-      'Order custom embossed aluminum tin tacker signs for your bar, pub, or tavern. Rectangle, arrow, and square shapes perfect for bar wall decor, promotions, and brand signage. Made in USA.',
+    metaTitle: 'Branded Bar Signs & Promotional Metal Signs',
+    metaDescription: 'Plan branded bar signs and promotional metal signs for pubs, beverage brands and retail displays. Compare shapes, sizes, construction and artwork requirements.',
     keywords: [
       'bar signs',
       'custom bar signs',

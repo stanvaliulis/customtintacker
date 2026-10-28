@@ -11,6 +11,7 @@ import { Package, Sparkles, ChevronRight } from 'lucide-react';
 import { catalog, getMaterial, getSubcategory, getMaterialGroup, getSubcategoryLabel } from '@/data/categories';
 import type { Product } from '@/types/product';
 import Link from 'next/link';
+import SignBuyingGuide from '@/components/products/SignBuyingGuide';
 
 export const revalidate = 3600; // revalidate every hour
 
@@ -143,7 +144,7 @@ export default async function ProductsPage({ searchParams }: Props) {
               Check each product for embossed or flat construction; vinyl options are listed separately.
             </p>
             <p className="mt-4 text-lg sm:text-xl text-gray-400 max-w-2xl leading-relaxed">
-              Premium embossed aluminum tin tacker signs built to make your brand impossible to ignore. Choose from squares, circles, can shapes, bottle caps, and fully custom die-cuts.
+              Compare embossed aluminum, flat metal and vinyl options. Choose a shape and finished size, then check the construction and artwork requirements on the product page.
             </p>
             <div className="mt-6 flex items-center gap-4 text-sm text-gray-500">
               <span className="flex items-center gap-1.5">
@@ -224,6 +225,7 @@ export default async function ProductsPage({ searchParams }: Props) {
           </div>
         </Container>
       </section>
+      <Container><SignBuyingGuide /></Container>
     </div>
   );
 }

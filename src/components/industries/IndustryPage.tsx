@@ -6,6 +6,7 @@ import { getBreadcrumbSchema } from '@/lib/structured-data';
 import { siteConfig } from '@/data/siteConfig';
 import { IndustryData } from '@/data/industries';
 import { products as listedProducts } from '@/data/products';
+import { signBuyingGuide } from '@/data/sign-buying-guide';
 import {
   Beer,
   Wine,
@@ -36,6 +37,7 @@ interface IndustryPageProps {
 
 export default function IndustryPage({ industry }: IndustryPageProps) {
   const IndustryIcon = iconMap[industry.benefits[0]?.icon || 'beer'];
+  const buyingAdvice = industry.slug === 'brewery-signs' ? signBuyingGuide[1] : industry.slug === 'bar-signs' ? signBuyingGuide[2] : null;
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -312,6 +314,17 @@ export default function IndustryPage({ industry }: IndustryPageProps) {
           </Container>
         </div>
       </section>
+      {buyingAdvice && <Container><section className="py-12" aria-label="Choosing your sign">
+        <h2 className="text-2xl font-bold text-white">Choosing {buyingAdvice.title.toLowerCase()}</h2>
+        <p className="mt-4 text-gray-300">{buyingAdvice.text}</p>
+        <p className="mt-4 text-gray-300">A bottle-cap outline does not mean embossed artwork: the listed 22-inch bottle cap is flat. Custom outlines and requested raised details need team review.</p>
+        <div className="flex flex-wrap gap-5 mt-4 text-amber-300 underline">
+          <Link href="/products/22-inch-bottle-cap-tacker">Flat bottle cap signs</Link>
+          <Link href="/products/custom-shape-tacker">Custom die-cut metal signs</Link>
+          <Link href="/products#sign-buying-guide">Compare sign materials and construction</Link>
+          <Link href="/artwork-templates">Prepare your artwork</Link>
+        </div>
+      </section></Container>}
     </div>
   );
 }
