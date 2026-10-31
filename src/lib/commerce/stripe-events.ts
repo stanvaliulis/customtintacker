@@ -16,9 +16,18 @@ export function stripeEventVerifier(config: { signingSecret: string; live: boole
       throw new CommerceError('Payment event account or mode mismatch.', 400);
     if (!['checkout.session.completed', 'checkout.session.async_payment_succeeded'].includes(event.type)) return null;
     const session = event.data.object as Stripe.Checkout.Session;
-    if (session.mode !== 'payment' || session.livemode !== config.live || session.metadata?.business !== 'IG')
+    if (!session || session.mode !== 'payment' || session.livemode !== config.live)
       throw new CommerceError('Payment event business or mode mismatch.', 400);
-    if (session.payment_status !== 'paid') return null;
+    const metadata = session.metadata;
+    if (metadata != null && (typeof metadata !== 'object' || Array.isArray(metadata)))
+      throw new CommerceError('Invalid payment metadata.', 400);
+    // This IG account also receives unrelated payment-link checkouts. Only after
+    // signature/account/mode checks, acknowledge events with NO Tin identifiers.
+    // Partial or conflicting Tin identifiers must still fail closed below.
+    const tinKeys = ['business', 'orderId', 'paymentContract', 'reviewHash', 'shippingCents', 'taxCents'];
+    if (config.reviewedOnly && !tinKeys.some(key => Object.prototype.hasOwnProperty.call(metadata || {}, key))) return null;
+    if (metadata?.business !== 'IG')
+      throw new CommerceError('Payment event business or mode mismatch.', 400);
     if(config.reviewedOnly&&session.metadata?.paymentContract!=='reviewed-final-v1')throw new CommerceError('Unsupported payment contract.',400);
     const payment = typeof session.payment_intent === 'string' ? session.payment_intent : session.payment_intent?.id;
     const orderId = session.metadata?.orderId;
@@ -38,6 +47,7 @@ export function stripeEventVerifier(config: { signingSecret: string; live: boole
         reconciledShipping+reconciledTax>total!||!session.metadata.reviewHash?.match(/^[a-f0-9]{64}$/))
         throw new CommerceError('Invalid reviewed payment breakdown.',400);
     }
+    if (session.payment_status !== 'paid') return null;
     return { id: event.id, type: event.type, sessionId: session.id, orderId, paymentIntentId: payment,
       paymentStatus: 'paid', currency: 'usd', total: total!, shipping: reconciledShipping, tax: reconciledTax,
       ...(session.metadata?.paymentContract==='reviewed-final-v1'?{reviewHash:session.metadata.reviewHash}:{}) };
