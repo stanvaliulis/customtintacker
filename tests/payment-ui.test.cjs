@@ -13,3 +13,47 @@ test('customer sees resolved emboss choice before approval and changed review cl
 
 test('expired test deadline refuses payment before any database read',async(t)=>{t.mock.method(Date,'now',()=>now);let now=Date.parse('2026-10-27T13:00:00Z'),reads=0;const m=load('../src/lib/persistence/payments.ts',{'server-only':{},'../db':{prisma:{$queryRawUnsafe:async()=>{reads++;throw Error('must not read');}}},'./staff-invoice':{},'./server':{},'./postgres':{},'./vercel-private':{}});for(const instant of ['2026-10-27T13:00:00Z','2026-10-28T13:00:00Z']){now=Date.parse(instant);await assert.rejects(m.paymentTestGate(),/Test payment window expired/);assert.equal(reads,0);}});
 
+
+test('staff must reconfirm after changing shipping, tax, or prepared proof selection',async()=>{
+ const f=setup(),old=global.fetch;let submitted;
+ const view={proofs:[{id:'proof-'+'a'.repeat(64),sourceId:'src',version:1,printName:'synthetic.pdf'}],paymentStatus:'not-started',customerPath:'/invoice-payment/'+id};
+ global.fetch=async(url,options)=>{if(options?.method==='POST')submitted=JSON.parse(options.body);return {ok:true,json:async()=>view};};
+ const Page=load('../src/app/admin/invoice-requests/[id]/PaymentReview.tsx').default;
+ const set=async(el,value)=>f.act(async()=>{Object.getOwnPropertyDescriptor(f.dom.window.HTMLInputElement.prototype,'value').set.call(el,value);el.dispatchEvent(new f.dom.window.Event('input',{bubbles:true}));});
+ try{
+  await f.act(async()=>f.root.render(f.React.createElement(Page,{invoiceId:id,subtotal:10000,sources:[{revisionId:'src',designId:'synthetic'}],testMode:false})));
+  const amounts=document.querySelectorAll('input[inputmode=decimal]'),check=document.querySelector('input[type=checkbox]'),approve=[...document.querySelectorAll('button')].find(x=>x.textContent.includes('Approve final'));
+  await set(amounts[0],'5');await set(amounts[1],'7');await f.act(async()=>check.click());assert.equal(check.checked,true);
+  await set(amounts[0],'99');assert.equal(check.checked,false);assert.equal(approve.disabled,true);await f.act(async()=>approve.click());assert.equal(submitted,undefined);
+  await f.act(async()=>check.click());await set(amounts[1],'8');assert.equal(check.checked,false);assert.equal(approve.disabled,true);
+  await f.act(async()=>check.click());const file=document.querySelector('input[type=file]');await f.act(async()=>file.dispatchEvent(new f.dom.window.Event('change',{bubbles:true})));assert.equal(check.checked,false);
+  await f.act(async()=>check.click());await f.act(async()=>approve.click());assert.equal(submitted.shipping,9900);assert.equal(submitted.tax,800);assert.equal(submitted.confirmFinalAmount,true);
+ }finally{await f.act(async()=>f.root.unmount());global.fetch=old;f.dom.window.close();}
+});
+
+test('staff can refresh verified payment status without writing or creating another charge',async()=>{
+ const f=setup(),old=global.fetch;let paid=false,reads=0;
+ global.fetch=async(url,options)=>{assert.notEqual(options?.method,'POST');reads++;assert.match(url,/api\/admin\/invoice-payment\?invoice_id=/);return {ok:true,json:async()=>({proofs:[],review:{priced:{total:11200}},paymentStatus:paid?'paid':'awaiting-payment',customerPath:'/invoice-payment/'+id})};};
+ const Page=load('../src/app/admin/invoice-requests/[id]/PaymentReview.tsx').default;
+ try{
+  await f.act(async()=>f.root.render(f.React.createElement(Page,{invoiceId:id,subtotal:10000,sources:[],testMode:false})));assert.match(document.body.textContent,/awaiting-payment/);assert.ok(![...document.querySelectorAll('button')].some(x=>x.textContent.includes('View manual PrintIQ')));
+  paid=true;await f.act(async()=>[...document.querySelectorAll('button')].find(x=>x.textContent==='Refresh payment status').click());assert.match(document.body.textContent,/Status: paid/);assert.ok([...document.querySelectorAll('button')].some(x=>x.textContent.includes('View manual PrintIQ')));assert.equal(reads,2);
+ }finally{await f.act(async()=>f.root.unmount());global.fetch=old;f.dom.window.close();}
+});
+
+test('delayed proof upload blocks confirmation throughout encoding and storage and requires fresh approval afterward',async()=>{
+ const f=setup(),oldFetch=global.fetch,oldReader=global.FileReader;let reader,releaseWrite,posts=0;
+ const view={proofs:[{id:'proof-old',sourceId:'src',version:1,printName:'old.pdf'}],paymentStatus:'not-started',customerPath:'/invoice-payment/'+id};
+ global.FileReader=class {readAsDataURL(){reader=this;}};
+ global.fetch=async(url,options)=>{if(options?.method==='POST'){posts++;assert.equal(JSON.parse(options.body).action,'prepare-proof');await new Promise(resolve=>{releaseWrite=resolve;});view.proofs=[{id:'proof-new',sourceId:'src',version:2,printName:'new.pdf'}];}return {ok:true,json:async()=>view};};
+ const Page=load('../src/app/admin/invoice-requests/[id]/PaymentReview.tsx').default;
+ try{
+  await f.act(async()=>f.root.render(f.React.createElement(Page,{invoiceId:id,subtotal:10000,sources:[{revisionId:'src',designId:'synthetic'}],testMode:false})));
+  const file=document.querySelector('input[type=file]');Object.defineProperty(file,'files',{configurable:true,value:[new f.dom.window.File(['%PDF fixture'],'new.pdf',{type:'application/pdf'})]});await f.act(async()=>file.dispatchEvent(new f.dom.window.Event('change',{bubbles:true})));
+  const check=document.querySelector('input[type=checkbox]'),upload=[...document.querySelectorAll('button')].find(x=>x.textContent==='Store prepared proofs'),approve=[...document.querySelectorAll('button')].find(x=>x.textContent.includes('Approve final'));
+  await f.act(async()=>check.click());assert.equal(check.checked,true);await f.act(async()=>upload.click());assert.equal(check.checked,false);assert.equal(check.disabled,true);assert.equal(approve.disabled,true);assert.equal(posts,0);
+  await f.act(async()=>check.click());assert.equal(check.checked,false);
+  await f.act(async()=>{reader.result='data:application/pdf;base64,JVBERiBmaXh0dXJl';reader.onload();});assert.equal(posts,1);assert.equal(check.disabled,true);assert.equal(file.disabled,true);
+  await f.act(async()=>check.click());assert.equal(check.checked,false);await f.act(async()=>releaseWrite());assert.match(document.body.textContent,/new.pdf/);assert.equal(check.disabled,false);assert.equal(check.checked,false);assert.equal(approve.disabled,true);
+ }finally{await f.act(async()=>f.root.unmount());global.fetch=oldFetch;global.FileReader=oldReader;f.dom.window.close();}
+});

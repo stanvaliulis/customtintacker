@@ -2,9 +2,12 @@ import {staffInvoice} from '@/lib/persistence/staff-invoice';
 import {isAdminAuthenticated} from '@/lib/admin-auth';
 import {redirect} from 'next/navigation';
 import PaymentReview from './PaymentReview';
+import {paymentReviewGate} from '@/lib/persistence/payments';
 export default async function InvoiceReview({params}:{params:Promise<{id:string}>}){
  if(!(await isAdminAuthenticated()))redirect('/admin/login');
  const {id}=await params,order=await staffInvoice(id);
+ let paymentReviewAvailable=false;
+ try{await paymentReviewGate();paymentReviewAvailable=true;}catch{/* Keep review fail-closed when runtime or schema checks fail. */}
  return <section className="mx-auto max-w-4xl space-y-5 p-6">
   <h1 className="text-2xl font-bold">Invoice request</h1>
   <p>{order.id} · Interstate Graphics</p>
@@ -24,6 +27,6 @@ export default async function InvoiceReview({params}:{params:Promise<{id:string}
    <a className="mr-5 underline" href={'/api/admin/invoice-artwork?'+new URLSearchParams({order_id:id,source_id:source.revisionId,kind:'document'})}>Download saved source</a>
    <a className="underline" href={'/api/admin/invoice-artwork?'+new URLSearchParams({order_id:id,source_id:source.revisionId,kind:'original'})}>Download original upload (if supplied)</a>
   </li>)}</ul>
-  {(process.env.TIN_PAYMENTS_TEST_ENABLED==='1'||process.env.TIN_ISOLATED_PREVIEW==='1')&&process.env.VERCEL_ENV==='preview'&&<PaymentReview invoiceId={id} sources={order.sources} subtotal={order.estimate.subtotal}/>}
+  {paymentReviewAvailable?<PaymentReview invoiceId={id} sources={order.sources} subtotal={order.estimate.subtotal} testMode={process.env.VERCEL_ENV!=='production'}/>:<p role="status">Payment review is unavailable. Check the payment configuration and schema before requesting payment.</p>}
  </section>;
 }
